@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Слот занят — Запись на консультацию</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Запись на консультацию</div>
+    <div class="who">
+      <strong>Соколов Илья</strong>
+      <span>студент, группа ПИ-21</span>
+    </div>
+    <nav>
+      <a href="student.html" aria-current="page">Свободные слоты</a>
+      <a href="student-bookings.html">Мои записи</a>
+      <a class="logout" href="index.html">Выйти</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Слот занят</h1>
+        <p class="lead">Запись сохранена. Этот слот больше не предлагается другим студентам.</p>
+      </div>
+    </div>
+    <p class="notice">Соколов Илья записан к Ивановой А. С. на 22.10.2026, 10:00–10:45, аудитория 314.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Преподаватель</th>
+            <th>Дата</th>
+            <th>Время</th>
+            <th>Аудитория</th>
+            <th>Студент</th>
+            <th>Статус</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="changed">
+            <td>Иванова А. С., доцент</td>
+            <td>22.10.2026</td>
+            <td>10:00–10:45</td>
+            <td>314</td>
+            <td>Соколов Илья, ПИ-21</td>
+            <td><span class="chip chip-booked">занят</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint"><a href="student-bookings.html">Мои записи</a></p>
+
+    <h2 class="subhead">Остальные свободные слоты</h2>
+    <section class="section">
+      <h2>Иванова А. С.</h2>
+      <p class="meta">доцент, программная инженерия</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Время</th>
+              <th>Аудитория</th>
+              <th>Комментарий</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>24.10.2026</td>
+              <td>14:00–14:45</td>
+              <td>314</td>
+              <td class="soft">принести черновик курсовой</td>
+              <td><span class="chip chip-free">свободен</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="section">
+      <h2>Петров Н. И.</h2>
+      <p class="meta">старший преподаватель, программная инженерия</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Время</th>
+              <th>Аудитория</th>
+              <th>Комментарий</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>23.10.2026</td>
+              <td>11:30–12:15</td>
+              <td>210</td>
+              <td>—</td>
+              <td><span class="chip chip-free">свободен</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="section">
+      <h2>Смирнова Е. В.</h2>
+      <p class="meta">профессор, программная инженерия</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Время</th>
+              <th>Аудитория</th>
+              <th>Комментарий</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>28.10.2026</td>
+              <td>15:00–15:45</td>
+              <td>105</td>
+              <td class="soft">разбор лабораторной</td>
+              <td><span class="chip chip-free">свободен</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

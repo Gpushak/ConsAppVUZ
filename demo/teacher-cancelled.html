@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Консультация отменена — Запись на консультацию</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Запись на консультацию</div>
+    <div class="who">
+      <strong>Иванова А. С.</strong>
+      <span>преподаватель, доцент</span>
+    </div>
+    <nav>
+      <a href="teacher.html" aria-current="page">Мои слоты</a>
+      <a href="teacher-new-slot.html">Новый слот</a>
+      <a class="logout" href="index.html">Выйти</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Мои слоты</h1>
+        <p class="lead">Слоты и записи на них.</p>
+      </div>
+      <a class="btn" href="teacher-new-slot.html">Новый слот</a>
+    </div>
+    <p class="notice">Консультация 29.10.2026, 11:00–11:45 со Соколовым Ильёй отменена. Слот студентам больше не предлагается.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Время</th>
+            <th>Аудитория</th>
+            <th>Студент</th>
+            <th>Комментарий</th>
+            <th>Статус</th>
+            <th>Действие</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="changed">
+            <td>29.10.2026</td>
+            <td>11:00–11:45</td>
+            <td>314</td>
+            <td>Соколов Илья, ПИ-21</td>
+            <td class="soft">окно больше не подходит</td>
+            <td><span class="chip chip-teacher">отменён преподавателем</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>24.10.2026</td>
+            <td>14:00–14:45</td>
+            <td>314</td>
+            <td>—</td>
+            <td class="soft">принести черновик курсовой</td>
+            <td><span class="chip chip-free">свободен</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>22.10.2026</td>
+            <td>10:00–10:45</td>
+            <td>314</td>
+            <td>—</td>
+            <td>—</td>
+            <td><span class="chip chip-free">свободен</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>12.10.2026</td>
+            <td>10:00–10:45</td>
+            <td>314</td>
+            <td>Соколов Илья, ПИ-21</td>
+            <td>—</td>
+            <td><span class="chip chip-student">отменён студентом</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>09.10.2026</td>
+            <td>14:00–14:30</td>
+            <td>314</td>
+            <td>Соколов Илья, ПИ-21</td>
+            <td class="soft">не смогу быть на кафедре</td>
+            <td><span class="chip chip-teacher">отменён преподавателем</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>08.10.2026</td>
+            <td>10:00–10:45</td>
+            <td>314</td>
+            <td>Соколов Илья, ПИ-21</td>
+            <td>—</td>
+            <td><span class="chip chip-done">проведён</span></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
