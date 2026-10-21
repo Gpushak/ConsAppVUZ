@@ -23,7 +23,7 @@
     <div class="page-head">
       <div>
         <h1>Новый слот</h1>
-        <p class="lead">Окно появится в кабинете как свободное.</p>
+        <p class="lead">Окно групповое: записаться сможет несколько студентов.</p>
       </div>
     </div>
     <div class="panel">
@@ -40,8 +40,20 @@
         <input id="end" type="text" name="end" value="16:45" autocomplete="off">
       </div>
       <div class="field">
+        <label for="building">Корпус</label>
+        <select id="building" name="building" size="7">
+          <option>Главный А</option>
+          <option selected>Главный Б</option>
+          <option>А</option>
+          <option>Б</option>
+          <option>В</option>
+          <option>Г</option>
+          <option>Д</option>
+        </select>
+      </div>
+      <div class="field">
         <label for="room">Аудитория</label>
-        <input id="room" type="text" name="room" value="314" autocomplete="off">
+        <input id="room" type="text" name="room" value="220" autocomplete="off">
       </div>
       <div class="field">
         <label for="comment">Комментарий, необязательно</label>
