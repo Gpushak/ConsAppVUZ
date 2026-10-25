@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Слоты избранных — Запись на консультацию</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Запись на консультацию</div>
+    <div class="who">
+      <strong>Соколов Илья</strong>
+      <span>студент, группа ПИ-21</span>
+    </div>
+    <nav>
+      <a href="student.html" aria-current="page">Слоты избранных</a>
+      <a href="student-teachers.html">Преподаватели</a>
+      <a href="student-bookings.html">Мои записи</a>
+      <a class="logout" href="index.html">Выйти</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Слоты избранных</h1>
+        <p class="lead">Предстоящие консультации Ивановой А. С. и Смирновой Е. В. Слот открыт, пока на него можно записаться.</p>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2>Иванова А. С.</h2>
+      <p class="meta">доцент, программная инженерия</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Время</th>
+              <th>Место</th>
+              <th>Записались</th>
+              <th>Комментарий</th>
+              <th>Статус</th>
+              <th>Действие</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>22.10.2026</td>
+              <td>10:00–10:45</td>
+              <td>Главный А, ауд. 314</td>
+              <td class="people">
+                <details class="people">
+                  <summary>2 студента</summary>
+                  <p class="group-name">ПИ-22</p>
+                  <ul><li>Лебедева Ольга</li></ul>
+                  <p class="group-name">ПИ-31</p>
+                  <ul><li>Егоров Артём</li></ul>
+                </details>
+              </td>
+              <td>—</td>
+              <td><span class="chip chip-free">свободен</span></td>
+              <td><a class="btn btn-small" href="student-booked.html">Записаться</a></td>
+            </tr>
+            <tr>
+              <td>24.10.2026</td>
+              <td>14:00–14:45</td>
+              <td>Главный А, ауд. 314</td>
+              <td class="people">
+                <details class="people">
+                  <summary>2 студента</summary>
+                  <p class="group-name">ПИ-21</p>
+                  <ul><li>Орлова Марина</li></ul>
+                  <p class="group-name">ПИ-22</p>
+                  <ul><li>Лебедева Ольга</li></ul>
+                </details>
+              </td>
+              <td class="soft">принести черновик курсовой</td>
+              <td><span class="chip chip-free">свободен</span></td>
+              <td><a class="btn btn-small" href="student.html">Записаться</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Смирнова Е. В.</h2>
+      <p class="meta">профессор, программная инженерия</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Время</th>
+              <th>Место</th>
+              <th>Записались</th>
+              <th>Комментарий</th>
+              <th>Статус</th>
+              <th>Действие</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>28.10.2026</td>
+              <td>15:00–15:45</td>
+              <td>В, ауд. 105</td>
+              <td class="people">
+                <details class="people">
+                  <summary>2 студента</summary>
+                  <p class="group-name">ПИ-21</p>
+                  <ul><li>Волкова Дарья</li></ul>
+                  <p class="group-name">ПИ-22</p>
+                  <ul><li>Новиков Игорь</li></ul>
+                </details>
+              </td>
+              <td class="soft">разбор лабораторной</td>
+              <td><span class="chip chip-free">свободен</span></td>
+              <td><a class="btn btn-small" href="student.html">Записаться</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

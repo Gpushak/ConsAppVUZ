@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Новый слот — Запись на консультацию</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Запись на консультацию</div>
+    <div class="who">
+      <strong>Иванова А. С.</strong>
+      <span>преподаватель, доцент</span>
+    </div>
+    <nav>
+      <a href="teacher.html">Мои слоты</a>
+      <a href="teacher-new-slot.html" aria-current="page">Новый слот</a>
+      <a class="logout" href="index.html">Выйти</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Новый слот</h1>
+        <p class="lead">Окно групповое: записаться сможет несколько студентов.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="field">
+        <label for="date">Дата</label>
+        <input id="date" type="text" name="date" value="30.10.2026" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="start">Начало</label>
+        <input id="start" type="text" name="start" value="16:00" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="end">Конец</label>
+        <input id="end" type="text" name="end" value="16:45" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="building">Корпус</label>
+        <select id="building" name="building" size="7">
+          <option>Главный А</option>
+          <option selected>Главный Б</option>
+          <option>А</option>
+          <option>Б</option>
+          <option>В</option>
+          <option>Г</option>
+          <option>Д</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="room">Аудитория</label>
+        <input id="room" type="text" name="room" value="220" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="comment">Комментарий, необязательно</label>
+        <textarea id="comment" name="comment">принести черновик курсовой</textarea>
+      </div>
+      <div class="field">
+        <label for="link">Ссылка, необязательно</label>
+        <input id="link" type="url" name="link" placeholder="https://" autocomplete="off">
+      </div>
+      <p class="form-actions"><a class="btn" href="teacher-published.html">Опубликовать</a></p>
+    </div>
+  </main>
+</body>
+</html>

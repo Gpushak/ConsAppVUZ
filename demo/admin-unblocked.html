@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Пользователь разблокирован — Запись на консультацию</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Запись на консультацию</div>
+    <div class="who">
+      <strong>Администратор кафедры</strong>
+      <span>администратор</span>
+    </div>
+    <nav>
+      <a href="admin.html" aria-current="page">Пользователи</a>
+      <a class="logout" href="index.html">Выйти</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Пользователи</h1>
+        <p class="lead">Учётные записи кафедры. Преподавателя создаёт администратор.</p>
+      </div>
+    </div>
+    <p class="notice">Учётная запись Кузнецовой Марии разблокирована.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ФИО</th>
+            <th>Почта</th>
+            <th>Роль</th>
+            <th>Должность или группа</th>
+            <th>Состояние</th>
+            <th>Действие</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Иванова А. С.</td>
+            <td>ivanova@kafedra.local</td>
+            <td>преподаватель</td>
+            <td>доцент</td>
+            <td><span class="state-on">активен</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Петров Н. И.</td>
+            <td>petrov@kafedra.local</td>
+            <td>преподаватель</td>
+            <td>старший преподаватель</td>
+            <td><span class="state-on">активен</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Смирнова Е. В.</td>
+            <td>smirnova@kafedra.local</td>
+            <td>преподаватель</td>
+            <td>профессор</td>
+            <td><span class="state-on">активен</span></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Соколов Илья</td>
+            <td>sokolov@kafedra.local</td>
+            <td>студент</td>
+            <td>ПИ-21</td>
+            <td><span class="state-on">активен</span></td>
+            <td><a class="btn btn-small btn-ghost" href="admin-blocked.html">Заблокировать</a></td>
+          </tr>
+          <tr class="changed">
+            <td>Кузнецова Мария</td>
+            <td>kuznetsova@kafedra.local</td>
+            <td>студент</td>
+            <td>ПИ-22</td>
+            <td><span class="state-on">активен</span></td>
+            <td><a class="btn btn-small btn-ghost" href="admin.html">Заблокировать</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <section class="panel">
+      <h2>Новый преподаватель</h2>
+      <div class="field">
+        <label for="name">ФИО</label>
+        <input id="name" type="text" name="name" value="Волков Д. А." autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="email">Почта</label>
+        <input id="email" type="email" name="email" value="volkov@kafedra.local" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="title">Должность</label>
+        <input id="title" type="text" name="title" value="ассистент" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="dept">Кафедра</label>
+        <input id="dept" type="text" name="dept" value="программная инженерия" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="password">Временный пароль</label>
+        <input id="password" type="text" name="password" value="Smena-parolya-1" autocomplete="off">
+      </div>
+      <p class="form-actions"><a class="btn" href="admin-teacher.html">Создать преподавателя</a></p>
+    </section>
+  </main>
+</body>
+</html>
