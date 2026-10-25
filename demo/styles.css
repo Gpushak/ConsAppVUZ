@@ -394,3 +394,9 @@ li.me {
   color: #146c36;
   font-weight: 650;
 }
+
+.fav-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

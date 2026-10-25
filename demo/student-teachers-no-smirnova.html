@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Преподаватели — Запись на консультацию</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Запись на консультацию</div>
+    <div class="who">
+      <strong>Соколов Илья</strong>
+      <span>студент, группа ПИ-21</span>
+    </div>
+    <nav>
+      <a href="student-no-smirnova.html">Слоты избранных</a>
+      <a href="student-teachers-no-smirnova.html" aria-current="page">Преподаватели</a>
+      <a href="student-bookings.html">Мои записи</a>
+      <a class="logout" href="index.html">Выйти</a>
+    </nav>
+  </header>
+  <main>
+    <div class="page-head">
+      <div>
+        <h1>Преподаватели</h1>
+        <p class="lead">Все преподаватели кафедры. На главную попадают только избранные.</p>
+      </div>
+    </div>
+    <p class="notice">Смирнова Е. В. больше не в избранном. Иванова А. С. остаётся.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Преподаватель</th>
+            <th>Должность</th>
+            <th>Кафедра</th>
+            <th>Избранное</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Иванова А. С.</td>
+            <td>доцент</td>
+            <td>программная инженерия</td>
+            <td class="fav-cell">
+              <span class="fav-on">в избранном</span>
+              <a class="btn btn-small btn-ghost" href="student-no-favorites.html">Убрать из избранного</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Петров Н. И.</td>
+            <td>старший преподаватель</td>
+            <td>программная инженерия</td>
+            <td><a class="btn btn-small" href="student-ivanova-petrov.html">В избранное</a></td>
+          </tr>
+          <tr class="changed">
+            <td>Смирнова Е. В.</td>
+            <td>профессор</td>
+            <td>программная инженерия</td>
+            <td><a class="btn btn-small" href="student-teachers.html">В избранное</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
