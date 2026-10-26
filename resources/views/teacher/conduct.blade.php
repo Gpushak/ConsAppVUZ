@@ -4,12 +4,10 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Отметить проведённой</h1>
-      <p class="lead">{{ $slot->dateLabel() }}, {{ $slot->timeRange() }}, @include('partials.slot-place', ['slot' => $slot]). Активные записи получат статус «проведён».</p>
-    </div>
+    <h1>Отметить проведённой</h1>
   </div>
   @include('partials.errors')
+  <p class="notice">Активные записи получат статус «проведён».</p>
   <form class="panel" method="POST" action="{{ route('teacher.slots.conduct.store', $slot) }}">
     @csrf
     <div class="field">

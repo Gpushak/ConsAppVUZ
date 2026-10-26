@@ -371,8 +371,7 @@ thead th {
 }
 
 .field input::placeholder,
-.field textarea::placeholder,
-tr.filters input::placeholder {
+.field textarea::placeholder {
   color: #8a94a0;
   opacity: 1;
 }
@@ -410,9 +409,9 @@ tr.filters th {
   padding-bottom: 8px;
 }
 
-tr.filters input {
+tr.filters select {
   width: 100%;
-  min-width: 5.5rem;
+  min-width: 11rem;
   padding: 4px 6px;
   border: 1px solid var(--line-strong);
   border-radius: 4px;
@@ -423,7 +422,7 @@ tr.filters input {
   font-weight: 400;
 }
 
-tr.filters input:focus {
+tr.filters select:focus {
   outline: 2px solid var(--blue);
   outline-offset: 1px;
   border-color: var(--blue);

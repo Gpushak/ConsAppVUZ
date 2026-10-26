@@ -4,10 +4,10 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Слоты избранных</h1>
-      <p class="lead">Предстоящие консультации избранных преподавателей. Слот открыт, пока на него можно записаться.</p>
-    </div>
+    <h1>Слоты избранных</h1>
+    @if ($slotsByTeacher->flatten()->contains(fn ($slot) => $slot->isFinished()))
+      <button class="btn btn-ghost" type="button" data-finished-toggle aria-pressed="false">Показать завершённые</button>
+    @endif
   </div>
   @include('partials.errors')
   @php
@@ -40,7 +40,7 @@
                 @php
                   $mine = $slot->bookings->first(fn ($booking) => $booking->student_profile_id === $student->id && $booking->isActive());
                 @endphp
-                <tr>
+                <tr @if ($slot->isFinished()) data-finished hidden @endif>
                   <td>{{ $slot->dateLabel() }}</td>
                   <td>{{ $slot->timeRange() }}</td>
                   <td class="place">@include('partials.slot-place', ['slot' => $slot])</td>

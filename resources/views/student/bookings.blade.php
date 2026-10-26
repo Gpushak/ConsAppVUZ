@@ -4,10 +4,10 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Мои записи</h1>
-      <p class="lead">Отменить можно только свою запись со статусом «занят», пока слот не начался.</p>
-    </div>
+    <h1>Мои записи</h1>
+    @if ($bookings->contains(fn ($booking) => $booking->isFinished()))
+      <button class="btn btn-ghost" type="button" data-finished-toggle aria-pressed="false">Показать завершённые</button>
+    @endif
   </div>
   @include('partials.errors')
   @if ($bookings->isEmpty())
@@ -28,7 +28,7 @@
         </thead>
         <tbody>
           @foreach ($bookings as $booking)
-            <tr>
+            <tr @if ($booking->isFinished()) data-finished hidden @endif>
               <td>{{ $booking->slot->dateLabel() }}</td>
               <td>{{ $booking->slot->timeRange() }}</td>
               <td>{{ $booking->slot->teacherProfile->user->name }}</td>

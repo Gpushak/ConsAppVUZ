@@ -4,10 +4,7 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Отмена записи</h1>
-      <p class="lead">{{ $booking->studentProfile->user->name }}, {{ $booking->studentProfile->group_name }}, {{ $booking->slot->dateLabel() }}, {{ $booking->slot->timeRange() }}, @include('partials.slot-place', ['slot' => $booking->slot]).</p>
-    </div>
+    <h1>Отмена записи</h1>
   </div>
   @include('partials.errors')
   <p class="notice">Отменяется запись одного студента. Остальные остаются, новая запись на слот возможна.</p>

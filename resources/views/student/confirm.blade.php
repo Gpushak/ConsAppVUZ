@@ -4,10 +4,7 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Подтверждение записи</h1>
-      <p class="lead">Слот групповой: записаться могут и другие студенты.</p>
-    </div>
+    <h1>Подтверждение записи</h1>
   </div>
   @include('partials.errors')
   <div class="table-wrap">

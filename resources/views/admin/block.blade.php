@@ -4,10 +4,7 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Заблокировать пользователя</h1>
-      <p class="lead">{{ $user->name }}, {{ $user->email }}, {{ $user->role->name }}.</p>
-    </div>
+    <h1>Заблокировать пользователя</h1>
   </div>
   @include('partials.errors')
   <p class="notice">Вход станет недоступен, открытая сессия прервётся.</p>

@@ -4,10 +4,7 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Преподаватели</h1>
-      <p class="lead">Все преподаватели кафедры. На главную попадают только избранные.</p>
-    </div>
+    <h1>Преподаватели</h1>
   </div>
   @include('partials.errors')
   <div class="field directory-search">

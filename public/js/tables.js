@@ -1,6 +1,12 @@
 (function () {
+  var showFinished = false;
+
   function fold(value) {
     return String(value || '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('ru');
+  }
+
+  function clean(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
   }
 
   function cellText(row, index) {
@@ -31,7 +37,8 @@
   }
 
   function apply(table) {
-    var inputs = table.querySelectorAll('tr.filters input');
+    var select = table.querySelector('select[data-status-filter]');
+    var query = select ? fold(select.value) : '';
     var search = document.querySelector('[data-teacher-search]');
     var words = [];
 
@@ -39,20 +46,20 @@
       words = fold(search.value).split(' ').filter(Boolean);
     }
 
+    var statusIndex = select ? select.parentNode.cellIndex : -1;
+    var filtering = query !== '' || words.length > 0;
     var shown = 0;
+
     dataRows(table).forEach(function (row) {
       var visible = true;
 
-      Array.prototype.forEach.call(inputs, function (input) {
-        var query = fold(input.value);
-        if (!query || !visible) {
-          return;
-        }
-        var index = input.parentNode.cellIndex;
-        if (cellText(row, index).indexOf(query) === -1) {
-          visible = false;
-        }
-      });
+      if (row.hasAttribute('data-finished') && !showFinished && query === '') {
+        visible = false;
+      }
+
+      if (visible && query && statusIndex >= 0 && cellText(row, statusIndex) !== query) {
+        visible = false;
+      }
 
       if (visible && words.length && row.hasAttribute('data-search')) {
         var haystack = fold(row.getAttribute('data-search'));
@@ -69,7 +76,7 @@
 
     var empty = table.querySelector('[data-nomatch]');
     if (empty) {
-      empty.hidden = shown !== 0;
+      empty.hidden = !(filtering && shown === 0);
     }
   }
 
@@ -97,6 +104,27 @@
     });
   }
 
+  function statusOptions(table, index) {
+    var seen = {};
+    var values = [];
+
+    dataRows(table).forEach(function (row) {
+      var text = clean(row.cells[index] ? row.cells[index].textContent : '');
+      var key = fold(text);
+      if (!key || seen[key]) {
+        return;
+      }
+      seen[key] = true;
+      values.push(text);
+    });
+
+    values.sort(function (left, right) {
+      return compareValues(fold(left), fold(right));
+    });
+
+    return values;
+  }
+
   function enhance(table) {
     if (!table.tHead || !table.tBodies[0] || table.dataset.enhanced === '1') {
       return;
@@ -104,41 +132,63 @@
     table.dataset.enhanced = '1';
 
     var headerRow = table.tHead.rows[0];
-    var filterRow = document.createElement('tr');
-    filterRow.className = 'filters';
+    var statusIndex = -1;
 
     Array.prototype.forEach.call(headerRow.cells, function (header, index) {
-      var cell = document.createElement('th');
-      if (!header.hasAttribute('data-skip')) {
-        var input = document.createElement('input');
-        input.type = 'search';
-        input.placeholder = 'фильтр';
-        input.autocomplete = 'off';
-        input.setAttribute('aria-label', 'Фильтр: ' + fold(header.textContent));
-        input.addEventListener('input', function () {
-          apply(table);
-        });
-        cell.appendChild(input);
-
-        header.classList.add('sortable');
-        header.tabIndex = 0;
-        header.title = 'Сортировать';
-        header.addEventListener('click', function () {
-          toggleSort(table, index, header);
-        });
-        header.addEventListener('keydown', function (event) {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            toggleSort(table, index, header);
-          }
-        });
+      if (header.hasAttribute('data-skip')) {
+        return;
       }
-      filterRow.appendChild(cell);
+
+      header.classList.add('sortable');
+      header.tabIndex = 0;
+      header.title = 'Сортировать';
+      header.addEventListener('click', function () {
+        toggleSort(table, index, header);
+      });
+      header.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggleSort(table, index, header);
+        }
+      });
+
+      if (fold(header.textContent) === 'статус') {
+        statusIndex = index;
+      }
     });
 
-    headerRow.parentNode.appendChild(filterRow);
+    if (statusIndex >= 0) {
+      var filterRow = document.createElement('tr');
+      filterRow.className = 'filters';
 
-    if (dataRows(table).length) {
+      Array.prototype.forEach.call(headerRow.cells, function (header, index) {
+        var cell = document.createElement('th');
+        if (index === statusIndex) {
+          var select = document.createElement('select');
+          select.setAttribute('data-status-filter', '');
+          select.setAttribute('aria-label', 'Статус');
+          var all = document.createElement('option');
+          all.value = '';
+          all.textContent = 'Все';
+          select.appendChild(all);
+          statusOptions(table, statusIndex).forEach(function (status) {
+            var option = document.createElement('option');
+            option.value = status;
+            option.textContent = status;
+            select.appendChild(option);
+          });
+          select.addEventListener('change', function () {
+            apply(table);
+          });
+          cell.appendChild(select);
+        }
+        filterRow.appendChild(cell);
+      });
+
+      headerRow.parentNode.appendChild(filterRow);
+    }
+
+    if ((statusIndex >= 0 || table.hasAttribute('data-teacher-directory')) && dataRows(table).length) {
       var empty = document.createElement('tr');
       empty.setAttribute('data-static', '');
       empty.setAttribute('data-nomatch', '');
@@ -150,20 +200,37 @@
       empty.appendChild(message);
       table.tBodies[0].appendChild(empty);
     }
+
+    apply(table);
+  }
+
+  function updateToggle() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-finished-toggle]'), function (button) {
+      button.textContent = showFinished ? 'Скрыть завершённые' : 'Показать завершённые';
+      button.setAttribute('aria-pressed', showFinished ? 'true' : 'false');
+    });
   }
 
   function boot() {
     Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), enhance);
     var search = document.querySelector('[data-teacher-search]');
-    if (!search) {
-      return;
+    if (search) {
+      search.addEventListener('input', function () {
+        var table = document.querySelector('table[data-teacher-directory]');
+        if (table) {
+          apply(table);
+        }
+      });
     }
-    search.addEventListener('input', function () {
-      var table = document.querySelector('table[data-teacher-directory]');
-      if (table) {
-        apply(table);
-      }
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-finished-toggle]'), function (button) {
+      button.addEventListener('click', function () {
+        showFinished = !showFinished;
+        updateToggle();
+        Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), apply);
+      });
     });
+    updateToggle();
   }
 
   if (document.readyState === 'loading') {

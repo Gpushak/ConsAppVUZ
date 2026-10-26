@@ -4,10 +4,7 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Пользователи</h1>
-      <p class="lead">Учётные записи кафедры. Преподавателя создаёт администратор.</p>
-    </div>
+    <h1>Пользователи</h1>
   </div>
   @include('partials.errors')
   <div class="table-wrap">
