@@ -14,7 +14,7 @@
     <p class="notice">Записей пока нет</p>
   @else
     <div class="table-wrap">
-      <table>
+      <table class="data-table">
         <thead>
           <tr>
             <th>Дата</th>
@@ -23,7 +23,7 @@
             <th>Место</th>
             <th>Комментарий</th>
             <th>Статус</th>
-            <th>Действие</th>
+            <th data-skip>Действие</th>
           </tr>
         </thead>
         <tbody>

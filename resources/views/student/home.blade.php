@@ -23,7 +23,7 @@
         <h2>{{ $teacher->user->name }}</h2>
         <p class="meta">{{ $teacher->position }}, {{ $teacher->department }}</p>
         <div class="table-wrap">
-          <table>
+          <table class="data-table">
             <thead>
               <tr>
                 <th>Дата</th>
@@ -32,7 +32,7 @@
                 <th>Записались</th>
                 <th>Комментарий</th>
                 <th>Статус</th>
-                <th>Действие</th>
+                <th data-skip>Действие</th>
               </tr>
             </thead>
             <tbody>

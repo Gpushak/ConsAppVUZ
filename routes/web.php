@@ -45,6 +45,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/slots', [SlotController::class, 'index'])->name('teacher.slots.index');
             Route::get('/slots/create', [SlotController::class, 'create'])->name('teacher.slots.create');
             Route::post('/slots', [SlotController::class, 'store'])->name('teacher.slots.store');
+            Route::get('/slots/{slot}/unpublish', [SlotController::class, 'unpublishForm'])->name('teacher.slots.unpublish.confirm');
             Route::post('/slots/{slot}/unpublish', [SlotController::class, 'unpublish'])->name('teacher.slots.unpublish');
             Route::get('/slots/{slot}/conduct', [SlotController::class, 'conductForm'])->name('teacher.slots.conduct');
             Route::post('/slots/{slot}/conduct', [SlotController::class, 'conduct'])->name('teacher.slots.conduct.store');
@@ -55,6 +56,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::middleware('role:admin')->prefix('admin')->group(function () {
             Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
             Route::post('/teachers', [UserController::class, 'storeTeacher'])->name('admin.teachers.store');
+            Route::get('/users/{user}/block', [UserController::class, 'blockForm'])->name('admin.users.block.confirm');
             Route::post('/users/{user}/block', [UserController::class, 'block'])->name('admin.users.block');
             Route::post('/users/{user}/unblock', [UserController::class, 'unblock'])->name('admin.users.unblock');
             Route::post('/users/{user}/password', [UserController::class, 'resetPassword'])->name('admin.users.password');

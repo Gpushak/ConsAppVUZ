@@ -43,5 +43,6 @@
   <main>
     @yield('content')
   </main>
+  <script src="{{ asset('js/tables.js') }}"></script>
 </body>
 </html>
