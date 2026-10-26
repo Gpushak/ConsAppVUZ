@@ -64,6 +64,11 @@ class Booking extends Model
         return self::labelFor($this->status);
     }
 
+    public function isFinished(): bool
+    {
+        return in_array($this->label(), ['проведён', 'снят'], true);
+    }
+
     public function chipClass(): string
     {
         return match ($this->status) {

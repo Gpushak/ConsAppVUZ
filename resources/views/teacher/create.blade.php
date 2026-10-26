@@ -26,10 +26,7 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Новый слот</h1>
-      <p class="lead">Окно групповое. Очно нужны корпус и аудитория, онлайн — только ссылка.</p>
-    </div>
+    <h1>Новый слот</h1>
   </div>
   <div class="panel">
     @include('partials.errors')

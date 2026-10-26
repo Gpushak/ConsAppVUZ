@@ -4,10 +4,7 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Снять с публикации</h1>
-      <p class="lead">{{ $slot->dateLabel() }}, {{ $slot->timeRange() }}, @include('partials.slot-place', ['slot' => $slot]).</p>
-    </div>
+    <h1>Снять с публикации</h1>
   </div>
   @include('partials.errors')
   <p class="notice">Слот исчезнет из кабинета студента. Вернуть его в публикацию нельзя.</p>

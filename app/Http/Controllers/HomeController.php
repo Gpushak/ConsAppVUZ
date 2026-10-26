@@ -37,8 +37,12 @@ class HomeController extends Controller
                 ->with(['teacherProfile.user', 'bookings.studentProfile.user'])
                 ->whereIn('teacher_profile_id', $favorites->pluck('id'))
                 ->where('is_published', true)
-                ->whereNull('conducted_at')
-                ->where('starts_at', '>', now())
+                ->where(function ($query) {
+                    $query->where(function ($upcoming) {
+                        $upcoming->whereNull('conducted_at')
+                            ->where('starts_at', '>', now());
+                    })->orWhereNotNull('conducted_at');
+                })
                 ->orderBy('starts_at')
                 ->get()
                 ->groupBy('teacher_profile_id');

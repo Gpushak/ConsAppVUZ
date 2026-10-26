@@ -202,7 +202,7 @@ class OnlineSlotTest extends ConsultationTestCase
         $this->actingAs($student)
             ->get(route('bookings.cancel', $booking))
             ->assertOk()
-            ->assertSee('https://meet.example.com/later')
+            ->assertSee('Отмена сохраняется. Слот для остальных студентов остаётся открытым.')
             ->assertDontSee('ауд.');
 
         $this->actingAs($student)

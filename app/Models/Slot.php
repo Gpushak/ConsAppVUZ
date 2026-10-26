@@ -130,6 +130,13 @@ class Slot extends Model
         return 'проведён';
     }
 
+    public function isFinished(): bool
+    {
+        $label = $this->statusLabel();
+
+        return $label === 'проведён' || $label === 'снят';
+    }
+
     public function chipClass(): string
     {
         return match ($this->statusLabel()) {

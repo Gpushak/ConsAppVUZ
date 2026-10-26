@@ -4,11 +4,13 @@
 
 @section('content')
   <div class="page-head">
-    <div>
-      <h1>Мои слоты</h1>
-      <p class="lead">Слоты и записавшиеся. Группы по алфавиту, внутри группы — фамилии.</p>
+    <h1>Мои слоты</h1>
+    <div class="actions">
+      @if ($slots->contains(fn ($slot) => $slot->isFinished()))
+        <button class="btn btn-ghost" type="button" data-finished-toggle aria-pressed="false">Показать завершённые</button>
+      @endif
+      <a class="btn" href="{{ route('teacher.slots.create') }}">Новый слот</a>
     </div>
-    <a class="btn" href="{{ route('teacher.slots.create') }}">Новый слот</a>
   </div>
   @include('partials.errors')
   @php
@@ -29,7 +31,7 @@
       </thead>
       <tbody>
         @forelse ($slots as $slot)
-          <tr>
+          <tr @if ($slot->isFinished()) data-finished hidden @endif>
             <td>{{ $slot->dateLabel() }}</td>
             <td>{{ $slot->timeRange() }}</td>
             <td class="place">@include('partials.slot-place', ['slot' => $slot])</td>
