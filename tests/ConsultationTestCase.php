@@ -35,6 +35,14 @@ abstract class ConsultationTestCase extends TestCase
         return $user->fresh(['studentProfile', 'role']);
     }
 
+    protected function adminUser(string $name = 'Администратор кафедры'): User
+    {
+        return User::factory()->create([
+            'name' => $name,
+            'role_id' => Role::idFor(Role::ADMIN),
+        ]);
+    }
+
     protected function teacherUser(string $name = 'Преподаватель Тест'): User
     {
         $user = User::factory()->create([

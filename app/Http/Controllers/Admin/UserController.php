@@ -61,7 +61,7 @@ class UserController extends Controller
     {
         $this->authorize('block', $user);
         $user->update(['is_active' => false]);
-        DB::table('sessions')->where('user_id', $user->id)->delete();
+        $this->endSessions($user);
 
         return redirect()->route('admin.users.index')->with('status', 'Пользователь заблокирован.');
     }
@@ -70,6 +70,7 @@ class UserController extends Controller
     {
         $this->authorize('block', $user);
         $user->update(['is_active' => true]);
+        $this->endSessions($user);
 
         return redirect()->route('admin.users.index')->with('status', 'Пользователь разблокирован.');
     }
@@ -88,9 +89,14 @@ class UserController extends Controller
             'password' => $data['password'],
             'must_change_password' => true,
         ]);
-        DB::table('sessions')->where('user_id', $user->id)->delete();
+        $this->endSessions($user);
 
         return redirect()->route('admin.users.index')->with('status', 'Временный пароль задан. Пользователь сменит его при входе.');
+    }
+
+    private function endSessions(User $user): void
+    {
+        DB::table('sessions')->where('user_id', $user->id)->delete();
     }
 
     private function roleOrder(User $user): int

@@ -28,14 +28,9 @@
           <td>{{ $slot->teacherProfile->user->name }}, {{ $slot->teacherProfile->position }}</td>
           <td>{{ $slot->dateLabel() }}</td>
           <td>{{ $slot->timeRange() }}</td>
-          <td>{{ $slot->place() }}</td>
+          <td class="place">@include('partials.slot-place', ['slot' => $slot])</td>
           @include('partials.signup-list', ['slot' => $slot, 'activeOnly' => true, 'open' => true])
-          <td class="soft">
-            {{ $slot->comment ?: '—' }}
-            @if ($slot->hasMeetingLink())
-              <a class="comment-line" href="{{ $slot->meeting_url }}" rel="noopener noreferrer">{{ $slot->meeting_url }}</a>
-            @endif
-          </td>
+          <td class="soft">{{ $slot->comment ?: '—' }}</td>
           <td><span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span></td>
         </tr>
       </tbody>
