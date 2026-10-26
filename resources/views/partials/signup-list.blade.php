@@ -21,6 +21,9 @@
               @if ($withStatus)
                 <span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span>
               @endif
+              @if ($withStatus && filled($booking->teacher_comment))
+                <span class="muted">{{ $booking->teacher_comment }}</span>
+              @endif
               @if ($withActions && $booking->isActive())
                 <a class="btn btn-small btn-ghost" href="{{ route('teacher.bookings.cancel', $booking) }}">Отменить</a>
               @endif

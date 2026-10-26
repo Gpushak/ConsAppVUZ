@@ -19,11 +19,15 @@ class StoreSlotRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $format = (string) $this->input('format');
+        $online = $format === 'online';
         $comment = trim((string) $this->input('comment'));
         $url = trim((string) $this->input('meeting_url'));
 
         $this->merge([
-            'room' => trim((string) $this->input('room')),
+            'format' => $format,
+            'building' => $online ? null : $this->input('building'),
+            'room' => $online ? null : trim((string) $this->input('room')),
             'comment' => $comment === '' ? null : $comment,
             'meeting_url' => $url === '' ? null : $url,
         ]);
@@ -34,14 +38,23 @@ class StoreSlotRequest extends FormRequest
      */
     public function rules(): array
     {
+        $online = $this->input('format') === 'online';
+
         return [
             'date' => ['required', 'regex:/^(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})$/'],
             'start_time' => ['required', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/'],
             'end_time' => ['required', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/'],
-            'building' => ['required', 'string', Rule::in(Building::LIST)],
-            'room' => ['required', 'string', 'max:32'],
+            'format' => ['required', Rule::in(['in_person', 'online'])],
+            'building' => $online
+                ? ['nullable']
+                : ['required', 'string', Rule::in(Building::LIST)],
+            'room' => $online
+                ? ['nullable']
+                : ['required', 'string', 'max:32'],
             'comment' => ['nullable', 'string', 'max:500'],
-            'meeting_url' => ['nullable', 'string', 'max:500', 'regex:/^https?:\/\/\S+$/i'],
+            'meeting_url' => $online
+                ? ['required', 'string', 'max:500', 'regex:/^https?:\/\/\S+$/i']
+                : ['nullable', 'string', 'max:500', 'regex:/^https?:\/\/\S+$/i'],
         ];
     }
 
@@ -57,10 +70,13 @@ class StoreSlotRequest extends FormRequest
             'start_time.regex' => 'Укажите начало в формате ЧЧ:ММ.',
             'end_time.required' => 'Укажите конец.',
             'end_time.regex' => 'Укажите конец в формате ЧЧ:ММ.',
+            'format.required' => 'Выберите формат: очно или онлайн.',
+            'format.in' => 'Выберите формат: очно или онлайн.',
             'building.required' => 'Выберите корпус.',
             'building.in' => 'Корпус выбирается из списка.',
             'room.required' => 'Укажите аудиторию.',
             'comment.max' => 'Комментарий не длиннее 500 символов.',
+            'meeting_url.required' => 'Для онлайн-слота укажите ссылку.',
             'meeting_url.regex' => 'Ссылка должна начинаться с http:// или https://.',
             'meeting_url.max' => 'Ссылка не длиннее 500 символов.',
         ];
@@ -139,12 +155,13 @@ class StoreSlotRequest extends FormRequest
     public function slotAttributes(): array
     {
         [$starts, $ends] = $this->consultationWindow();
+        $online = $this->input('format') === 'online';
 
         return [
             'starts_at' => $starts,
             'ends_at' => $ends,
-            'building' => $this->input('building'),
-            'room' => $this->input('room'),
+            'building' => $online ? null : $this->input('building'),
+            'room' => $online ? null : $this->input('room'),
             'comment' => $this->input('comment'),
             'meeting_url' => $this->input('meeting_url'),
             'is_published' => true,

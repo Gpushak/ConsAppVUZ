@@ -6,7 +6,7 @@
   <div class="page-head">
     <div>
       <h1>Отмена записи</h1>
-      <p class="lead">{{ $booking->slot->teacherProfile->user->name }}, {{ $booking->slot->dateLabel() }}, {{ $booking->slot->timeRange() }}, {{ $booking->slot->place() }}.</p>
+      <p class="lead">{{ $booking->slot->teacherProfile->user->name }}, {{ $booking->slot->dateLabel() }}, {{ $booking->slot->timeRange() }}, @include('partials.slot-place', ['slot' => $booking->slot]).</p>
     </div>
   </div>
   @include('partials.errors')

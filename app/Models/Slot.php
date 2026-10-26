@@ -41,8 +41,17 @@ class Slot extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function isOnline(): bool
+    {
+        return $this->building === null || $this->building === '';
+    }
+
     public function place(): string
     {
+        if ($this->isOnline()) {
+            return (string) $this->meeting_url;
+        }
+
         return $this->building.', ауд. '.$this->room;
     }
 

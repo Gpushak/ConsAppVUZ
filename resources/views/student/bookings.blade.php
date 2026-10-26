@@ -32,8 +32,18 @@
               <td>{{ $booking->slot->dateLabel() }}</td>
               <td>{{ $booking->slot->timeRange() }}</td>
               <td>{{ $booking->slot->teacherProfile->user->name }}</td>
-              <td>{{ $booking->slot->place() }}</td>
-              <td class="soft">{{ $booking->teacher_comment ?: '—' }}</td>
+              <td class="place">@include('partials.slot-place', ['slot' => $booking->slot])</td>
+              <td class="soft">
+                @if ($booking->slot->comment)
+                  <div>{{ $booking->slot->comment }}</div>
+                @endif
+                @if ($booking->teacher_comment)
+                  <div>{{ $booking->teacher_comment }}</div>
+                @endif
+                @if (! $booking->slot->comment && ! $booking->teacher_comment)
+                  —
+                @endif
+              </td>
               <td><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
               <td>
                 @can('cancel', $booking)

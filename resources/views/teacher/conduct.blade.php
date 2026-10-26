@@ -6,7 +6,7 @@
   <div class="page-head">
     <div>
       <h1>Отметить проведённой</h1>
-      <p class="lead">{{ $slot->dateLabel() }}, {{ $slot->timeRange() }}, {{ $slot->place() }}. Активные записи получат статус «проведён».</p>
+      <p class="lead">{{ $slot->dateLabel() }}, {{ $slot->timeRange() }}, @include('partials.slot-place', ['slot' => $slot]). Активные записи получат статус «проведён».</p>
     </div>
   </div>
   @include('partials.errors')

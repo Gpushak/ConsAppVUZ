@@ -146,5 +146,15 @@ class DatabaseSeeder extends Seeder
         $book($petrovPast, $sokolov, Booking::CANCELLED_BY_STUDENT, null, $sokolov);
 
         $slot($petrov, $at(8, 12, 0), $at(8, 12, 45), 'Б', '210');
+
+        $ivanova->slots()->create([
+            'starts_at' => $at(1, 16, 0),
+            'ends_at' => $at(1, 16, 45),
+            'building' => null,
+            'room' => null,
+            'comment' => 'подключиться за пять минут',
+            'meeting_url' => 'https://meet.example.com/ivanova',
+            'is_published' => true,
+        ]);
     }
 }
