@@ -57,6 +57,15 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('status', 'Преподаватель создан. Передайте временный пароль лично.');
     }
 
+    public function blockForm(User $user): View
+    {
+        $this->authorize('block', $user);
+
+        return view('admin.block', [
+            'user' => $user,
+        ]);
+    }
+
     public function block(User $user): RedirectResponse
     {
         $this->authorize('block', $user);

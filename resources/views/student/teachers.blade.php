@@ -10,19 +10,23 @@
     </div>
   </div>
   @include('partials.errors')
+  <div class="field directory-search">
+    <label for="teacher-search">Поиск</label>
+    <input id="teacher-search" type="search" placeholder="Имя или кафедра" data-teacher-search autocomplete="off">
+  </div>
   <div class="table-wrap">
-    <table>
+    <table class="data-table" data-teacher-directory>
       <thead>
         <tr>
           <th>Преподаватель</th>
           <th>Должность</th>
           <th>Кафедра</th>
-          <th>Избранное</th>
+          <th data-skip>Избранное</th>
         </tr>
       </thead>
       <tbody>
         @forelse ($teachers as $teacher)
-          <tr>
+          <tr data-search="{{ $teacher->user->name }} {{ $teacher->department }}">
             <td>{{ $teacher->user->name }}</td>
             <td>{{ $teacher->position }}</td>
             <td>{{ $teacher->department }}</td>
@@ -42,7 +46,7 @@
             </td>
           </tr>
         @empty
-          <tr>
+          <tr data-static>
             <td colspan="4" class="muted">Преподавателей пока нет.</td>
           </tr>
         @endforelse

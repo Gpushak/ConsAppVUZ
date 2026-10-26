@@ -15,7 +15,7 @@
     $openId = $slots->first(fn ($slot) => $slot->bookings->isNotEmpty())?->id;
   @endphp
   <div class="table-wrap">
-    <table>
+    <table class="data-table">
       <thead>
         <tr>
           <th>Дата</th>
@@ -24,7 +24,7 @@
           <th>Студенты</th>
           <th>Комментарий</th>
           <th>Статус</th>
-          <th>Действие</th>
+          <th data-skip>Действие</th>
         </tr>
       </thead>
       <tbody>
@@ -47,16 +47,13 @@
                   <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}">Отметить проведённой</a>
                 @endif
                 @if ($slot->canBeUnpublished())
-                  <form method="POST" action="{{ route('teacher.slots.unpublish', $slot) }}">
-                    @csrf
-                    <button class="btn btn-small btn-ghost" type="submit">Снять с публикации</button>
-                  </form>
+                  <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
                 @endif
               </div>
             </td>
           </tr>
         @empty
-          <tr>
+          <tr data-static>
             <td colspan="7" class="muted">Слотов пока нет.</td>
           </tr>
         @endforelse

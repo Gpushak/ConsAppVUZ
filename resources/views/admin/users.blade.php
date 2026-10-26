@@ -11,7 +11,7 @@
   </div>
   @include('partials.errors')
   <div class="table-wrap">
-    <table>
+    <table class="data-table">
       <thead>
         <tr>
           <th>ФИО</th>
@@ -19,7 +19,7 @@
           <th>Роль</th>
           <th>Должность или группа</th>
           <th>Состояние</th>
-          <th>Действие</th>
+          <th data-skip>Действие</th>
         </tr>
       </thead>
       <tbody>
@@ -40,10 +40,7 @@
               @can('block', $user)
                 <div class="actions">
                   @if ($user->is_active)
-                    <form method="POST" action="{{ route('admin.users.block', $user) }}">
-                      @csrf
-                      <button class="btn btn-small btn-ghost" type="submit">Заблокировать</button>
-                    </form>
+                    <a class="btn btn-small btn-ghost" href="{{ route('admin.users.block.confirm', $user) }}">Заблокировать</a>
                   @else
                     <form method="POST" action="{{ route('admin.users.unblock', $user) }}">
                       @csrf

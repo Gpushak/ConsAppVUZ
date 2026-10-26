@@ -5,6 +5,23 @@
 @php
   $format = old('format', 'in_person');
   $online = $format === 'online';
+
+  $rawDate = old('date');
+  $dateValue = '';
+  if (is_string($rawDate) && preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $rawDate, $parts)) {
+      $dateValue = $parts[3].'-'.$parts[2].'-'.$parts[1];
+  } elseif (is_string($rawDate) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDate)) {
+      $dateValue = $rawDate;
+  }
+
+  $timeValue = function (string $key): string {
+      $value = old($key);
+      if (! is_string($value) || preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $value) !== 1) {
+          return '';
+      }
+
+      return substr($value, 0, 5);
+  };
 @endphp
 
 @section('content')
@@ -31,33 +48,34 @@
       </fieldset>
       <div class="field">
         <label for="date">Дата</label>
-        <input id="date" type="text" name="date" value="{{ old('date', now()->addDays(5)->format('d.m.Y')) }}" inputmode="numeric" placeholder="ДД.ММ.ГГГГ" required>
+        <input id="date" type="date" name="date" value="{{ $dateValue }}" placeholder="31.10.2026" required>
       </div>
       <div class="field">
         <label for="start_time">Начало</label>
-        <input id="start_time" type="text" name="start_time" value="{{ old('start_time', '16:00') }}" inputmode="numeric" placeholder="ЧЧ:ММ" required>
+        <input id="start_time" type="time" name="start_time" value="{{ $timeValue('start_time') }}" placeholder="16:00" step="300" required>
       </div>
       <div class="field">
         <label for="end_time">Конец</label>
-        <input id="end_time" type="text" name="end_time" value="{{ old('end_time', '16:45') }}" inputmode="numeric" placeholder="ЧЧ:ММ" required>
+        <input id="end_time" type="time" name="end_time" value="{{ $timeValue('end_time') }}" placeholder="16:45" step="300" required>
       </div>
       <div data-in-person @if ($online) hidden @endif>
         <div class="field">
           <label for="building">Корпус</label>
-          <select id="building" name="building" size="7" @disabled($online) @required(! $online)>
+          <select id="building" name="building" size="8" @disabled($online) @required(! $online)>
+            <option value="" @selected(old('building') === null || old('building') === '')>Выберите корпус</option>
             @foreach (\App\Support\Building::LIST as $building)
-              <option value="{{ $building }}" @selected(old('building', 'Главный Б') === $building)>{{ $building }}</option>
+              <option value="{{ $building }}" @selected(old('building') === $building)>{{ $building }}</option>
             @endforeach
           </select>
         </div>
         <div class="field">
           <label for="room">Аудитория</label>
-          <input id="room" type="text" name="room" value="{{ old('room', '220') }}" @disabled($online) @required(! $online)>
+          <input id="room" type="text" name="room" value="{{ old('room') }}" placeholder="220" @disabled($online) @required(! $online)>
         </div>
       </div>
       <div class="field">
         <label for="comment">Комментарий, необязательно</label>
-        <textarea id="comment" name="comment" maxlength="500">{{ old('comment', 'принести черновик курсовой') }}</textarea>
+        <textarea id="comment" name="comment" maxlength="500" placeholder="принести черновик курсовой">{{ old('comment') }}</textarea>
       </div>
       <div class="field">
         <label for="meeting_url">{{ $online ? 'Ссылка' : 'Ссылка, необязательно' }}</label>

@@ -370,6 +370,65 @@ thead th {
   border-color: var(--blue);
 }
 
+.field input::placeholder,
+.field textarea::placeholder,
+tr.filters input::placeholder {
+  color: #8a94a0;
+  opacity: 1;
+}
+
+.directory-search {
+  max-width: 22rem;
+  margin-bottom: 14px;
+}
+
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+th.sortable:hover {
+  color: var(--blue);
+}
+
+th.sortable[aria-sort="ascending"]::after {
+  content: " ▲";
+  color: var(--blue);
+  font-size: 11px;
+}
+
+th.sortable[aria-sort="descending"]::after {
+  content: " ▼";
+  color: var(--blue);
+  font-size: 11px;
+}
+
+tr.filters th {
+  background: var(--paper);
+  font-weight: 400;
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+
+tr.filters input {
+  width: 100%;
+  min-width: 5.5rem;
+  padding: 4px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+tr.filters input:focus {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+  border-color: var(--blue);
+}
+
 .field .error {
   margin: 4px 0 0;
   color: #8d2f2f;

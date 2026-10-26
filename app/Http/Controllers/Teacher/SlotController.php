@@ -38,6 +38,15 @@ class SlotController extends Controller
         return redirect()->route('teacher.slots.index')->with('status', 'Слот опубликован.');
     }
 
+    public function unpublishForm(Slot $slot): View
+    {
+        $this->authorize('unpublish', $slot);
+
+        return view('teacher.unpublish', [
+            'slot' => $slot,
+        ]);
+    }
+
     public function unpublish(Slot $slot, BookingService $bookings): RedirectResponse
     {
         $this->authorize('unpublish', $slot);
