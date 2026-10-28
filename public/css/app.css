@@ -65,10 +65,10 @@ body {
 
 .brand img {
   display: block;
-  height: 40px;
   width: auto;
+  height: auto;
+  max-height: 52px;
   max-width: 100%;
-  flex-shrink: 0;
 }
 
 .who {
@@ -647,6 +647,11 @@ td.place {
   .brand {
     flex: 1 1 100%;
     margin-right: 0;
+  }
+
+  .brand img {
+    max-width: 100%;
+    max-height: 52px;
   }
 
   .who {
