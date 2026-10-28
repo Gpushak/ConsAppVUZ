@@ -8,17 +8,21 @@
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="{{ auth()->check() ? route('home') : route('login') }}">
-      <img src="{{ asset('images/pnipu-kons.png') }}" alt="Запись на консультацию">
-    </a>
+    <div class="head-row">
+      <a class="brand" href="{{ auth()->check() ? route('home') : route('login') }}">
+        <img src="{{ asset('images/pnipu-kons.png') }}" alt="Запись на консультацию">
+      </a>
+      @auth
+        <div class="who">
+          <strong>{{ auth()->user()->name }}</strong>
+          <span>{{ auth()->user()->roleLine() }}</span>
+          @unless (auth()->user()->must_change_password)
+            <a href="{{ route('password.edit') }}">Сменить пароль</a>
+          @endunless
+        </div>
+      @endauth
+    </div>
     @auth
-      <div class="who">
-        <strong>{{ auth()->user()->name }}</strong>
-        <span>{{ auth()->user()->roleLine() }}</span>
-        @unless (auth()->user()->must_change_password)
-          <a href="{{ route('password.edit') }}">Сменить пароль</a>
-        @endunless
-      </div>
       @unless (auth()->user()->must_change_password)
         <nav>
           @if (auth()->user()->isStudent())
