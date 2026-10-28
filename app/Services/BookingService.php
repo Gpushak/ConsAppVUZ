@@ -19,7 +19,7 @@ class BookingService
                 $lockedSlot = Slot::query()->whereKey($slot->id)->lockForUpdate()->firstOrFail();
                 StudentProfile::query()->whereKey($student->id)->lockForUpdate()->first();
 
-                if (! $lockedSlot->isFree() || ! $lockedSlot->teacherProfile?->user?->is_active) {
+                if (! $lockedSlot->canBeBooked() || ! $lockedSlot->teacherProfile?->user?->is_active) {
                     throw ValidationException::withMessages([
                         'slot' => 'На этот слот уже нельзя записаться.',
                     ]);

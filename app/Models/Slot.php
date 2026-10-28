@@ -72,6 +72,15 @@ class Slot extends Model
             && $this->starts_at->greaterThan(now());
     }
 
+    public function canBeBooked(): bool
+    {
+        if ($this->conducted_at !== null || ! $this->isFree() || $this->isFinished()) {
+            return false;
+        }
+
+        return $this->statusLabel() === 'свободен';
+    }
+
     public function hasMeetingLink(): bool
     {
         return is_string($this->meeting_url)
