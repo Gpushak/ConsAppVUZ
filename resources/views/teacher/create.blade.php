@@ -62,7 +62,7 @@
       <div class="slot-place" data-in-person @if ($online) hidden @endif>
         <div class="field">
           <label for="building">Корпус</label>
-          <select id="building" name="building" size="8" @disabled($online) @required(! $online)>
+          <select id="building" name="building" @disabled($online) @required(! $online)>
             <option value="" @selected(old('building') === null || old('building') === '')>Выберите корпус</option>
             @foreach (\App\Support\Building::LIST as $building)
               <option value="{{ $building }}" @selected(old('building') === $building)>{{ $building }}</option>
