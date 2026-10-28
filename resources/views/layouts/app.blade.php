@@ -9,8 +9,7 @@
 <body>
   <header class="top">
     <a class="brand" href="{{ auth()->check() ? route('home') : route('login') }}">
-      <img src="{{ asset('images/pnipu.png') }}" alt="Пермский Политех">
-      Запись на консультацию
+      <img src="{{ asset('images/pnipu-kons.png') }}" alt="Запись на консультацию">
     </a>
     @auth
       <div class="who">
