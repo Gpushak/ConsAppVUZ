@@ -67,7 +67,7 @@ body {
   display: block;
   width: auto;
   height: auto;
-  max-height: 52px;
+  max-height: 80px;
   max-width: 100%;
 }
 
@@ -651,7 +651,7 @@ td.place {
 
   .brand img {
     max-width: 100%;
-    max-height: 52px;
+    max-height: 80px;
   }
 
   .who {
