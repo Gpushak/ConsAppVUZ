@@ -28,34 +28,38 @@
   <div class="page-head">
     <h1>Новый слот</h1>
   </div>
-  <div class="panel">
+  <div class="panel slot-panel">
     @include('partials.errors')
-    <form method="POST" action="{{ route('teacher.slots.store') }}" data-slot-form>
+    <form class="slot-form" method="POST" action="{{ route('teacher.slots.store') }}" data-slot-form>
       @csrf
-      <fieldset class="field format">
-        <legend>Формат</legend>
-        <label class="choice">
-          <input id="format_in_person" type="radio" name="format" value="in_person" @checked(! $online)>
-          Очно
-        </label>
-        <label class="choice">
-          <input id="format_online" type="radio" name="format" value="online" @checked($online)>
-          Онлайн
-        </label>
-      </fieldset>
-      <div class="field">
-        <label for="date">Дата</label>
-        <input id="date" type="date" name="date" value="{{ $dateValue }}" placeholder="31.10.2026" required>
+      <div class="slot-fields">
+        <fieldset class="field format">
+          <legend>Формат</legend>
+          <div class="choices">
+            <label class="choice">
+              <input id="format_in_person" type="radio" name="format" value="in_person" @checked(! $online)>
+              Очно
+            </label>
+            <label class="choice">
+              <input id="format_online" type="radio" name="format" value="online" @checked($online)>
+              Онлайн
+            </label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="date">Дата</label>
+          <input id="date" type="date" name="date" value="{{ $dateValue }}" placeholder="31.10.2026" required>
+        </div>
+        <div class="field">
+          <label for="start_time">Начало</label>
+          <input id="start_time" type="time" name="start_time" value="{{ $timeValue('start_time') }}" placeholder="16:00" step="300" required>
+        </div>
+        <div class="field">
+          <label for="end_time">Конец</label>
+          <input id="end_time" type="time" name="end_time" value="{{ $timeValue('end_time') }}" placeholder="16:45" step="300" required>
+        </div>
       </div>
-      <div class="field">
-        <label for="start_time">Начало</label>
-        <input id="start_time" type="time" name="start_time" value="{{ $timeValue('start_time') }}" placeholder="16:00" step="300" required>
-      </div>
-      <div class="field">
-        <label for="end_time">Конец</label>
-        <input id="end_time" type="time" name="end_time" value="{{ $timeValue('end_time') }}" placeholder="16:45" step="300" required>
-      </div>
-      <div data-in-person @if ($online) hidden @endif>
+      <div class="slot-place" data-in-person @if ($online) hidden @endif>
         <div class="field">
           <label for="building">Корпус</label>
           <select id="building" name="building" size="8" @disabled($online) @required(! $online)>
