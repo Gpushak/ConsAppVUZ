@@ -14,7 +14,9 @@ class SlotPolicy
         }
 
         if ($user->isStudent()) {
-            return $slot->is_published && $slot->conducted_at === null;
+            return $slot->is_published
+                && $slot->conducted_at === null
+                && ! $slot->isFinished();
         }
 
         return false;
@@ -28,7 +30,7 @@ class SlotPolicy
     public function book(User $user, Slot $slot): bool
     {
         return $user->isStudent()
-            && $slot->isFree()
+            && $slot->canBeBooked()
             && (bool) $slot->teacherProfile?->user?->is_active;
     }
 

@@ -50,7 +50,7 @@
                   <td>
                     @if ($mine)
                       <a class="btn btn-small btn-ghost" href="{{ route('bookings.show', $mine) }}">Вы записаны</a>
-                    @else
+                    @elseif ($slot->canBeBooked())
                       <a class="btn btn-small" href="{{ route('bookings.create', $slot) }}">Записаться</a>
                     @endif
                   </td>

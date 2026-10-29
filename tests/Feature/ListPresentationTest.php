@@ -115,6 +115,72 @@ class ListPresentationTest extends ConsultationTestCase
         $this->assertRowFinished($bookings, 'ауд. 210', false);
     }
 
+    public function test_conducted_consultation_has_no_booking_button(): void
+    {
+        $student = $this->studentUser('Соколов Илья');
+        $other = $this->studentUser('Белова Анна');
+        $teacher = $this->teacherUser('Иванова А. С.');
+        $student->studentProfile->favoriteTeachers()->attach($teacher->teacherProfile->id);
+
+        $open = $this->futureSlot($teacher, '10:00', '10:45', 'Главный А', '314');
+        $conducted = $this->pastSlot($teacher, '777');
+        $conducted->update(['conducted_at' => now()->subHour()]);
+        Booking::query()->create([
+            'slot_id' => $conducted->id,
+            'student_profile_id' => $other->studentProfile->id,
+            'status' => Booking::COMPLETED,
+            'completed_at' => now()->subHour(),
+        ]);
+
+        $home = $this->actingAs($student)
+            ->get(route('home'))
+            ->assertOk()
+            ->getContent();
+
+        $openRow = $this->rowHtml($home, 'ауд. 314');
+        $conductedRow = $this->rowHtml($home, 'ауд. 777');
+
+        $this->assertStringContainsString('свободен', $openRow);
+        $this->assertStringContainsString('>Записаться</a>', $openRow);
+        $this->assertStringContainsString('проведён', $conductedRow);
+        $this->assertStringNotContainsString('Записаться', $conductedRow);
+        $this->assertStringNotContainsString('disabled', $conductedRow);
+        $this->assertStringNotContainsString('уже нельзя записаться', $conductedRow);
+
+        $this->actingAs($student)
+            ->get(route('bookings.create', $open))
+            ->assertOk()
+            ->assertSee('Записаться');
+
+        $this->actingAs($student)
+            ->get(route('bookings.create', $conducted))
+            ->assertForbidden()
+            ->assertDontSee('Записаться');
+
+        $this->actingAs($student)
+            ->post(route('bookings.store', $conducted))
+            ->assertForbidden();
+
+        $this->assertSame(
+            0,
+            Booking::query()
+                ->where('slot_id', $conducted->id)
+                ->where('student_profile_id', $student->studentProfile->id)
+                ->count(),
+        );
+
+        $teacherPage = $this->actingAs($teacher)
+            ->get(route('teacher.slots.index'))
+            ->assertOk()
+            ->assertSee('проведён')
+            ->assertDontSee('Записаться')
+            ->getContent();
+
+        $teacherRow = $this->rowHtml($teacherPage, 'ауд. 777');
+        $this->assertStringContainsString('проведён', $teacherRow);
+        $this->assertStringNotContainsString('Записаться', $teacherRow);
+    }
+
     public function test_page_headings_drop_the_lead_and_confirm_warnings_stay(): void
     {
         $teacher = $this->teacherUser('Иванова А. С.');
@@ -217,6 +283,15 @@ class ListPresentationTest extends ConsultationTestCase
             'room' => $room,
             'is_published' => true,
         ]);
+    }
+
+    private function rowHtml(string $html, string $marker): string
+    {
+        $pattern = '/<tr\b[^>]*>(?:(?!<\/tr>).)*'.preg_quote($marker, '/').'(?:(?!<\/tr>).)*<\/tr>/s';
+        $this->assertMatchesRegularExpression($pattern, $html);
+        preg_match($pattern, $html, $match);
+
+        return $match[0];
     }
 
     private function assertRowFinished(string $html, string $marker, bool $finished): void

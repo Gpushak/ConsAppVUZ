@@ -36,12 +36,12 @@
   @if ($mine)
     <p class="notice">Вы уже записаны на этот слот.</p>
     <p class="hint"><a href="{{ route('bookings.show', $mine) }}">Открыть запись</a></p>
-  @elseif ($slot->isFree())
+  @elseif ($slot->canBeBooked())
     <form method="POST" action="{{ route('bookings.store', $slot) }}">
       @csrf
       <p class="form-actions"><button class="btn" type="submit">Записаться</button></p>
     </form>
-  @else
+  @elseif (! $slot->isFinished())
     <p class="notice">На этот слот уже нельзя записаться.</p>
   @endif
   <p class="hint"><a href="{{ route('home') }}">К слотам избранных</a></p>
