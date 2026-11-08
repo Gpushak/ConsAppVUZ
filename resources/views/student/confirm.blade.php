@@ -26,7 +26,7 @@
           <td>{{ $slot->dateLabel() }}</td>
           <td>{{ $slot->timeRange() }}</td>
           <td class="place">@include('partials.slot-place', ['slot' => $slot])</td>
-          @include('partials.signup-list', ['slot' => $slot, 'activeOnly' => true, 'open' => true])
+          @include('partials.signup-list', ['slot' => $slot, 'activeOnly' => true, 'open' => true, 'inline' => true])
           <td class="soft">{{ $slot->comment ?: '—' }}</td>
           <td><span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span></td>
         </tr>

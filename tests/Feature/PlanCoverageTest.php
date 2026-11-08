@@ -299,7 +299,11 @@ class PlanCoverageTest extends ConsultationTestCase
         $this->actingAs($teacher)
             ->get(route('teacher.slots.index'))
             ->assertOk()
-            ->assertSee('проведён')
+            ->assertSee('проведён');
+
+        $this->actingAs($teacher)
+            ->get(route('slots.roster', $started))
+            ->assertOk()
             ->assertSee('разобрали введение');
 
         $this->actingAs($student)
@@ -336,7 +340,12 @@ class PlanCoverageTest extends ConsultationTestCase
         $this->actingAs($teacher)
             ->get(route('teacher.slots.index'))
             ->assertOk()
-            ->assertSee('<details class="people"', false)
+            ->assertDontSee('<details class="people"', false)
+            ->assertSee(route('slots.roster', $slot), false);
+
+        $this->actingAs($teacher)
+            ->get(route('slots.roster', $slot))
+            ->assertOk()
             ->assertSeeInOrder([
                 'ПИ-21',
                 'Белова Анна',

@@ -504,6 +504,34 @@ tr.filters select:focus {
   align-items: start;
 }
 
+.repeat-row {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1.2fr) minmax(12rem, 0.8fr);
+  column-gap: 16px;
+  align-items: end;
+}
+
+.repeat-row .choice {
+  min-height: 42px;
+  margin: 0 0 12px;
+}
+
+.field-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+a.signup-link {
+  color: var(--blue);
+  font-weight: 650;
+}
+
+a.signup-link.muted {
+  color: var(--muted);
+  font-weight: 450;
+}
+
 .slot-fields > .field,
 .slot-fields > .format,
 .slot-place > .field {
@@ -727,7 +755,8 @@ td.place {
   }
 
   .slot-fields,
-  .slot-place {
+  .slot-place,
+  .repeat-row {
     display: block;
   }
 

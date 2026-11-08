@@ -12,9 +12,14 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, BookingService $service): View
     {
         $student = $request->user()->studentProfile;
+        $teacherIds = Slot::query()
+            ->whereIn('id', Booking::query()->where('student_profile_id', $student->id)->select('slot_id'))
+            ->pluck('teacher_profile_id');
+        $service->completeEndedSlots($teacherIds);
+
         $bookings = Booking::query()
             ->with(['slot.teacherProfile.user'])
             ->where('student_profile_id', $student->id)

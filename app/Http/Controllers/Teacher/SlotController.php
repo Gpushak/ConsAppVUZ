@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSlotRequest;
+use App\Models\Booking;
 use App\Models\Slot;
 use App\Services\BookingService;
 use Illuminate\Http\RedirectResponse;
@@ -12,15 +13,47 @@ use Illuminate\View\View;
 
 class SlotController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, BookingService $bookings): View
     {
-        $slots = $request->user()->teacherProfile->slots()
+        $profile = $request->user()->teacherProfile;
+        $bookings->completeEndedSlots([$profile->id]);
+
+        $slots = $profile->slots()
             ->with(['bookings.studentProfile.user'])
             ->orderByDesc('starts_at')
             ->get();
 
+        $seriesIds = $slots->pluck('series_id')->filter()->unique()->values();
+        $stoppableSeries = $seriesIds->isEmpty()
+            ? collect()
+            : Slot::query()
+                ->whereIn('series_id', $seriesIds)
+                ->where('is_published', true)
+                ->whereNull('conducted_at')
+                ->where('starts_at', '>', now())
+                ->whereDoesntHave('bookings', function ($query) {
+                    $query->where('status', Booking::BOOKED);
+                })
+                ->pluck('series_id')
+                ->unique()
+                ->values();
+
         return view('teacher.slots', [
             'slots' => $slots,
+            'stoppableSeries' => $stoppableSeries,
+        ]);
+    }
+
+    public function roster(Request $request, Slot $slot): View
+    {
+        $this->authorize('viewRoster', $slot);
+        $slot->load(['bookings.studentProfile.user', 'teacherProfile.user']);
+
+        return view('slots.roster', [
+            'slot' => $slot,
+            'signups' => $slot->sortedBookings(),
+            'teacherActions' => $request->user()->isTeacher()
+                && $slot->teacher_profile_id === $request->user()->teacherProfile?->id,
         ]);
     }
 
@@ -31,11 +64,43 @@ class SlotController extends Controller
         return view('teacher.create');
     }
 
-    public function store(StoreSlotRequest $request): RedirectResponse
+    public function store(StoreSlotRequest $request, BookingService $bookings): RedirectResponse
     {
-        $request->user()->teacherProfile->slots()->create($request->slotAttributes());
+        $result = $bookings->publish(
+            $request->user()->teacherProfile,
+            $request->slotAttributes(),
+            $request->repeatUntil(),
+        );
 
-        return redirect()->route('teacher.slots.index')->with('status', 'Слот опубликован.');
+        $count = $result['created']->count();
+        $series = $result['created']->first()?->series_id !== null;
+
+        if (! $series) {
+            $message = 'Слот опубликован.';
+        } elseif ($result['skipped'] > 0) {
+            $message = 'Опубликовано слотов: '.$count.'. Дни с пересечением пропущены.';
+        } else {
+            $message = 'Опубликовано слотов: '.$count.'.';
+        }
+
+        return redirect()->route('teacher.slots.index')->with('status', $message);
+    }
+
+    public function stopSeriesForm(Slot $slot): View
+    {
+        $this->authorize('stopSeries', $slot);
+
+        return view('teacher.stop-series', [
+            'slot' => $slot,
+        ]);
+    }
+
+    public function stopSeries(Slot $slot, BookingService $bookings): RedirectResponse
+    {
+        $this->authorize('stopSeries', $slot);
+        $bookings->stopSeries($slot);
+
+        return redirect()->route('teacher.slots.index')->with('status', 'Повтор остановлен. Будущие пустые слоты сняты с публикации.');
     }
 
     public function unpublishForm(Slot $slot): View
