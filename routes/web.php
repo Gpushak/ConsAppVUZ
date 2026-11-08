@@ -28,6 +28,7 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::middleware('password.changed')->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('home');
+        Route::get('/slots/{slot}/roster', [SlotController::class, 'roster'])->name('slots.roster');
 
         Route::middleware('role:student')->group(function () {
             Route::get('/teachers', [TeacherDirectoryController::class, 'index'])->name('teachers.index');
@@ -45,6 +46,8 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/slots', [SlotController::class, 'index'])->name('teacher.slots.index');
             Route::get('/slots/create', [SlotController::class, 'create'])->name('teacher.slots.create');
             Route::post('/slots', [SlotController::class, 'store'])->name('teacher.slots.store');
+            Route::get('/slots/{slot}/series/stop', [SlotController::class, 'stopSeriesForm'])->name('teacher.slots.series.stop');
+            Route::post('/slots/{slot}/series/stop', [SlotController::class, 'stopSeries'])->name('teacher.slots.series.stop.store');
             Route::get('/slots/{slot}/unpublish', [SlotController::class, 'unpublishForm'])->name('teacher.slots.unpublish.confirm');
             Route::post('/slots/{slot}/unpublish', [SlotController::class, 'unpublish'])->name('teacher.slots.unpublish');
             Route::get('/slots/{slot}/conduct', [SlotController::class, 'conductForm'])->name('teacher.slots.conduct');

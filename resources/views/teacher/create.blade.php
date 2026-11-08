@@ -6,13 +6,22 @@
   $format = old('format', 'in_person');
   $online = $format === 'online';
 
-  $rawDate = old('date');
-  $dateValue = '';
-  if (is_string($rawDate) && preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $rawDate, $parts)) {
-      $dateValue = $parts[3].'-'.$parts[2].'-'.$parts[1];
-  } elseif (is_string($rawDate) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDate)) {
-      $dateValue = $rawDate;
-  }
+  $dateInput = function (mixed $raw): string {
+      if (! is_string($raw)) {
+          return '';
+      }
+      if (preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $raw, $parts)) {
+          return $parts[3].'-'.$parts[2].'-'.$parts[1];
+      }
+      if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) {
+          return $raw;
+      }
+
+      return '';
+  };
+  $dateValue = $dateInput(old('date'));
+  $repeat = filter_var(old('repeat_weekly'), FILTER_VALIDATE_BOOLEAN);
+  $repeatUntilValue = $dateInput(old('repeat_until'));
 
   $timeValue = function (string $key): string {
       $value = old($key);
@@ -59,6 +68,17 @@
           <input id="end_time" type="time" name="end_time" value="{{ $timeValue('end_time') }}" placeholder="16:45" step="300" required>
         </div>
       </div>
+      <div class="repeat-row">
+        <label class="choice" for="repeat_weekly">
+          <input id="repeat_weekly" type="checkbox" name="repeat_weekly" value="1" @checked($repeat)>
+          Повторять каждую неделю
+        </label>
+        <div class="field">
+          <label for="repeat_until">До даты</label>
+          <input id="repeat_until" type="date" name="repeat_until" value="{{ $repeatUntilValue }}" max="{{ \App\Support\Term::WORK_ENDS_ON }}" @required($repeat)>
+          <p class="field-note">Не позже {{ \App\Support\Term::workEndsOn()->format('d.m.Y') }}.</p>
+        </div>
+      </div>
       <div class="slot-place" data-in-person @if ($online) hidden @endif>
         <div class="field">
           <label for="building">Корпус</label>
@@ -96,6 +116,8 @@
       var room = form.querySelector('#room');
       var url = form.querySelector('#meeting_url');
       var urlLabel = form.querySelector('label[for="meeting_url"]');
+      var repeat = form.querySelector('#repeat_weekly');
+      var until = form.querySelector('#repeat_until');
 
       function sync() {
         var online = form.querySelector('input[name="format"]:checked').value === 'online';
@@ -106,11 +128,13 @@
         room.required = !online;
         url.required = online;
         urlLabel.textContent = online ? 'Ссылка' : 'Ссылка, необязательно';
+        until.required = repeat.checked;
       }
 
       form.querySelectorAll('input[name="format"]').forEach(function (input) {
         input.addEventListener('change', sync);
       });
+      repeat.addEventListener('change', sync);
       sync();
     })();
   </script>

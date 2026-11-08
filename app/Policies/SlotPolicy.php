@@ -47,4 +47,24 @@ class SlotPolicy
             && $slot->teacher_profile_id === $user->teacherProfile?->id
             && $slot->canBeConducted();
     }
+
+    public function viewRoster(User $user, Slot $slot): bool
+    {
+        if ($user->isTeacher()) {
+            return $slot->teacher_profile_id === $user->teacherProfile?->id;
+        }
+
+        if ($user->isStudent()) {
+            return $slot->is_published;
+        }
+
+        return false;
+    }
+
+    public function stopSeries(User $user, Slot $slot): bool
+    {
+        return $user->isTeacher()
+            && $slot->series_id !== null
+            && $slot->teacher_profile_id === $user->teacherProfile?->id;
+    }
 }

@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Slot;
+use App\Services\BookingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(Request $request): View|RedirectResponse
+    public function index(Request $request, BookingService $bookings): View|RedirectResponse
     {
         $user = $request->user();
 
@@ -29,6 +30,8 @@ class HomeController extends Controller
             ->get()
             ->sort(fn ($left, $right) => $collator->compare($left->user->name, $right->user->name) ?: 0)
             ->values();
+
+        $bookings->completeEndedSlots($favorites->pluck('id'));
 
         $slotsByTeacher = collect();
 

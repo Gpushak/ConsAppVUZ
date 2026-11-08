@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 #[Fillable([
     'teacher_profile_id',
+    'series_id',
     'starts_at',
     'ends_at',
     'building',
@@ -39,6 +41,39 @@ class Slot extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public static function teacherHasOverlap(int $teacherProfileId, Carbon $starts, Carbon $ends): bool
+    {
+        return static::query()
+            ->where('teacher_profile_id', $teacherProfileId)
+            ->where('starts_at', '<', $ends)
+            ->where('ends_at', '>', $starts)
+            ->where(function ($query) {
+                $query->where(function ($query) {
+                    $query->whereNull('conducted_at')->where('is_published', true);
+                })->orWhereHas('bookings', function ($bookings) {
+                    $bookings->where('status', Booking::BOOKED);
+                });
+            })
+            ->exists();
+    }
+
+    public function canStopSeries(): bool
+    {
+        if ($this->series_id === null) {
+            return false;
+        }
+
+        return static::query()
+            ->where('series_id', $this->series_id)
+            ->where('is_published', true)
+            ->whereNull('conducted_at')
+            ->where('starts_at', '>', now())
+            ->whereDoesntHave('bookings', function ($bookings) {
+                $bookings->where('status', Booking::BOOKED);
+            })
+            ->exists();
     }
 
     public function isOnline(): bool
@@ -158,9 +193,9 @@ class Slot extends Model
     }
 
     /**
-     * @return Collection<string, Collection<int, Booking>>
+     * @return Collection<int, Booking>
      */
-    public function groupedBookings(bool $activeOnly = false): Collection
+    public function sortedBookings(bool $activeOnly = false): Collection
     {
         $bookings = $this->bookings;
 
@@ -169,7 +204,8 @@ class Slot extends Model
         }
 
         $collator = new \Collator('ru_RU');
-        $sorted = $bookings->sort(function (Booking $left, Booking $right) use ($collator) {
+
+        return $bookings->sort(function (Booking $left, Booking $right) use ($collator) {
             $group = $collator->compare(
                 $left->studentProfile->group_name,
                 $right->studentProfile->group_name,
@@ -186,7 +222,14 @@ class Slot extends Model
 
             return $name === false ? 0 : $name;
         })->values();
+    }
 
-        return $sorted->groupBy(fn (Booking $booking) => $booking->studentProfile->group_name);
+    /**
+     * @return Collection<string, Collection<int, Booking>>
+     */
+    public function groupedBookings(bool $activeOnly = false): Collection
+    {
+        return $this->sortedBookings($activeOnly)
+            ->groupBy(fn (Booking $booking) => $booking->studentProfile->group_name);
     }
 }

@@ -16,6 +16,7 @@ class ListPresentationTest extends ConsultationTestCase
 
         $open = $this->futureSlot($teacher, '10:00', '10:45', 'Главный А', '314');
         $cancelled = $this->pastSlot($teacher, '210');
+        $cancelled->update(['ends_at' => now()->addHour()]);
         Booking::query()->create([
             'slot_id' => $cancelled->id,
             'student_profile_id' => $student->studentProfile->id,
@@ -74,6 +75,7 @@ class ListPresentationTest extends ConsultationTestCase
             'completed_at' => now()->subHour(),
         ]);
         $cancelled = $this->pastSlot($teacher, '210');
+        $cancelled->update(['ends_at' => now()->addHour()]);
         Booking::query()->create([
             'slot_id' => $cancelled->id,
             'student_profile_id' => $student->studentProfile->id,

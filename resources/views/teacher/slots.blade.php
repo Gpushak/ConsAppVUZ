@@ -13,9 +13,6 @@
     </div>
   </div>
   @include('partials.errors')
-  @php
-    $openId = $slots->first(fn ($slot) => $slot->bookings->isNotEmpty())?->id;
-  @endphp
   <div class="table-wrap">
     <table class="data-table">
       <thead>
@@ -35,12 +32,7 @@
             <td>{{ $slot->dateLabel() }}</td>
             <td>{{ $slot->timeRange() }}</td>
             <td class="place">@include('partials.slot-place', ['slot' => $slot])</td>
-            @include('partials.signup-list', [
-              'slot' => $slot,
-              'withStatus' => true,
-              'withActions' => true,
-              'open' => $slot->id === $openId,
-            ])
+            @include('partials.signup-list', ['slot' => $slot])
             <td class="soft">{{ $slot->comment ?: '—' }}</td>
             <td><span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span></td>
             <td class="fit">
@@ -50,6 +42,9 @@
                 @endif
                 @if ($slot->canBeUnpublished())
                   <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
+                @endif
+                @if ($slot->series_id !== null && $stoppableSeries->contains($slot->series_id))
+                  <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}">Остановить повтор</a>
                 @endif
               </div>
             </td>

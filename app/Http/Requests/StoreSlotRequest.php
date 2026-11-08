@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Booking;
 use App\Models\Slot;
 use App\Support\Building;
+use App\Support\Term;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -24,12 +24,16 @@ class StoreSlotRequest extends FormRequest
         $comment = trim((string) $this->input('comment'));
         $url = trim((string) $this->input('meeting_url'));
 
+        $repeat = $this->boolean('repeat_weekly');
+
         $this->merge([
             'format' => $format,
             'building' => $online ? null : $this->input('building'),
             'room' => $online ? null : trim((string) $this->input('room')),
             'comment' => $comment === '' ? null : $comment,
             'meeting_url' => $url === '' ? null : $url,
+            'repeat_weekly' => $repeat,
+            'repeat_until' => $repeat ? $this->input('repeat_until') : null,
         ]);
     }
 
@@ -55,6 +59,10 @@ class StoreSlotRequest extends FormRequest
             'meeting_url' => $online
                 ? ['required', 'string', 'max:500', 'regex:/^https?:\/\/\S+$/i']
                 : ['nullable', 'string', 'max:500', 'regex:/^https?:\/\/\S+$/i'],
+            'repeat_weekly' => ['boolean'],
+            'repeat_until' => $this->boolean('repeat_weekly')
+                ? ['required', 'regex:/^(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})$/']
+                : ['nullable'],
         ];
     }
 
@@ -79,6 +87,8 @@ class StoreSlotRequest extends FormRequest
             'meeting_url.required' => 'Для онлайн-слота укажите ссылку.',
             'meeting_url.regex' => 'Ссылка должна начинаться с http:// или https://.',
             'meeting_url.max' => 'Ссылка не длиннее 500 символов.',
+            'repeat_until.required' => 'Укажите дату окончания повтора.',
+            'repeat_until.regex' => 'Укажите дату в формате ДД.ММ.ГГГГ.',
         ];
     }
 
@@ -89,14 +99,10 @@ class StoreSlotRequest extends FormRequest
                 return;
             }
 
-            $value = (string) $this->input('date');
-            if (str_contains($value, '.')) {
-                $day = Carbon::createFromFormat('!d.m.Y', $value);
-                if ($day === false || $day->format('d.m.Y') !== $value) {
-                    $validator->errors()->add('date', 'Укажите дату в формате ДД.ММ.ГГГГ.');
+            if ($this->strictDay((string) $this->input('date')) === null) {
+                $validator->errors()->add('date', 'Укажите дату в формате ДД.ММ.ГГГГ.');
 
-                    return;
-                }
+                return;
             }
 
             [$starts, $ends] = $this->consultationWindow();
@@ -113,24 +119,66 @@ class StoreSlotRequest extends FormRequest
                 return;
             }
 
-            $teacherId = $this->user()->teacherProfile->id;
-            $overlap = Slot::query()
-                ->where('teacher_profile_id', $teacherId)
-                ->where('starts_at', '<', $ends)
-                ->where('ends_at', '>', $starts)
-                ->where(function ($query) {
-                    $query->where(function ($query) {
-                        $query->whereNull('conducted_at')->where('is_published', true);
-                    })->orWhereHas('bookings', function ($bookings) {
-                        $bookings->where('status', Booking::BOOKED);
-                    });
-                })
-                ->exists();
+            if ($this->boolean('repeat_weekly')) {
+                $until = $this->strictDay((string) $this->input('repeat_until'));
 
-            if ($overlap) {
+                if ($until === null) {
+                    $validator->errors()->add('repeat_until', 'Укажите дату в формате ДД.ММ.ГГГГ.');
+
+                    return;
+                }
+
+                if ($until->greaterThan(Term::workEndsOn())) {
+                    $validator->errors()->add('repeat_until', 'Дата окончания не позже '.Term::workEndsOn()->format('d.m.Y').'.');
+
+                    return;
+                }
+
+                if ($until->lt($starts->copy()->startOfDay())) {
+                    $validator->errors()->add('repeat_until', 'Дата окончания не раньше даты слота.');
+
+                    return;
+                }
+            }
+
+            if (! $this->boolean('repeat_weekly') && Slot::teacherHasOverlap($this->user()->teacherProfile->id, $starts, $ends)) {
                 $validator->errors()->add('start_time', 'Это время пересекается с другим вашим слотом.');
             }
         });
+    }
+
+    public function repeatUntil(): ?Carbon
+    {
+        if (! $this->boolean('repeat_weekly')) {
+            return null;
+        }
+
+        return $this->strictDay((string) $this->input('repeat_until'));
+    }
+
+    private function strictDay(string $value): ?Carbon
+    {
+        if (preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $value) === 1) {
+            $day = Carbon::createFromFormat('!d.m.Y', $value);
+
+            if ($day === false || $day->format('d.m.Y') !== $value) {
+                return null;
+            }
+
+            return $day->startOfDay();
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1) {
+            $day = Carbon::createFromFormat('!Y-m-d', $value);
+
+            if ($day === false || $day->format('Y-m-d') !== $value) {
+                return null;
+            }
+
+            return $day->startOfDay();
+        }
+
+        return null;
     }
 
     /**
@@ -138,10 +186,7 @@ class StoreSlotRequest extends FormRequest
      */
     private function consultationWindow(): array
     {
-        $value = (string) $this->input('date');
-        $day = str_contains($value, '.')
-            ? Carbon::createFromFormat('!d.m.Y', $value)
-            : Carbon::parse($value)->startOfDay();
+        $day = $this->strictDay((string) $this->input('date')) ?? now()->startOfDay();
 
         $start = substr((string) $this->input('start_time'), 0, 5);
         $end = substr((string) $this->input('end_time'), 0, 5);
