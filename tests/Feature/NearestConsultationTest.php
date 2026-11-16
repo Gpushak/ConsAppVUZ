@@ -135,6 +135,216 @@ class NearestConsultationTest extends ConsultationTestCase
         $this->assertStringNotContainsString('data-date="2026-10-27"', $may);
     }
 
+    public function test_nearest_panel_offers_booking_and_creates_a_booking(): void
+    {
+        $student = $this->studentUser('Соколов Илья');
+        $teacher = $this->teacherUser('Иванова А. С.');
+        $student->studentProfile->favoriteTeachers()->attach($teacher->teacherProfile->id);
+        $slot = $this->slot($teacher, '2026-10-27 10:00:00', '2026-10-27 10:45:00', '333');
+        $query = [
+            'teacher' => $teacher->teacherProfile->id,
+            'month' => '2026-10',
+        ];
+
+        $nearest = $this->nearestHtml($this->actingAs($student)->get(route('home', $query))->assertOk()->getContent());
+
+        $this->assertStringContainsString('>Записаться</a>', $nearest);
+        $this->assertStringContainsString(route('bookings.create', $slot), $nearest);
+        $this->assertStringNotContainsString('Вы записаны', $nearest);
+
+        $this->actingAs($student)->get(route('bookings.create', $slot))->assertOk()->assertSee('Записаться');
+        $this->actingAs($student)
+            ->post(route('bookings.store', $slot))
+            ->assertRedirect(route('bookings.index'));
+
+        $booking = Booking::query()
+            ->where('slot_id', $slot->id)
+            ->where('student_profile_id', $student->studentProfile->id)
+            ->first();
+        $this->assertNotNull($booking);
+        $this->assertSame(Booking::BOOKED, $booking->status);
+
+        $booked = $this->nearestHtml($this->actingAs($student)->get(route('home', $query))->assertOk()->getContent());
+
+        $this->assertStringContainsString('>Вы записаны</a>', $booked);
+        $this->assertStringContainsString(route('bookings.show', $booking), $booked);
+        $this->assertStringNotContainsString('>Записаться</a>', $booked);
+    }
+
+    public function test_marked_day_lists_every_slot_that_day_and_not_slots_from_another_day(): void
+    {
+        $student = $this->studentUser('Соколов Илья');
+        $ivanova = $this->teacherUser('Иванова А. С.');
+        $smirnova = $this->teacherUser('Смирнова Е. В.');
+        $petrov = $this->teacherUser('Петров Н. И.');
+        $student->studentProfile->favoriteTeachers()->attach([
+            $ivanova->teacherProfile->id,
+            $smirnova->teacherProfile->id,
+        ]);
+
+        $done = $this->slot($ivanova, '2026-10-27 08:00:00', '2026-10-27 08:45:00', '111', conducted: true);
+        $morning = $this->slot($ivanova, '2026-10-27 10:00:00', '2026-10-27 10:45:00', '333');
+        $evening = Slot::query()->create([
+            'teacher_profile_id' => $ivanova->teacherProfile->id,
+            'starts_at' => '2026-10-27 16:00:00',
+            'ends_at' => '2026-10-27 16:45:00',
+            'meeting_url' => 'https://meet.example.com/evening',
+            'is_published' => true,
+        ]);
+        $sameDayOther = $this->slot($smirnova, '2026-10-27 12:00:00', '2026-10-27 12:45:00', '555');
+        $nextDay = $this->slot($ivanova, '2026-10-28 12:00:00', '2026-10-28 12:45:00', '444');
+        $crossesMidnight = $this->slot($ivanova, '2026-10-28 23:30:00', '2026-10-29 00:15:00', '888');
+        $outsider = $this->slot($petrov, '2026-10-27 14:00:00', '2026-10-27 14:45:00', '666');
+        Booking::query()->create([
+            'slot_id' => $morning->id,
+            'student_profile_id' => $student->studentProfile->id,
+            'status' => Booking::BOOKED,
+        ]);
+
+        $query = [
+            'teacher' => $ivanova->teacherProfile->id,
+            'month' => '2026-10',
+            'from' => '2026-10-26',
+            'to' => '2026-11-01',
+            'day' => '2026-10-27',
+        ];
+        $html = $this->actingAs($student)->get(route('home', $query))->assertOk()->getContent();
+        $panel = $this->dayPanel($html);
+
+        $this->assertStringContainsString('data-day="2026-10-27"', $panel);
+        $this->assertSame(3, substr_count($panel, 'data-day-slot'));
+        $this->assertStringNotContainsString('<section class="nearest"', $html);
+        $this->assertStringContainsString('27.10.2026', $html);
+
+        $finished = $this->dayRow($panel, $done->id);
+        $this->assertStringContainsString('ауд. 111', $finished);
+        $this->assertStringContainsString('Иванова А. С.', $finished);
+        $this->assertStringContainsString($done->timeRange(), $finished);
+        $this->assertStringContainsString('проведён', $finished);
+        $this->assertStringNotContainsString('>Записаться</a>', $finished);
+        $this->assertStringNotContainsString('Вы записаны', $finished);
+
+        $booked = $this->dayRow($panel, $morning->id);
+        $this->assertStringContainsString('ауд. 333', $booked);
+        $this->assertStringContainsString('Иванова А. С.', $booked);
+        $this->assertStringContainsString($morning->timeRange(), $booked);
+        $this->assertStringContainsString('свободен', $booked);
+        $this->assertStringContainsString('>Вы записаны</a>', $booked);
+        $this->assertStringNotContainsString('>Записаться</a>', $booked);
+
+        $open = $this->dayRow($panel, $evening->id);
+        $this->assertStringContainsString('https://meet.example.com/evening', $open);
+        $this->assertStringContainsString('Иванова А. С.', $open);
+        $this->assertStringContainsString($evening->timeRange(), $open);
+        $this->assertStringContainsString('>Записаться</a>', $open);
+        $this->assertStringContainsString(route('bookings.create', $evening), $open);
+
+        $this->assertStringNotContainsString('ауд. 555', $panel);
+        $this->assertStringNotContainsString('ауд. 444', $panel);
+        $this->assertStringNotContainsString('ауд. 888', $panel);
+        $this->assertStringNotContainsString('ауд. 666', $panel);
+        $this->assertStringNotContainsString('data-day-slot="'.$sameDayOther->id.'"', $panel);
+        $this->assertStringNotContainsString('data-day-slot="'.$nextDay->id.'"', $panel);
+        $this->assertStringNotContainsString('data-day-slot="'.$crossesMidnight->id.'"', $panel);
+        $this->assertStringNotContainsString('data-day-slot="'.$outsider->id.'"', $panel);
+
+        $week = $this->dayHtml($html, '27.10.2026');
+        $this->assertStringNotContainsString('ауд. 111', $week);
+        $this->assertStringContainsString('ауд. 333', $week);
+
+        $nav = html_entity_decode($this->monthNav($html));
+        $this->assertStringContainsString('day=2026-10-27', $nav);
+        $this->assertStringContainsString('teacher='.$ivanova->teacherProfile->id, $nav);
+        $this->assertStringContainsString('month=2026-09', $nav);
+        $this->assertStringContainsString('month=2026-11', $nav);
+        $this->assertStringContainsString('name="day" value="2026-10-27"', $html);
+
+        $back = $this->href($html, 'Ближайшая');
+        $this->assertStringNotContainsString('day=', $back);
+        $this->assertStringContainsString('teacher='.$ivanova->teacherProfile->id, $back);
+        $this->assertStringContainsString('month=2026-10', $back);
+        $this->assertSame($back, $this->cellHref($this->calendarCellHtml($html, '2026-10-27')));
+        $this->assertStringContainsString('chosen', $this->calendarCell($html, '2026-10-27'));
+        $this->assertStringContainsString('day=2026-10-28', (string) $this->cellHref($this->calendarCellHtml($html, '2026-10-28')));
+        $this->assertNull($this->cellHref($this->calendarCellHtml($html, '2026-10-26')));
+
+        $returned = $this->actingAs($student)->get($back)->assertOk()->getContent();
+        $this->assertStringNotContainsString('class="near-day"', $returned);
+        $this->assertStringContainsString('data-nearest="'.$morning->id.'"', $this->nearestHtml($returned));
+        $this->assertStringContainsString('>Вы записаны</a>', $this->nearestHtml($returned));
+
+        $later = $this->dayPanel($this->actingAs($student)->get(route('home', [
+            'teacher' => $ivanova->teacherProfile->id,
+            'month' => '2026-10',
+            'day' => '2026-10-29',
+        ]))->assertOk()->getContent());
+        $this->assertStringContainsString('data-day-slot="'.$crossesMidnight->id.'"', $later);
+        $this->assertStringContainsString('ауд. 888', $later);
+        $this->assertStringNotContainsString('ауд. 333', $later);
+        $this->assertStringNotContainsString('ауд. 444', $later);
+
+        $anyone = $this->dayPanel($this->actingAs($student)->get(route('home', [
+            'month' => '2026-10',
+            'day' => '2026-10-27',
+        ]))->assertOk()->getContent());
+        $this->assertSame(4, substr_count($anyone, 'data-day-slot'));
+        $this->assertStringContainsString('data-day-slot="'.$sameDayOther->id.'"', $anyone);
+        $this->assertStringContainsString('Смирнова Е. В.', $this->dayRow($anyone, $sameDayOther->id));
+        $this->assertStringContainsString('ауд. 555', $anyone);
+        $this->assertStringNotContainsString('ауд. 444', $anyone);
+        $this->assertStringNotContainsString('ауд. 666', $anyone);
+        $this->assertStringNotContainsString('ауд. 888', $anyone);
+        $this->assertStringNotContainsString('teacher=', html_entity_decode($this->monthNav(
+            $this->actingAs($student)->get(route('home', [
+                'month' => '2026-10',
+                'day' => '2026-10-27',
+            ]))->getContent(),
+        )));
+    }
+
+    public function test_unmarked_day_does_not_replace_the_panel(): void
+    {
+        $student = $this->studentUser('Соколов Илья');
+        $ivanova = $this->teacherUser('Иванова А. С.');
+        $smirnova = $this->teacherUser('Смирнова Е. В.');
+        $student->studentProfile->favoriteTeachers()->attach([
+            $ivanova->teacherProfile->id,
+            $smirnova->teacherProfile->id,
+        ]);
+        $soon = $this->slot($ivanova, '2026-10-27 10:00:00', '2026-10-27 10:45:00', '333');
+        $this->slot($smirnova, '2026-10-21 12:00:00', '2026-10-21 12:45:00', '555');
+
+        $query = [
+            'teacher' => $ivanova->teacherProfile->id,
+            'month' => '2026-10',
+            'from' => '2026-10-26',
+            'to' => '2026-11-01',
+        ];
+
+        foreach (['2026-10-26', '2026-10-21', 'nope'] as $day) {
+            $html = $this->actingAs($student)
+                ->get(route('home', $query + ['day' => $day]))
+                ->assertOk()
+                ->getContent();
+
+            $nearest = $this->nearestHtml($html);
+            $this->assertStringContainsString('data-nearest="'.$soon->id.'"', $nearest);
+            $this->assertStringContainsString('ауд. 333', $nearest);
+            $this->assertStringContainsString('>Записаться</a>', $nearest);
+            $this->assertStringNotContainsString('class="near-day"', $html);
+            $this->assertStringNotContainsString('ауд. 555', $nearest);
+            $this->assertStringNotContainsString('name="day"', $html);
+        }
+
+        $html = $this->actingAs($student)->get(route('home', $query))->assertOk()->getContent();
+        $this->assertStringContainsString('marked', $this->calendarCell($html, '2026-10-27'));
+        $this->assertNotNull($this->cellHref($this->calendarCellHtml($html, '2026-10-27')));
+        $this->assertStringNotContainsString('marked', $this->calendarCell($html, '2026-10-26'));
+        $this->assertStringNotContainsString('marked', $this->calendarCell($html, '2026-10-21'));
+        $this->assertNull($this->cellHref($this->calendarCellHtml($html, '2026-10-26')));
+        $this->assertNull($this->cellHref($this->calendarCellHtml($html, '2026-10-21')));
+    }
+
     public function test_finished_slots_do_not_appear_on_the_home_week(): void
     {
         $student = $this->studentUser('Соколов Илья');
@@ -219,6 +429,50 @@ class NearestConsultationTest extends ConsultationTestCase
         $pattern = '/<td\b[^>]*\bdata-date="'.preg_quote($date, '/').'"[^>]*>/s';
         $this->assertMatchesRegularExpression($pattern, $html);
         preg_match($pattern, $html, $match);
+
+        return $match[0];
+    }
+
+    private function calendarCellHtml(string $html, string $date): string
+    {
+        $pattern = '/<td\b[^>]*\bdata-date="'.preg_quote($date, '/').'"[^>]*>.*?<\/td>/s';
+        $this->assertMatchesRegularExpression($pattern, $html);
+        preg_match($pattern, $html, $match);
+
+        return $match[0];
+    }
+
+    private function cellHref(string $cell): ?string
+    {
+        if (preg_match('/href="([^"]*)"/', $cell, $match) !== 1) {
+            return null;
+        }
+
+        return html_entity_decode($match[1]);
+    }
+
+    private function href(string $html, string $label): string
+    {
+        $pattern = '/<a\b[^>]*href="([^"]*)"[^>]*>'.preg_quote($label, '/').'<\/a>/';
+        $this->assertSame(1, preg_match($pattern, $html, $match));
+
+        return html_entity_decode($match[1]);
+    }
+
+    private function dayPanel(string $html): string
+    {
+        $this->assertSame(
+            1,
+            preg_match('/<section class="near-day" data-day="[^"]+">.*?<\/section>/s', $html, $match),
+        );
+
+        return $match[0];
+    }
+
+    private function dayRow(string $panel, int $id): string
+    {
+        $pattern = '/<article class="day-row" data-day-slot="'.$id.'">.*?<\/article>/s';
+        $this->assertSame(1, preg_match($pattern, $panel, $match));
 
         return $match[0];
     }

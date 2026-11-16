@@ -11,12 +11,27 @@
     <p class="notice">Избранных преподавателей нет. <a href="{{ route('teachers.index') }}">Откройте преподавателей</a> и отметьте, чьи слоты смотреть.</p>
   @else
     <section class="near" aria-labelledby="near-title">
-      <h2 id="near-title">Ближайшая консультация</h2>
+      <div class="near-head">
+        <h2 id="near-title">
+          @if ($activeDay)
+            <span class="near-dow">{{ \App\Support\DateSpan::weekday($activeDay) }}</span>
+            {{ $activeDay->format('d.m.Y') }}
+          @else
+            Ближайшая консультация
+          @endif
+        </h2>
+        @if ($activeDay)
+          <a class="btn btn-ghost btn-small" href="{{ route('home') }}?{{ http_build_query($nearestQuery) }}">Ближайшая</a>
+        @endif
+      </div>
       <div class="near-main">
         <form class="near-form" method="get" action="{{ route('home') }}">
           <input type="hidden" name="from" value="{{ $span->from->toDateString() }}">
           <input type="hidden" name="to" value="{{ $span->query()['to'] }}">
           <input type="hidden" name="month" value="{{ $month->format('Y-m') }}">
+          @if ($activeDay)
+            <input type="hidden" name="day" value="{{ $activeDay->toDateString() }}">
+          @endif
           <label class="field">
             <span>Преподаватель</span>
             <select name="teacher" onchange="this.form.submit()">
@@ -28,15 +43,36 @@
           </label>
           <button class="btn" type="submit">Показать</button>
         </form>
-        @if ($selectedTeacher === null)
+        @if ($daySlots !== null)
+          <section class="near-day" data-day="{{ $activeDay->toDateString() }}">
+            @foreach ($daySlots as $slot)
+              @php
+                $mine = $slot->bookings->first(fn ($booking) => $booking->student_profile_id === $student->id && $booking->isActive());
+              @endphp
+              <article class="day-row" data-day-slot="{{ $slot->id }}">
+                <div class="day-row-top">
+                  <p class="nearest-when">{{ $slot->timeRange() }}</p>
+                  <span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span>
+                </div>
+                <p class="day-row-who">{{ $slot->teacherProfile->user->name }}</p>
+                @include('partials.slot-place', ['slot' => $slot])
+                @include('partials.slot-book', ['slot' => $slot, 'mine' => $mine])
+              </article>
+            @endforeach
+          </section>
+        @elseif ($selectedTeacher === null)
           <p class="nearest-empty">Выберите преподавателя.</p>
         @elseif ($nearest === null)
           <p class="nearest-empty">Ближайших консультаций нет.</p>
         @else
+          @php
+            $mine = $nearest->bookings->first(fn ($booking) => $booking->student_profile_id === $student->id && $booking->isActive());
+          @endphp
           <section class="nearest" data-nearest="{{ $nearest->id }}">
             <p class="nearest-when">{{ $nearest->dateLabel() }}, {{ $nearest->timeRange() }}</p>
             @include('partials.slot-place', ['slot' => $nearest])
             <p class="nearest-status"><span class="chip {{ $nearest->chipClass() }}">{{ $nearest->statusLabel() }}</span></p>
+            @include('partials.slot-book', ['slot' => $nearest, 'mine' => $mine])
           </section>
         @endif
       </div>
@@ -58,8 +94,20 @@
             @foreach ($weeks as $week)
               <tr>
                 @foreach ($week as $day)
-                  <td @class(['cal-day', 'marked' => $day['marked'], 'out' => ! $day['inMonth'], 'today' => $day['today']]) data-date="{{ $day['date']->toDateString() }}" @if ($day['marked']) title="есть консультация" @endif>
-                    <span>{{ $day['date']->day }}</span>
+                  @php
+                    $dateKey = $day['date']->toDateString();
+                    $chosen = $activeDay !== null && $activeDay->toDateString() === $dateKey;
+                    $dayLink = $nearestQuery;
+                    if (! $chosen) {
+                        $dayLink['day'] = $dateKey;
+                    }
+                  @endphp
+                  <td @class(['cal-day', 'marked' => $day['marked'], 'chosen' => $chosen, 'out' => ! $day['inMonth'], 'today' => $day['today']]) data-date="{{ $dateKey }}" @if ($day['marked']) title="есть консультация" @endif>
+                    @if ($day['marked'])
+                      <a href="{{ route('home') }}?{{ http_build_query($dayLink) }}">{{ $day['date']->day }}</a>
+                    @else
+                      <span>{{ $day['date']->day }}</span>
+                    @endif
                   </td>
                 @endforeach
               </tr>
@@ -73,6 +121,9 @@
         <input type="hidden" name="teacher" value="{{ $selectedTeacher->id }}">
       @endif
       <input type="hidden" name="month" value="{{ $month->format('Y-m') }}">
+      @if ($activeDay)
+        <input type="hidden" name="day" value="{{ $activeDay->toDateString() }}">
+      @endif
       <label class="field">
         <span>С</span>
         <input type="date" name="from" value="{{ $span->from->toDateString() }}">
@@ -116,15 +167,7 @@
                     <p class="comment">{{ $slot->comment }}</p>
                   @endif
                   @include('partials.signup-list', ['slot' => $slot, 'activeOnly' => true, 'asCell' => false])
-                  @if ($mine || $slot->canBeBooked())
-                    <div class="actions slot-primary">
-                      @if ($mine)
-                        <a class="btn btn-small btn-ghost" href="{{ route('bookings.show', $mine) }}">Вы записаны</a>
-                      @else
-                        <a class="btn btn-small" href="{{ route('bookings.create', $slot) }}">Записаться</a>
-                      @endif
-                    </div>
-                  @endif
+                  @include('partials.slot-book', ['slot' => $slot, 'mine' => $mine])
                 </div>
               </article>
             @empty

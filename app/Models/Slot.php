@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\DateSpan;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -92,6 +93,11 @@ class Slot extends Model
         }
 
         return $this->building.', ауд. '.$this->room;
+    }
+
+    public function localDate(): string
+    {
+        return $this->starts_at->copy()->timezone(DateSpan::TIMEZONE)->toDateString();
     }
 
     public function dateLabel(): string

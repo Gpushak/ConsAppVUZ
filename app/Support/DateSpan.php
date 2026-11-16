@@ -116,6 +116,11 @@ final class DateSpan
         });
     }
 
+    public static function parseDay(mixed $value): ?Carbon
+    {
+        return self::parseDate(is_string($value) ? $value : null);
+    }
+
     public static function weekday(Carbon $day): string
     {
         return [
