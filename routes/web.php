@@ -45,6 +45,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::middleware('role:teacher')->prefix('teacher')->group(function () {
             Route::get('/slots', [SlotController::class, 'index'])->name('teacher.slots.index');
             Route::get('/slots/create', [SlotController::class, 'create'])->name('teacher.slots.create');
+            Route::get('/slots/room-warning', [SlotController::class, 'roomWarning'])->name('teacher.slots.room-warning');
             Route::post('/slots', [SlotController::class, 'store'])->name('teacher.slots.store');
             Route::get('/slots/{slot}/edit', [SlotController::class, 'edit'])->name('teacher.slots.edit');
             Route::post('/slots/{slot}', [SlotController::class, 'update'])->name('teacher.slots.update');

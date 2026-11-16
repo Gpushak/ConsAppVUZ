@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\Slot;
 use App\Services\BookingService;
 use App\Support\DateSpan;
+use App\Support\RoomOccupancy;
 use App\Support\Ru;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -121,11 +122,40 @@ class SlotController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $this->authorize('create', Slot::class);
 
-        return view('teacher.create');
+        return view('teacher.create', [
+            'roomConflicts' => RoomOccupancy::conflicts($this->warningInput($request)),
+        ]);
+    }
+
+    public function roomWarning(Request $request): View
+    {
+        $this->authorize('create', Slot::class);
+
+        return view('partials.room-warning', [
+            'roomConflicts' => RoomOccupancy::conflicts($this->warningInput($request)),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function warningInput(Request $request): array
+    {
+        $input = [];
+
+        foreach (['format', 'building', 'room', 'date', 'start_time', 'end_time', 'repeat', 'repeat_weekly', 'repeat_until'] as $key) {
+            $value = $request->old($key);
+            if ($value === null) {
+                $value = $request->query($key);
+            }
+            $input[$key] = is_scalar($value) ? $value : null;
+        }
+
+        return $input;
     }
 
     public function store(StoreSlotRequest $request, BookingService $bookings): RedirectResponse

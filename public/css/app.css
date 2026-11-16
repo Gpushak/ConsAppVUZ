@@ -173,6 +173,28 @@ h2 {
   border-left-color: #8d2f2f;
 }
 
+.notice.room-warning {
+  border-left-color: #8a5a00;
+  background: #fff8eb;
+}
+
+.room-warning p {
+  margin: 0;
+}
+
+.room-warning ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.room-warning li + li {
+  margin-top: 4px;
+}
+
+.room-warning .room-when {
+  white-space: nowrap;
+}
+
 .section {
   margin-top: 22px;
 }
