@@ -117,6 +117,24 @@
             <p class="error" id="repeat_until-error">{{ $message }}</p>
           @enderror
           <p class="field-note" id="repeat-until-note" data-limit="{{ $repeatLimit }}" data-on="{{ $repeatOnNote }}" data-off="{{ $repeatOffNote }}">{{ $repeatWeeks > 0 ? $repeatOnNote : $repeatOffNote }}</p>
+          <p class="error" id="repeat-until-cleared" hidden></p>
+          <div id="repeat-until-cal" class="end-cal" hidden>
+            <div class="cal-nav">
+              <button type="button" class="cal-arrow" data-end-prev aria-label="Предыдущий месяц">‹</button>
+              <span class="cal-title" data-end-title></span>
+              <button type="button" class="cal-arrow" data-end-next aria-label="Следующий месяц">›</button>
+            </div>
+            <table class="month-cal end-month">
+              <thead>
+                <tr>
+                  @foreach (['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'] as $dow)
+                    <th scope="col">{{ $dow }}</th>
+                  @endforeach
+                </tr>
+              </thead>
+              <tbody data-end-days></tbody>
+            </table>
+          </div>
         </div>
       </div>
       <div class="slot-place" data-in-person @if ($online) hidden @endif>
@@ -169,16 +187,209 @@
       var room = form.querySelector('#room');
       var url = form.querySelector('#meeting_url');
       var urlLabel = form.querySelector('label[for="meeting_url"]');
+      var dateInput = form.querySelector('#date');
       var until = form.querySelector('#repeat_until');
       var untilNote = form.querySelector('#repeat-until-note');
+      var cleared = form.querySelector('#repeat-until-cleared');
+      var cal = form.querySelector('#repeat-until-cal');
+      var endView = null;
+      var weekdays = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'];
+      var months = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 
-      function repeatChosen() {
+      function repeatStep() {
         var chosen = form.querySelector('input[name="repeat"]:checked');
+        if (!chosen || chosen.value === 'none') {
+          return 0;
+        }
 
-        return chosen && chosen.value !== 'none';
+        return chosen.value === '2' ? 14 : 7;
       }
 
-      function sync() {
+      function parseIso(value) {
+        var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+        if (!match) {
+          return null;
+        }
+        var year = Number(match[1]);
+        var month = Number(match[2]);
+        var day = Number(match[3]);
+        var date = new Date(year, month - 1, day);
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+          return null;
+        }
+
+        return date;
+      }
+
+      function iso(date) {
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+
+        return date.getFullYear() + '-' + month + '-' + day;
+      }
+
+      function formatRu(date) {
+        var day = String(date.getDate()).padStart(2, '0');
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+
+        return day + '.' + month + '.' + date.getFullYear();
+      }
+
+      function dayDiff(from, to) {
+        var start = Date.UTC(from.getFullYear(), from.getMonth(), from.getDate());
+        var end = Date.UTC(to.getFullYear(), to.getMonth(), to.getDate());
+
+        return Math.round((end - start) / 86400000);
+      }
+
+      function weekdayName(date) {
+        var index = date.getDay() === 0 ? 6 : date.getDay() - 1;
+
+        return weekdays[index];
+      }
+
+      function fits(start, untilDate, stepDays) {
+        var days = dayDiff(start, untilDate);
+
+        return days >= 0 && iso(untilDate) <= until.getAttribute('max') && days % stepDays === 0;
+      }
+
+      function clearReason(start, untilDate, stepDays) {
+        var days = dayDiff(start, untilDate);
+        if (days < 0) {
+          return 'Дата окончания сброшена: она раньше даты слота.';
+        }
+        if (iso(untilDate) > until.getAttribute('max')) {
+          return 'Дата окончания сброшена: не позже ' + untilNote.getAttribute('data-limit') + '.';
+        }
+        if (stepDays === 14 && days % 7 === 0) {
+          return 'Дата окончания сброшена: этот день между занятиями. При повторе каждые 2 недели шаг — 14 дней.';
+        }
+        if (stepDays === 7) {
+          return 'Дата окончания сброшена: нужен тот же день недели, что и дата слота (' + weekdayName(start) + ').';
+        }
+
+        return 'Дата окончания сброшена: консультация в этот день не проводится.';
+      }
+
+      function hideCleared() {
+        cleared.hidden = true;
+        cleared.textContent = '';
+      }
+
+      function showCleared(text) {
+        cleared.hidden = false;
+        cleared.textContent = text;
+      }
+
+      function monthTitle(year, month) {
+        var name = months[month];
+
+        return name.charAt(0).toUpperCase() + name.slice(1) + ' ' + year;
+      }
+
+      function renderCal() {
+        var start = parseIso(dateInput.value);
+        var stepDays = repeatStep();
+        if (!start || !stepDays) {
+          cal.hidden = true;
+
+          return;
+        }
+        var limit = parseIso(until.getAttribute('max'));
+        var startIndex = start.getFullYear() * 12 + start.getMonth();
+        var limitIndex = limit.getFullYear() * 12 + limit.getMonth();
+        if (!endView) {
+          var focus = parseIso(until.value) || start;
+          endView = { y: focus.getFullYear(), m: focus.getMonth() };
+        }
+        var index = endView.y * 12 + endView.m;
+        if (index < startIndex) {
+          endView = { y: start.getFullYear(), m: start.getMonth() };
+        } else if (index > limitIndex) {
+          endView = { y: limit.getFullYear(), m: limit.getMonth() };
+        }
+        cal.hidden = false;
+        cal.querySelector('[data-end-title]').textContent = monthTitle(endView.y, endView.m);
+        cal.querySelector('[data-end-prev]').disabled = endView.y === start.getFullYear() && endView.m === start.getMonth();
+        cal.querySelector('[data-end-next]').disabled = endView.y === limit.getFullYear() && endView.m === limit.getMonth();
+        var cursor = new Date(endView.y, endView.m, 1);
+        cursor.setDate(1 - ((cursor.getDay() + 6) % 7));
+        var html = '';
+        var week;
+        var day;
+        for (week = 0; week < 6; week++) {
+          var row = '';
+          var inMonth = false;
+          for (day = 0; day < 7; day++) {
+            var key = iso(cursor);
+            var shown = cursor.getMonth() === endView.m && cursor.getFullYear() === endView.y;
+            if (shown) {
+              inMonth = true;
+              if (fits(start, cursor, stepDays)) {
+                var selected = until.value === key ? ' is-selected' : ' is-allowed';
+                row += '<td class="cal-day"><button type="button" class="end-day' + selected + '" data-date="' + key + '">' + cursor.getDate() + '</button></td>';
+              } else {
+                row += '<td class="cal-day"><button type="button" class="end-day" data-date="' + key + '" disabled>' + cursor.getDate() + '</button></td>';
+              }
+            } else {
+              row += '<td class="cal-day out"><span>' + cursor.getDate() + '</span></td>';
+            }
+            cursor.setDate(cursor.getDate() + 1);
+          }
+          if (inMonth) {
+            html += '<tr>' + row + '</tr>';
+          }
+        }
+        cal.querySelector('[data-end-days]').innerHTML = html;
+      }
+
+      function enforceUntil(clearIfBad) {
+        var stepDays = repeatStep();
+        var start = parseIso(dateInput.value);
+        until.required = stepDays > 0;
+        if (!stepDays) {
+          untilNote.textContent = untilNote.getAttribute('data-off');
+          until.readOnly = false;
+          until.removeAttribute('min');
+          until.removeAttribute('step');
+          cal.hidden = true;
+          hideCleared();
+
+          return;
+        }
+        if (!start) {
+          untilNote.textContent = untilNote.getAttribute('data-on');
+          until.readOnly = false;
+          until.removeAttribute('min');
+          until.removeAttribute('step');
+          cal.hidden = true;
+
+          return;
+        }
+        until.min = iso(start);
+        until.step = String(stepDays);
+        until.readOnly = true;
+        var chosen = parseIso(until.value);
+        if (chosen && !fits(start, chosen, stepDays)) {
+          if (clearIfBad) {
+            showCleared(clearReason(start, chosen, stepDays));
+            until.value = '';
+          }
+        } else if (clearIfBad || chosen) {
+          hideCleared();
+        }
+        var from = formatRu(start);
+        var limitLabel = untilNote.getAttribute('data-limit');
+        if (stepDays === 14) {
+          untilNote.textContent = 'Только даты через 14, 28, … дней от ' + from + ', по ' + limitLabel + '. День через 7 дней не подходит.';
+        } else {
+          untilNote.textContent = 'Только ' + weekdayName(start) + ', как у даты слота, с ' + from + ' по ' + limitLabel + '.';
+        }
+        renderCal();
+      }
+
+      function sync(clearUntil) {
         var online = form.querySelector('input[name="format"]:checked').value === 'online';
         inPerson.hidden = online;
         building.disabled = online;
@@ -187,9 +398,7 @@
         room.required = !online;
         url.required = online;
         urlLabel.textContent = online ? 'Ссылка на встречу' : 'Ссылка на встречу, необязательно';
-        var repeating = repeatChosen();
-        until.required = repeating;
-        untilNote.textContent = repeating ? untilNote.getAttribute('data-on') : untilNote.getAttribute('data-off');
+        enforceUntil(clearUntil === true);
       }
 
       function missing(input, message) {
@@ -260,18 +469,63 @@
         warningTimer = window.setTimeout(readWarning, 200);
       }
 
+      dateInput.addEventListener('change', function () {
+        endView = null;
+        enforceUntil(true);
+      });
+      until.addEventListener('change', function () {
+        enforceUntil(true);
+      });
       ['#date', '#start_time', '#end_time', '#building', '#room', '#repeat_until'].forEach(function (selector) {
         var input = form.querySelector(selector);
         input.addEventListener('change', scheduleWarning);
         input.addEventListener('input', scheduleWarning);
       });
-      form.querySelectorAll('input[name="format"], input[name="repeat"]').forEach(function (input) {
+      form.querySelectorAll('input[name="format"]').forEach(function (input) {
         input.addEventListener('change', function () {
-          sync();
+          sync(false);
           scheduleWarning();
         });
       });
-      sync();
+      form.querySelectorAll('input[name="repeat"]').forEach(function (input) {
+        input.addEventListener('change', function () {
+          endView = null;
+          sync(true);
+          scheduleWarning();
+        });
+      });
+      cal.addEventListener('click', function (event) {
+        var button = event.target.closest('button[data-date]');
+        if (!button || button.disabled) {
+          return;
+        }
+        until.value = button.getAttribute('data-date');
+        hideCleared();
+        until.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      cal.querySelector('[data-end-prev]').addEventListener('click', function () {
+        if (!endView || this.disabled) {
+          return;
+        }
+        endView.m -= 1;
+        if (endView.m < 0) {
+          endView.m = 11;
+          endView.y -= 1;
+        }
+        renderCal();
+      });
+      cal.querySelector('[data-end-next]').addEventListener('click', function () {
+        if (!endView || this.disabled) {
+          return;
+        }
+        endView.m += 1;
+        if (endView.m > 11) {
+          endView.m = 0;
+          endView.y += 1;
+        }
+        renderCal();
+      });
+      sync(false);
     })();
   </script>
 @endsection

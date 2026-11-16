@@ -281,7 +281,7 @@ class Pass1ScreensTest extends ConsultationTestCase
             'end_time' => '18:45',
             'meeting_url' => 'https://meet.example.com/weekly',
             'repeat_weekly' => '1',
-            'repeat_until' => '10.11.2026',
+            'repeat_until' => '12.11.2026',
         ])->assertRedirect(route('teacher.slots.index'));
 
         $anchor = Slot::query()->orderBy('starts_at')->firstOrFail();
