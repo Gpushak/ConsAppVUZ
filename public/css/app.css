@@ -506,14 +506,21 @@ tr.filters select:focus {
 
 .repeat-row {
   display: grid;
-  grid-template-columns: minmax(16rem, 1.2fr) minmax(12rem, 0.8fr);
+  grid-template-columns: minmax(20rem, 1.6fr) minmax(12rem, 0.8fr);
   column-gap: 16px;
   align-items: end;
 }
 
-.repeat-row .choice {
+.repeat-row > .format {
+  margin-bottom: 0;
+}
+
+.repeat-row .choices {
   min-height: 42px;
-  margin: 0 0 12px;
+}
+
+.repeat-row .choice {
+  margin: 0;
 }
 
 .field-note {

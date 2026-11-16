@@ -24,7 +24,7 @@ class StoreSlotRequest extends FormRequest
         $comment = trim((string) $this->input('comment'));
         $url = trim((string) $this->input('meeting_url'));
 
-        $repeat = $this->boolean('repeat_weekly');
+        $weeks = $this->normalizeRepeatWeeks();
 
         $this->merge([
             'format' => $format,
@@ -32,9 +32,42 @@ class StoreSlotRequest extends FormRequest
             'room' => $online ? null : trim((string) $this->input('room')),
             'comment' => $comment === '' ? null : $comment,
             'meeting_url' => $url === '' ? null : $url,
-            'repeat_weekly' => $repeat,
-            'repeat_until' => $repeat ? $this->input('repeat_until') : null,
+            'repeat' => match ($weeks) {
+                1 => '1',
+                2 => '2',
+                0 => 'none',
+                default => $this->input('repeat'),
+            },
+            'repeat_until' => $weeks > 0 ? $this->input('repeat_until') : null,
         ]);
+    }
+
+    public function repeatWeeks(): int
+    {
+        return match ((string) $this->input('repeat')) {
+            '1' => 1,
+            '2' => 2,
+            default => 0,
+        };
+    }
+
+    private function normalizeRepeatWeeks(): int
+    {
+        $repeat = $this->input('repeat');
+
+        if ($repeat === '2' || $repeat === 2) {
+            return 2;
+        }
+
+        if ($repeat === '1' || $repeat === 1) {
+            return 1;
+        }
+
+        if ($repeat === null || $repeat === '' || $repeat === 'none') {
+            return $this->boolean('repeat_weekly') ? 1 : 0;
+        }
+
+        return -1;
     }
 
     /**
@@ -59,8 +92,9 @@ class StoreSlotRequest extends FormRequest
             'meeting_url' => $online
                 ? ['required', 'string', 'max:500', 'regex:/^https?:\/\/\S+$/i']
                 : ['nullable', 'string', 'max:500', 'regex:/^https?:\/\/\S+$/i'],
+            'repeat' => ['required', Rule::in(['none', '1', '2'])],
             'repeat_weekly' => ['boolean'],
-            'repeat_until' => $this->boolean('repeat_weekly')
+            'repeat_until' => $this->repeatWeeks() > 0
                 ? ['required', 'regex:/^(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})$/']
                 : ['nullable'],
         ];
@@ -88,6 +122,8 @@ class StoreSlotRequest extends FormRequest
             'meeting_url.required' => 'Для онлайн-слота укажите ссылку http:// или https://.',
             'meeting_url.regex' => 'Ссылка должна быть адресом http:// или https:// без пробелов.',
             'meeting_url.max' => 'Ссылка не длиннее 500 символов.',
+            'repeat.required' => 'Выберите повтор: не повторять, каждую неделю или каждые 2 недели.',
+            'repeat.in' => 'Выберите повтор: не повторять, каждую неделю или каждые 2 недели.',
             'repeat_until.required' => 'Укажите дату окончания повтора.',
             'repeat_until.regex' => 'Укажите дату окончания повтора: такого дня нет.',
         ];
@@ -120,7 +156,7 @@ class StoreSlotRequest extends FormRequest
                 return;
             }
 
-            if ($this->boolean('repeat_weekly')) {
+            if ($this->repeatWeeks() > 0) {
                 $until = $this->strictDay((string) $this->input('repeat_until'));
 
                 if ($until === null) {
@@ -142,7 +178,7 @@ class StoreSlotRequest extends FormRequest
                 }
             }
 
-            if (! $this->boolean('repeat_weekly') && Slot::teacherHasOverlap($this->user()->teacherProfile->id, $starts, $ends)) {
+            if ($this->repeatWeeks() < 1 && Slot::teacherHasOverlap($this->user()->teacherProfile->id, $starts, $ends)) {
                 $validator->errors()->add('start_time', 'Это время пересекается с другим вашим слотом.');
             }
         });
@@ -150,7 +186,7 @@ class StoreSlotRequest extends FormRequest
 
     public function repeatUntil(): ?Carbon
     {
-        if (! $this->boolean('repeat_weekly')) {
+        if ($this->repeatWeeks() < 1) {
             return null;
         }
 

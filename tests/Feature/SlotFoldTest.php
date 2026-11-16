@@ -53,14 +53,15 @@ class SlotFoldTest extends ConsultationTestCase
             ->getContent();
 
         $this->assertFoldedDay($slots, '27.10.2026', [
-            'ауд. 314' => ['Изменить', 'Остановить повтор', 'впереди ещё 1 день', 'черновик курсовой'],
+            'ауд. 314' => ['Изменить', 'Остановить повтор', 'каждую неделю', 'впереди ещё 1 день', 'черновик курсовой'],
             'ауд. 220' => ['Изменить', 'Снять с публикации', 'разбор лабораторной'],
         ], false);
 
         $later = $this->cardHtml($this->dayHtml($slots, '03.11.2026'), 'ауд. 318');
         [$laterButton, $laterDetails] = $this->splitCard($later);
-        $this->assertStringContainsString('еженедельно', $laterDetails);
-        $this->assertStringNotContainsString('еженедельно', $laterButton);
+        $this->assertStringContainsString('каждую неделю', $laterDetails);
+        $this->assertStringNotContainsString('каждую неделю', $laterButton);
+        $this->assertStringNotContainsString('еженедельно', $laterDetails);
         $this->assertStringNotContainsString('впереди ещё', $laterButton);
 
         foreach ([$home, $slots] as $html) {

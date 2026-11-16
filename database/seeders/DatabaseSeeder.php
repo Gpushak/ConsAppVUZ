@@ -87,6 +87,7 @@ class DatabaseSeeder extends Seeder
                 'comment' => $comment,
                 'meeting_url' => $url,
                 'series_id' => $seriesId,
+                'series_weeks' => $seriesId === null ? null : 1,
                 'is_published' => true,
             ]);
         };

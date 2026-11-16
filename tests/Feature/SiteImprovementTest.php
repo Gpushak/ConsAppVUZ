@@ -51,12 +51,13 @@ class SiteImprovementTest extends ConsultationTestCase
         $nearestRow = $this->rowHtml($html, '27.10.2026');
         $this->assertStringContainsString('>Остановить повтор</a>', $nearestRow);
         $this->assertStringContainsString(route('teacher.slots.series.stop', $nearest), $nearestRow);
+        $this->assertStringContainsString('каждую неделю', $nearestRow);
         $this->assertStringNotContainsString('еженедельно', $nearestRow);
         $this->assertStringNotContainsString(route('teacher.slots.unpublish.confirm', $nearest), $nearestRow);
 
         foreach ($series->skip(1) as $slot) {
             $row = $this->rowHtml($html, $slot->dateLabel());
-            $this->assertStringContainsString('еженедельно', $row);
+            $this->assertStringContainsString('каждую неделю', $row);
             $this->assertStringNotContainsString('Остановить повтор', $row);
             $this->assertStringContainsString(route('teacher.slots.unpublish.confirm', $slot), $row);
         }

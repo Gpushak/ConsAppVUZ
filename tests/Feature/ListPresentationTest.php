@@ -39,18 +39,20 @@ class ListPresentationTest extends ConsultationTestCase
             ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Мои слоты')
-            ->assertSee('Показать завершённые')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
+            ->assertDontSee('ауд. 777')
+            ->assertDontSee('ауд. 909')
             ->assertDontSee('Слоты и записавшиеся')
             ->getContent();
 
-        $this->assertRowFinished($html, 'ауд. 777', true);
-        $this->assertRowFinished($html, 'ауд. 909', true);
         $this->assertRowFinished($html, 'ауд. 314', false);
         $this->assertRowFinished($html, 'ауд. 210', false);
         $this->assertStringContainsString('свободен', $html);
         $this->assertStringContainsString('отменён преподавателем', $html);
-        $this->assertStringContainsString('проведён', $html);
-        $this->assertStringContainsString('снят', $html);
+        $this->assertStringNotContainsString('проведён', $html);
+        $this->assertStringNotContainsString('снят', $html);
+        $this->assertStringNotContainsString('data-finished', $html);
         $this->assertStringNotContainsString('class="lead"', $html);
     }
 
@@ -171,16 +173,13 @@ class ListPresentationTest extends ConsultationTestCase
                 ->count(),
         );
 
-        $teacherPage = $this->actingAs($teacher)
+        $this->actingAs($teacher)
             ->get(route('teacher.slots.index'))
             ->assertOk()
-            ->assertSee('проведён')
+            ->assertDontSee('ауд. 777')
+            ->assertDontSee('проведён')
             ->assertDontSee('Записаться')
-            ->getContent();
-
-        $teacherRow = $this->rowHtml($teacherPage, 'ауд. 777');
-        $this->assertStringContainsString('проведён', $teacherRow);
-        $this->assertStringNotContainsString('Записаться', $teacherRow);
+            ->assertDontSee('Показать завершённые');
     }
 
     public function test_page_headings_drop_the_lead_and_confirm_warnings_stay(): void

@@ -6,9 +6,6 @@
   <div class="page-head">
     <h1>Мои слоты</h1>
     <div class="actions">
-      @if ($showFinishedToggle)
-        <button class="btn btn-ghost" type="button" data-finished-toggle aria-pressed="false">Показать завершённые</button>
-      @endif
       <a class="btn" href="{{ route('teacher.slots.create') }}">Новый слот</a>
     </div>
   </div>
@@ -24,7 +21,6 @@
         @forelse ($day['slots'] as $slot)
           @php
             $showStop = $stopSlotIds->contains($slot->id);
-            $showMark = $slot->series_id !== null && ! $showStop;
             if ($slot->canBeConducted()) {
                 $primary = 'conduct';
             } elseif ($slot->canBeEdited()) {
@@ -42,7 +38,7 @@
                 || ($showStop && $primary !== 'stop');
             $ahead = $seriesAhead->get($slot->id);
           @endphp
-          <article @class(['slot', 'done' => $slot->isFinished()]) data-slot-card @if ($slot->isFinished()) data-finished hidden @endif>
+          <article class="slot" data-slot-card>
             <button class="slot-toggle" type="button" aria-expanded="false" aria-controls="slot-details-{{ $slot->id }}">
               <span class="time">
                 <span class="slot-date-text">{{ $slot->dateLabel() }}</span>
@@ -51,10 +47,8 @@
               <span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span>
             </button>
             <div class="slot-details" id="slot-details-{{ $slot->id }}" hidden>
-              @if ($showMark)
-                <span class="series-mark">еженедельно@if ($ahead), {{ \App\Support\Ru::aheadDays($ahead) }}@endif</span>
-              @elseif ($ahead)
-                <span class="series-mark">{{ \App\Support\Ru::aheadDays($ahead) }}</span>
+              @if ($slot->series_id !== null)
+                <span class="series-mark">{{ $slot->seriesStepLabel() }}@if ($ahead), {{ \App\Support\Ru::aheadDays($ahead) }}@endif</span>
               @endif
               @include('partials.slot-place', ['slot' => $slot])
               @if ($slot->comment)

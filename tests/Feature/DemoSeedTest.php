@@ -105,8 +105,9 @@ class DemoSeedTest extends ConsultationTestCase
         $this->actingAs($ivanova)
             ->get(route('teacher.slots.index', $span))
             ->assertOk()
-            ->assertSee('Показать завершённые')
-            ->assertSee('еженедельно')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('проведён')
+            ->assertSee('series-mark">каждую неделю', false)
             ->assertSee('25.05.2027')
             ->assertSee('01.06.2027')
             ->assertSee('04.05.2027');

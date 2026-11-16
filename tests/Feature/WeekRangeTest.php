@@ -50,7 +50,7 @@ class WeekRangeTest extends ConsultationTestCase
     {
         [$teacher, $student] = $this->pair();
         $this->slotOn($teacher, '2026-10-20', '201');
-        $this->slotOn($teacher, '2026-10-24', '241');
+        $this->slotOn($teacher, '2026-10-25', '241', '15:00', '15:45');
 
         $query = ['from' => '2026-10-22', 'to' => '2026-10-25'];
 
@@ -67,7 +67,7 @@ class WeekRangeTest extends ConsultationTestCase
 
             $empty = $this->dayHtml($html, '23.10.2026');
             $this->assertStringContainsString('нет слотов', $empty);
-            $filled = $this->dayHtml($html, '24.10.2026');
+            $filled = $this->dayHtml($html, '25.10.2026');
             $this->assertStringContainsString('ауд. 241', $filled);
             $this->assertStringNotContainsString('нет слотов', $filled);
         }

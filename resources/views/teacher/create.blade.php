@@ -20,8 +20,16 @@
       return '';
   };
   $dateValue = $dateInput(old('date'));
-  $repeat = filter_var(old('repeat_weekly'), FILTER_VALIDATE_BOOLEAN);
+  $repeatWeeks = match (old('repeat')) {
+      '1', 1 => 1,
+      '2', 2 => 2,
+      'none' => 0,
+      default => filter_var(old('repeat_weekly'), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+  };
   $repeatUntilValue = $dateInput(old('repeat_until'));
+  $repeatLimit = \App\Support\Term::workEndsOn()->format('d.m.Y');
+  $repeatOnNote = 'Последний день серии, не позже '.$repeatLimit.'.';
+  $repeatOffNote = 'Учитывается, только если выбран повтор: «Каждую неделю» или «Каждые 2 недели». Не позже '.$repeatLimit.'.';
 
   $timeValue = function (string $key): string {
       $value = old($key);
@@ -38,7 +46,7 @@
     <h1>Новый слот</h1>
   </div>
   <div class="panel slot-panel">
-    @include('partials.errors', ['inlineErrors' => ['date', 'start_time', 'end_time', 'format', 'building', 'room', 'comment', 'meeting_url', 'repeat_until']])
+    @include('partials.errors', ['inlineErrors' => ['date', 'start_time', 'end_time', 'format', 'building', 'room', 'comment', 'meeting_url', 'repeat', 'repeat_until']])
     <form class="slot-form" method="POST" action="{{ route('teacher.slots.store') }}" data-slot-form>
       @csrf
       <div class="slot-fields">
@@ -82,17 +90,33 @@
         </div>
       </div>
       <div class="repeat-row">
-        <label class="choice" for="repeat_weekly">
-          <input id="repeat_weekly" type="checkbox" name="repeat_weekly" value="1" @checked($repeat)>
-          Повторять каждую неделю
-        </label>
+        <fieldset class="field format">
+          <legend>Повтор</legend>
+          <div class="choices">
+            <label class="choice" for="repeat_none">
+              <input id="repeat_none" type="radio" name="repeat" value="none" @checked($repeatWeeks === 0)>
+              Не повторять
+            </label>
+            <label class="choice" for="repeat_week">
+              <input id="repeat_week" type="radio" name="repeat" value="1" @checked($repeatWeeks === 1)>
+              Каждую неделю
+            </label>
+            <label class="choice" for="repeat_biweek">
+              <input id="repeat_biweek" type="radio" name="repeat" value="2" @checked($repeatWeeks === 2)>
+              Каждые 2 недели
+            </label>
+          </div>
+          @error('repeat')
+            <p class="error" id="repeat-error">{{ $message }}</p>
+          @enderror
+        </fieldset>
         <div class="field">
           <label for="repeat_until">Последний день повтора</label>
-          <input id="repeat_until" type="date" name="repeat_until" value="{{ $repeatUntilValue }}" max="{{ \App\Support\Term::WORK_ENDS_ON }}" @required($repeat) @if ($errors->has('repeat_until')) aria-invalid="true" aria-describedby="repeat_until-error" @endif>
+          <input id="repeat_until" type="date" name="repeat_until" value="{{ $repeatUntilValue }}" max="{{ \App\Support\Term::WORK_ENDS_ON }}" @required($repeatWeeks > 0) @if ($errors->has('repeat_until')) aria-invalid="true" aria-describedby="repeat_until-error" @endif>
           @error('repeat_until')
             <p class="error" id="repeat_until-error">{{ $message }}</p>
           @enderror
-          <p class="field-note" id="repeat-until-note" data-limit="{{ \App\Support\Term::workEndsOn()->format('d.m.Y') }}">{{ $repeat ? 'Последний день серии, не позже '.\App\Support\Term::workEndsOn()->format('d.m.Y').'.' : 'Учитывается, только если включено «Повторять каждую неделю». Не позже '.\App\Support\Term::workEndsOn()->format('d.m.Y').'.' }}</p>
+          <p class="field-note" id="repeat-until-note" data-limit="{{ $repeatLimit }}" data-on="{{ $repeatOnNote }}" data-off="{{ $repeatOffNote }}">{{ $repeatWeeks > 0 ? $repeatOnNote : $repeatOffNote }}</p>
         </div>
       </div>
       <div class="slot-place" data-in-person @if ($online) hidden @endif>
@@ -144,9 +168,14 @@
       var room = form.querySelector('#room');
       var url = form.querySelector('#meeting_url');
       var urlLabel = form.querySelector('label[for="meeting_url"]');
-      var repeat = form.querySelector('#repeat_weekly');
       var until = form.querySelector('#repeat_until');
       var untilNote = form.querySelector('#repeat-until-note');
+
+      function repeatChosen() {
+        var chosen = form.querySelector('input[name="repeat"]:checked');
+
+        return chosen && chosen.value !== 'none';
+      }
 
       function sync() {
         var online = form.querySelector('input[name="format"]:checked').value === 'online';
@@ -157,11 +186,9 @@
         room.required = !online;
         url.required = online;
         urlLabel.textContent = online ? 'Ссылка на встречу' : 'Ссылка на встречу, необязательно';
-        until.required = repeat.checked;
-        var limit = untilNote.getAttribute('data-limit');
-        untilNote.textContent = repeat.checked
-          ? 'Последний день серии, не позже ' + limit + '.'
-          : 'Учитывается, только если включено «Повторять каждую неделю». Не позже ' + limit + '.';
+        var repeating = repeatChosen();
+        until.required = repeating;
+        untilNote.textContent = repeating ? untilNote.getAttribute('data-on') : untilNote.getAttribute('data-off');
       }
 
       function missing(input, message) {
@@ -184,10 +211,9 @@
       missing(url, 'Для онлайн-слота укажите ссылку http:// или https://.');
       missing(until, 'Укажите дату окончания повтора.');
 
-      form.querySelectorAll('input[name="format"]').forEach(function (input) {
+      form.querySelectorAll('input[name="format"], input[name="repeat"]').forEach(function (input) {
         input.addEventListener('change', sync);
       });
-      repeat.addEventListener('change', sync);
       sync();
     })();
   </script>
