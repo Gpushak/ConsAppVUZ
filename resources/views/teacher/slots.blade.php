@@ -15,6 +15,9 @@
           @if ($nextSlot->canBeEdited())
             <a class="btn btn-small" href="{{ route('teacher.slots.edit', $nextSlot) }}">Изменить</a>
           @endif
+          @if ($nextSlot->canBeUnpublished())
+            <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $nextSlot) }}">Снять с публикации</a>
+          @endif
           @if ($nextSlot->series_id !== null)
             <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $nextSlot) }}">Остановить повтор</a>
           @endif
