@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Slot;
+use App\Models\TeacherProfile;
 use App\Services\BookingService;
 use App\Support\DateSpan;
+use App\Support\MonthGrid;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -35,6 +39,8 @@ class HomeController extends Controller
         $bookings->completeEndedSlots($favorites->pluck('id'));
 
         $span = DateSpan::fromQuery($request->query('from'), $request->query('to'));
+        $month = MonthGrid::parse($request->query('month'));
+        $selected = $this->selectedFavorite($favorites, $request->query('teacher'));
         $slots = collect();
 
         if ($favorites->isNotEmpty()) {
@@ -42,26 +48,77 @@ class HomeController extends Controller
                 ->with(['teacherProfile.user', 'bookings.studentProfile.user'])
                 ->whereIn('teacher_profile_id', $favorites->pluck('id'))
                 ->where('is_published', true)
-                ->whereNull('conducted_at')
-                ->where('starts_at', '>', now())
                 ->orderBy('starts_at')
-                ->get()
-                ->reject(fn (Slot $slot) => $slot->isFinished())
-                ->values();
+                ->orderBy('id')
+                ->get();
         }
 
+        $open = $slots
+            ->filter(fn (Slot $slot) => $slot->conducted_at === null && $slot->starts_at->isFuture())
+            ->values();
         $visible = $span->bounded
-            ? $slots->filter(fn (Slot $slot) => $span->contains($slot->starts_at))->values()
-            : $slots;
+            ? $open->filter(fn (Slot $slot) => $span->contains($slot->starts_at))->values()
+            : $open;
+        $scope = $selected === null ? $slots : $slots->where('teacher_profile_id', $selected->id);
+        $marked = [];
+
+        foreach ($scope as $slot) {
+            $marked[$slot->starts_at->copy()->timezone(DateSpan::TIMEZONE)->toDateString()] = true;
+        }
+
+        $nearest = $selected === null
+            ? null
+            : $open->first(fn (Slot $slot) => $slot->teacher_profile_id === $selected->id);
+        $teacherId = $selected?->id;
 
         return view('student.home', [
             'favorites' => $favorites,
             'student' => $student,
             'span' => $span,
             'days' => $span->buckets($visible),
-            'hasOpen' => $slots->isNotEmpty(),
-            'onlyFinished' => false,
-            'showFinishedToggle' => false,
+            'hasOpen' => $open->isNotEmpty(),
+            'selectedTeacher' => $selected,
+            'nearest' => $nearest,
+            'month' => $month,
+            'monthTitle' => MonthGrid::title($month),
+            'weeks' => MonthGrid::weeks($month, $marked),
+            'weekLinks' => [
+                'previous' => $this->homeQuery($span->previous(), $month, $teacherId),
+                'next' => $this->homeQuery($span->next(), $month, $teacherId),
+            ],
+            'monthLinks' => [
+                'previous' => $this->homeQuery($span, $month->copy()->subMonth(), $teacherId),
+                'next' => $this->homeQuery($span, $month->copy()->addMonth(), $teacherId),
+            ],
         ]);
+    }
+
+    /**
+     * @param  Collection<int, TeacherProfile>  $favorites
+     */
+    private function selectedFavorite(Collection $favorites, mixed $teacher): ?TeacherProfile
+    {
+        if (! is_string($teacher) || preg_match('/^[1-9]\d*$/', $teacher) !== 1) {
+            return null;
+        }
+
+        $match = $favorites->firstWhere('id', (int) $teacher);
+
+        return $match instanceof TeacherProfile ? $match : null;
+    }
+
+    /**
+     * @return array<string, int|string>
+     */
+    private function homeQuery(DateSpan $span, Carbon $month, ?int $teacherId): array
+    {
+        $query = $span->query();
+        $query['month'] = $month->copy()->timezone(DateSpan::TIMEZONE)->format('Y-m');
+
+        if ($teacherId !== null) {
+            $query['teacher'] = $teacherId;
+        }
+
+        return $query;
     }
 }

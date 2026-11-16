@@ -86,6 +86,7 @@ class DemoSeedTest extends ConsultationTestCase
         $home = $this->actingAs($sokolov)->get(route('home', $span))->assertOk();
         $home->assertDontSee('Показать завершённые')
             ->assertDontSee('Скрыть завершённые')
+            ->assertSee('04.05.2027')
             ->assertDontSee('>проведён<')
             ->assertSee('25.05.2027')
             ->assertSee('26.05.2027')

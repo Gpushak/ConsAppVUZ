@@ -363,8 +363,8 @@ class DailyUsePassTest extends ConsultationTestCase
             ->assertSee('Откройте преподавателей')
             ->assertSee(route('teachers.index'), false)
             ->assertDontSee('data-only-finished', false)
-            ->assertDontSee('Иванова А. С.')
             ->assertDontSee('ауд. 314')
+            ->assertSee('Иванова А. С.')
             ->getContent();
 
         $this->assertMatchesRegularExpression(

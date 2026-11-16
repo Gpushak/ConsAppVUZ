@@ -149,6 +149,7 @@ class ListPresentationTest extends ConsultationTestCase
         $this->assertStringContainsString('свободен', $openRow);
         $this->assertStringContainsString('>Записаться</a>', $openRow);
         $this->assertStringNotContainsString('проведён', $home);
+        $this->assertStringNotContainsString('уже нельзя записаться', $home);
         $this->assertStringNotContainsString('data-finished', $home);
 
         $this->actingAs($student)
