@@ -77,6 +77,86 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
         $this->assertMatchesRegularExpression('/<tr\b[^>]*data-nomatch(?![^>]*hidden)[^>]*>\s*<td[^>]*>Нет совпадений<\/td>/', $empty);
     }
 
+    public function test_admin_search_finds_a_user_by_surname_and_by_initials(): void
+    {
+        $admin = $this->adminUser();
+        $sokolov = $this->studentUser('Соколов Илья');
+        $ivanova = $this->teacherUser('Иванова А. С.');
+        $this->teacherUser('Фёдоров П. А.');
+
+        $everyone = $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('value=""', false)
+            ->getContent();
+        $this->assertRowVisible($everyone, 'Соколов Илья');
+        $this->assertRowVisible($everyone, 'Иванова А. С.');
+        $this->assertRowVisible($everyone, 'Фёдоров П. А.');
+        $this->assertStringContainsString('>Заблокировать</a>', $this->row($everyone, 'Соколов Илья'));
+        $this->assertStringContainsString(route('admin.users.password.confirm', $ivanova), $this->row($everyone, 'Иванова А. С.'));
+        $this->assertMatchesRegularExpression('/<tr\b[^>]*data-nomatch[^>]*hidden/', $everyone);
+
+        $bySurname = $this->actingAs($admin)
+            ->get(route('admin.users.index', ['q' => 'Соколов']))
+            ->assertOk()
+            ->assertSee('value="Соколов"', false)
+            ->getContent();
+        $this->assertRowVisible($bySurname, 'Соколов Илья');
+        $this->assertRowHidden($bySurname, 'Иванова А. С.');
+        $this->assertRowHidden($bySurname, 'Фёдоров П. А.');
+        $this->assertStringContainsString(route('admin.users.block.confirm', $sokolov), $this->row($bySurname, 'Соколов Илья'));
+        $this->assertStringContainsString(route('admin.users.password.confirm', $sokolov), $this->row($bySurname, 'Соколов Илья'));
+        $this->assertStringContainsString('>Заблокировать</a>', $this->row($bySurname, 'Соколов Илья'));
+        $this->assertStringContainsString('>Новый пароль</a>', $this->row($bySurname, 'Соколов Илья'));
+
+        $byInitials = $this->actingAs($admin)
+            ->get(route('admin.users.index', ['q' => 'Иванова А.С.']))
+            ->assertOk()
+            ->assertSee('value="Иванова А.С."', false)
+            ->getContent();
+        $this->assertRowVisible($byInitials, 'Иванова А. С.');
+        $this->assertRowHidden($byInitials, 'Соколов Илья');
+        $this->assertStringContainsString(route('admin.users.block.confirm', $ivanova), $this->row($byInitials, 'Иванова А. С.'));
+        $this->assertStringContainsString(route('admin.users.password.confirm', $ivanova), $this->row($byInitials, 'Иванова А. С.'));
+        $this->assertStringContainsString(
+            'data-search="'.SearchText::fold('Иванова А. С.').'"',
+            $byInitials,
+        );
+
+        $withComma = $this->actingAs($admin)
+            ->get(route('admin.users.index', ['q' => 'соколов, илья']))
+            ->assertOk()
+            ->getContent();
+        $this->assertRowVisible($withComma, 'Соколов Илья');
+        $this->assertRowHidden($withComma, 'Иванова А. С.');
+
+        $folded = $this->actingAs($admin)
+            ->get(route('admin.users.index', ['q' => 'федоров']))
+            ->assertOk()
+            ->getContent();
+        $this->assertRowVisible($folded, 'Фёдоров П. А.');
+        $this->assertRowHidden($folded, 'Соколов Илья');
+
+        $empty = $this->actingAs($admin)
+            ->get(route('admin.users.index', ['q' => 'нет такого']))
+            ->assertOk()
+            ->getContent();
+        $this->assertRowHidden($empty, 'Соколов Илья');
+        $this->assertRowHidden($empty, 'Иванова А. С.');
+        $this->assertMatchesRegularExpression('/<tr\b[^>]*data-nomatch(?![^>]*hidden)[^>]*>\s*<td[^>]*>Нет совпадений<\/td>/', $empty);
+
+        $css = file_get_contents(public_path('css/app.css'));
+        $this->assertIsString($css);
+        $this->assertMatchesRegularExpression(
+            '/\.directory-search input\s*\{[^}]*max-width:\s*100%;[^}]*min-width:\s*0/s',
+            $css,
+        );
+        $script = file_get_contents(public_path('js/tables.js'));
+        $this->assertIsString($script);
+        $this->assertStringContainsString('data-user-search', $script);
+        $this->assertStringContainsString('data-user-directory', $script);
+    }
+
     public function test_favorite_row_says_whether_the_teacher_is_saved(): void
     {
         $student = $this->studentUser('Соколов Илья');

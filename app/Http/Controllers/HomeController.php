@@ -42,14 +42,12 @@ class HomeController extends Controller
                 ->with(['teacherProfile.user', 'bookings.studentProfile.user'])
                 ->whereIn('teacher_profile_id', $favorites->pluck('id'))
                 ->where('is_published', true)
-                ->where(function ($query) {
-                    $query->where(function ($upcoming) {
-                        $upcoming->whereNull('conducted_at')
-                            ->where('starts_at', '>', now());
-                    })->orWhereNotNull('conducted_at');
-                })
+                ->whereNull('conducted_at')
+                ->where('starts_at', '>', now())
                 ->orderBy('starts_at')
-                ->get();
+                ->get()
+                ->reject(fn (Slot $slot) => $slot->isFinished())
+                ->values();
         }
 
         $visible = $span->bounded
@@ -61,9 +59,9 @@ class HomeController extends Controller
             'student' => $student,
             'span' => $span,
             'days' => $span->buckets($visible),
-            'hasOpen' => $slots->contains(fn (Slot $slot) => ! $slot->isFinished()),
-            'onlyFinished' => ! $slots->contains(fn (Slot $slot) => ! $slot->isFinished()) && $visible->isNotEmpty(),
-            'showFinishedToggle' => $visible->contains(fn (Slot $slot) => $slot->isFinished()),
+            'hasOpen' => $slots->isNotEmpty(),
+            'onlyFinished' => false,
+            'showFinishedToggle' => false,
         ]);
     }
 }

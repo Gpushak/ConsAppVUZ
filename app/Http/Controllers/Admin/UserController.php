@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTeacherRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\SearchText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class UserController extends Controller
     {
         $this->authorize('manage', User::class);
 
+        $query = (string) $request->query('q', '');
         $collator = new \Collator('ru_RU');
         $users = User::query()
             ->with(['role', 'studentProfile', 'teacherProfile'])
@@ -32,10 +34,16 @@ class UserController extends Controller
 
                 return $collator->compare($left->name, $right->name) ?: 0;
             })
+            ->each(function (User $user) use ($query) {
+                $user->setAttribute('search_text', SearchText::fold($user->name));
+                $user->setAttribute('search_match', SearchText::matches($user->name, $query));
+            })
             ->values();
 
         return view('admin.users', [
             'users' => $users,
+            'query' => $query,
+            'searchHasMatch' => $users->contains(fn (User $user) => (bool) $user->search_match),
         ]);
     }
 

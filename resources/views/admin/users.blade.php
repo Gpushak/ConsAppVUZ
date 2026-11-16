@@ -18,8 +18,12 @@
     <h1>Пользователи</h1>
   </div>
   @include('partials.errors', ['inlineErrors' => $inlineErrors])
+  <form class="field directory-search" method="GET" action="{{ route('admin.users.index') }}">
+    <label for="user-search">Поиск</label>
+    <input id="user-search" type="search" name="q" value="{{ $query }}" placeholder="ФИО" data-user-search autocomplete="off">
+  </form>
   <div class="table-wrap person-cards admin-users">
-    <table class="data-table">
+    <table class="data-table" data-user-directory>
       <thead>
         <tr>
           <th>ФИО</th>
@@ -32,7 +36,7 @@
       </thead>
       <tbody>
         @foreach ($users as $user)
-          <tr class="person-card" id="user-{{ $user->id }}">
+          <tr class="person-card" id="user-{{ $user->id }}" data-search="{{ $user->search_text }}" @unless ($user->search_match) hidden @endunless>
             <td class="person-name">{{ $user->name }}</td>
             <td class="person-mail"><span class="cell-label">Почта</span>{{ $user->email }}</td>
             <td class="person-role"><span class="cell-label">Роль</span>{{ $user->role->name }}</td>
@@ -96,6 +100,11 @@
             </td>
           </tr>
         @endforeach
+        @if ($users->isNotEmpty())
+          <tr data-static data-nomatch @if ($searchHasMatch) hidden @endif>
+            <td colspan="6" class="muted">Нет совпадений</td>
+          </tr>
+        @endif
       </tbody>
     </table>
   </div>

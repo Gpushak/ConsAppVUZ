@@ -39,18 +39,20 @@ class ListPresentationTest extends ConsultationTestCase
             ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Мои слоты')
-            ->assertSee('Показать завершённые')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
+            ->assertDontSee('ауд. 777')
+            ->assertDontSee('ауд. 909')
             ->assertDontSee('Слоты и записавшиеся')
             ->getContent();
 
-        $this->assertRowFinished($html, 'ауд. 777', true);
-        $this->assertRowFinished($html, 'ауд. 909', true);
         $this->assertRowFinished($html, 'ауд. 314', false);
         $this->assertRowFinished($html, 'ауд. 210', false);
         $this->assertStringContainsString('свободен', $html);
         $this->assertStringContainsString('отменён преподавателем', $html);
-        $this->assertStringContainsString('проведён', $html);
-        $this->assertStringContainsString('снят', $html);
+        $this->assertStringNotContainsString('>проведён<', $html);
+        $this->assertStringNotContainsString('>снят<', $html);
+        $this->assertStringNotContainsString('data-finished', $html);
         $this->assertStringNotContainsString('class="lead"', $html);
     }
 
@@ -90,15 +92,16 @@ class ListPresentationTest extends ConsultationTestCase
             ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Слоты избранных')
-            ->assertSee('Показать завершённые')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
             ->assertSee('ауд. 314')
-            ->assertSee('ауд. 777')
+            ->assertDontSee('ауд. 777')
             ->assertDontSee('ауд. 909')
             ->assertDontSee('Предстоящие консультации')
             ->getContent();
 
-        $this->assertRowFinished($home, 'ауд. 777', true);
         $this->assertRowFinished($home, 'ауд. 314', false);
+        $this->assertStringNotContainsString('data-finished', $home);
         $this->assertStringNotContainsString('ауд. 210', $home);
 
         $bookings = $this->actingAs($student)
@@ -137,17 +140,16 @@ class ListPresentationTest extends ConsultationTestCase
         $home = $this->actingAs($student)
             ->get(route('home', $this->listedSpan()))
             ->assertOk()
+            ->assertDontSee('ауд. 777')
+            ->assertDontSee('Показать завершённые')
             ->getContent();
 
         $openRow = $this->rowHtml($home, 'ауд. 314');
-        $conductedRow = $this->rowHtml($home, 'ауд. 777');
 
         $this->assertStringContainsString('свободен', $openRow);
         $this->assertStringContainsString('>Записаться</a>', $openRow);
-        $this->assertStringContainsString('проведён', $conductedRow);
-        $this->assertStringNotContainsString('Записаться', $conductedRow);
-        $this->assertStringNotContainsString('disabled', $conductedRow);
-        $this->assertStringNotContainsString('уже нельзя записаться', $conductedRow);
+        $this->assertStringNotContainsString('проведён', $home);
+        $this->assertStringNotContainsString('data-finished', $home);
 
         $this->actingAs($student)
             ->get(route('bookings.create', $open))
@@ -171,16 +173,67 @@ class ListPresentationTest extends ConsultationTestCase
                 ->count(),
         );
 
-        $teacherPage = $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+        $this->actingAs($teacher)
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
-            ->assertSee('проведён')
-            ->assertDontSee('Записаться')
-            ->getContent();
+            ->assertDontSee('ауд. 777')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('>проведён<')
+            ->assertDontSee('Записаться');
+    }
 
-        $teacherRow = $this->rowHtml($teacherPage, 'ауд. 777');
-        $this->assertStringContainsString('проведён', $teacherRow);
-        $this->assertStringNotContainsString('Записаться', $teacherRow);
+    public function test_finished_slot_is_absent_outside_my_bookings_and_the_toggle_stays_there(): void
+    {
+        $teacher = $this->teacherUser('Иванова А. С.');
+        $student = $this->studentUser('Соколов Илья');
+        $student->studentProfile->favoriteTeachers()->attach($teacher->teacherProfile->id);
+
+        $open = $this->futureSlot($teacher, '10:00', '10:45', 'Главный А', '314');
+        Booking::query()->create([
+            'slot_id' => $open->id,
+            'student_profile_id' => $student->studentProfile->id,
+            'status' => Booking::BOOKED,
+        ]);
+        $done = $this->pastSlot($teacher, '777');
+        $done->update(['conducted_at' => now()->subHour()]);
+        Booking::query()->create([
+            'slot_id' => $done->id,
+            'student_profile_id' => $student->studentProfile->id,
+            'status' => Booking::COMPLETED,
+            'completed_at' => now()->subHour(),
+        ]);
+        $removed = $this->futureSlot($teacher, '16:00', '16:45', 'Главный А', '909');
+        $removed->update(['is_published' => false]);
+
+        $teacherPage = $this->actingAs($teacher)
+            ->get(route('teacher.slots.index', $this->listedSpan()))
+            ->assertOk()
+            ->assertSee('ауд. 314')
+            ->assertDontSee('ауд. 777')
+            ->assertDontSee('ауд. 909')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
+            ->getContent();
+        $this->assertStringNotContainsString('data-finished', $teacherPage);
+
+        $home = $this->actingAs($student)
+            ->get(route('home', $this->listedSpan()))
+            ->assertOk()
+            ->assertSee('ауд. 314')
+            ->assertDontSee('ауд. 777')
+            ->assertDontSee('Показать завершённые')
+            ->getContent();
+        $this->assertStringNotContainsString('data-finished', $home);
+
+        $bookings = $this->actingAs($student)
+            ->get(route('bookings.index'))
+            ->assertOk()
+            ->assertSee('Мои записи')
+            ->assertSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
+            ->getContent();
+        $this->assertRowFinished($bookings, 'ауд. 777', true);
+        $this->assertRowFinished($bookings, 'ауд. 314', false);
     }
 
     public function test_page_headings_drop_the_lead_and_confirm_warnings_stay(): void
