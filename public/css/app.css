@@ -811,13 +811,26 @@ td.place {
   border-radius: 14px;
 }
 
-.near h2,
+.near-head,
 .near-main {
   grid-column: 1;
 }
 
-.near h2 {
+.near-head {
   grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.near-head h2 {
+  min-width: 0;
+}
+
+.near-dow {
+  color: var(--muted);
+  font-weight: 650;
 }
 
 .near-main {
@@ -871,9 +884,45 @@ td.place {
   margin: 8px 0 0;
 }
 
+.nearest .actions {
+  margin-top: 10px;
+}
+
 .nearest-empty {
   margin: 12px 0 0;
   color: var(--muted);
+}
+
+.near-day {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.day-row {
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--head);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+
+.day-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.day-row-who {
+  margin: 4px 0 0;
+  font-weight: 650;
+}
+
+.day-row .actions {
+  margin-top: 8px;
 }
 
 .cal-nav {
@@ -941,28 +990,52 @@ td.place {
   color: var(--ink);
 }
 
-.cal-day span {
+.cal-day span,
+.cal-day a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
   border-radius: 50%;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
 }
 
-.cal-day.out span {
+.cal-day.out span,
+.cal-day.out a {
   color: #9aa3ab;
 }
 
-.cal-day.today span {
+.cal-day.today span,
+.cal-day.today a {
   box-shadow: inset 0 0 0 1px var(--blue);
 }
 
-.cal-day.marked span {
+.cal-day.marked span,
+.cal-day.marked a {
   background: var(--blue);
   color: #fff;
   font-weight: 700;
   box-shadow: none;
+}
+
+.cal-day.marked.chosen a {
+  box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--blue);
+}
+
+.cal-day a:hover {
+  text-decoration: none;
+}
+
+.cal-day.marked a:hover {
+  background: var(--blue-dark);
+}
+
+.cal-day a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .week-range {
@@ -1186,7 +1259,7 @@ td.place {
 
 @media (max-width: 900px) {
   .near,
-  .near h2,
+  .near-head,
   .near-main,
   .near-cal {
     grid-column: auto;
