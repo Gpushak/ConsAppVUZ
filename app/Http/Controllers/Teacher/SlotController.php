@@ -67,17 +67,18 @@ class SlotController extends Controller
                 return [$nearest->id => $later];
             });
 
+        $listed = $slots->reject(fn (Slot $slot) => $slot->isFinished())->values();
         $visible = $span->bounded
-            ? $slots->filter(fn (Slot $slot) => $span->contains($slot->starts_at))->values()
-            : $slots;
+            ? $listed->filter(fn (Slot $slot) => $span->contains($slot->starts_at))->values()
+            : $listed;
 
         return view('teacher.slots', [
-            'slots' => $slots,
+            'slots' => $listed,
             'days' => $span->buckets($visible),
             'span' => $span,
             'stopSlotIds' => $stopSlotIds,
             'seriesAhead' => $seriesAhead,
-            'showFinishedToggle' => $visible->contains(fn (Slot $slot) => $slot->isFinished()),
+            'showFinishedToggle' => false,
         ]);
     }
 

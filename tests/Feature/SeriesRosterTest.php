@@ -220,7 +220,11 @@ class SeriesRosterTest extends ConsultationTestCase
         $html = $this->actingAs($teacher)
             ->get(route('teacher.slots.index'))
             ->assertOk()
-            ->assertSee('Показать завершённые')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
+            ->assertDontSee('ауд. 401')
+            ->assertDontSee('ауд. 402')
+            ->assertDontSee('ауд. 403')
             ->getContent();
 
         $this->assertNull($inProgress->refresh()->conducted_at);
@@ -234,8 +238,7 @@ class SeriesRosterTest extends ConsultationTestCase
         $this->assertTrue($empty->refresh()->conducted_at->equalTo($empty->ends_at));
         $this->assertSame(0, $empty->bookings()->count());
         $this->assertNull($hidden->refresh()->conducted_at);
-        $this->assertStringContainsString('data-finished', $this->rowHtml($html, 'ауд. 402'));
-        $this->assertStringContainsString('проведён', $this->rowHtml($html, 'ауд. 402'));
+        $this->assertStringNotContainsString('data-finished', $html);
 
         $this->actingAs($teacher)
             ->post(route('teacher.slots.conduct.store', $inProgress))

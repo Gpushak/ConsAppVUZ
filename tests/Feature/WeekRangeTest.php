@@ -51,6 +51,7 @@ class WeekRangeTest extends ConsultationTestCase
         [$teacher, $student] = $this->pair();
         $this->slotOn($teacher, '2026-10-20', '201');
         $this->slotOn($teacher, '2026-10-24', '241');
+        $this->slotOn($teacher, '2026-10-25', '251', '12:00', '12:45');
 
         $query = ['from' => '2026-10-22', 'to' => '2026-10-25'];
 
@@ -60,15 +61,20 @@ class WeekRangeTest extends ConsultationTestCase
                 ->assertOk()
                 ->assertSee('value="2026-10-22"', false)
                 ->assertSee('value="2026-10-25"', false)
-                ->assertSee('ауд. 241')
+                ->assertSee('ауд. 251')
+                ->assertDontSee('ауд. 241')
                 ->assertDontSee('ауд. 201')
+                ->assertDontSee('Показать завершённые')
                 ->assertDontSee(DateSpan::ORDER_ERROR)
                 ->getContent();
 
             $empty = $this->dayHtml($html, '23.10.2026');
             $this->assertStringContainsString('нет слотов', $empty);
-            $filled = $this->dayHtml($html, '24.10.2026');
-            $this->assertStringContainsString('ауд. 241', $filled);
+            $finishedDay = $this->dayHtml($html, '24.10.2026');
+            $this->assertStringContainsString('нет слотов', $finishedDay);
+            $this->assertStringNotContainsString('ауд. 241', $finishedDay);
+            $filled = $this->dayHtml($html, '25.10.2026');
+            $this->assertStringContainsString('ауд. 251', $filled);
             $this->assertStringNotContainsString('нет слотов', $filled);
         }
     }

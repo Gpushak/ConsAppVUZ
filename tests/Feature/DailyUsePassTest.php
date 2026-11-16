@@ -358,17 +358,19 @@ class DailyUsePassTest extends ConsultationTestCase
             ->get(route('home'))
             ->assertOk()
             ->assertSee('Свободных слотов нет')
-            ->assertSee('Показать завершённые')
-            ->assertSee('откройте преподавателей')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
+            ->assertSee('Откройте преподавателей')
             ->assertSee(route('teachers.index'), false)
+            ->assertDontSee('data-only-finished', false)
+            ->assertDontSee('Иванова А. С.')
+            ->assertDontSee('ауд. 314')
             ->getContent();
 
         $this->assertMatchesRegularExpression(
-            '/Свободных слотов нет\.\s*Нажмите «Показать завершённые» или <a href="[^"]*">откройте преподавателей<\/a>\./',
+            '/Свободных слотов нет\.\s*<a href="[^"]*">Откройте преподавателей<\/a>, чтобы выбрать, чьи слоты смотреть\./',
             $finished,
         );
-        $this->assertMatchesRegularExpression('/<div\s+data-only-finished\s+hidden\s*>/', $finished);
-        $this->assertStringContainsString('Иванова А. С.', $finished);
     }
 
     public function test_phone_lists_are_cards_without_a_wide_table(): void
