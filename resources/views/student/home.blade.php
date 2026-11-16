@@ -14,7 +14,7 @@
     $visible = $favorites->filter(fn ($teacher) => ($slotsByTeacher[$teacher->id] ?? collect())->isNotEmpty());
   @endphp
   @if ($favorites->isEmpty())
-    <p class="notice">Избранных преподавателей нет</p>
+    <p class="notice">Избранных преподавателей нет. <a href="{{ route('teachers.index') }}">Откройте преподавателей</a> и отметьте, чьи слоты смотреть.</p>
   @elseif ($visible->isEmpty())
     <p class="notice">Свободных слотов нет</p>
   @else

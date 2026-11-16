@@ -7,10 +7,10 @@
     <h1>Записавшиеся</h1>
   </div>
   <p class="meta">{{ $slot->dateLabel() }}, {{ $slot->timeRange() }}</p>
-  <p class="place">@include('partials.slot-place', ['slot' => $slot])</p>
+  <div class="place">@include('partials.slot-place', ['slot' => $slot])</div>
   @include('partials.errors')
   @if ($signups->isEmpty())
-    <p class="notice">Записей пока нет</p>
+    <p class="notice">На этот слот ещё никто не записался.</p>
   @else
     <div class="table-wrap">
       <table class="data-table">

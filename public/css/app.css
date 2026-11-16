@@ -664,8 +664,27 @@ td.slot-actions .actions + .actions {
 
 td.place {
   white-space: normal;
-  min-width: 10rem;
-  max-width: 18rem;
+  min-width: 14rem;
+  max-width: 36rem;
+}
+
+.where-line {
+  margin: 0;
+}
+
+.where-line + .where-line {
+  margin-top: 6px;
+}
+
+.where-label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.where .place-link {
+  font-weight: 650;
 }
 
 .place-link {
@@ -840,12 +859,14 @@ td.place {
   }
 
   .table-wrap.slot-cards {
-    overflow-x: visible;
+    overflow-x: clip;
     background: transparent;
     border: 0;
+    max-width: 100%;
   }
 
   .slot-cards table.slot-table {
+    display: block;
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -859,78 +880,41 @@ td.place {
   .slot-cards .slot-table tbody {
     display: block;
     width: 100%;
+    max-width: 100%;
   }
 
   .slot-cards tr.slot-row {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 4px 8px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     margin: 0 0 12px;
     padding: 12px;
     background: var(--paper);
     border: 1px solid var(--line);
+    overflow-x: clip;
   }
 
   .slot-cards tr.slot-row > td {
     display: block;
-    width: auto;
+    width: 100%;
     min-width: 0;
-    max-width: none;
+    max-width: 100%;
     padding: 0;
     border: 0;
     white-space: normal;
   }
 
   .slot-cards tr.slot-row > td.slot-date,
-  .slot-cards tr.slot-row > td.slot-time {
-    flex: 0 0 auto;
-    order: 1;
-    font-weight: 650;
-  }
-
-  .slot-cards tr.slot-row > td.slot-time {
-    order: 2;
-  }
-
+  .slot-cards tr.slot-row > td.slot-time,
   .slot-cards tr.slot-row > td.slot-when {
-    flex: 1 0 100%;
-    order: 1;
     font-weight: 650;
   }
 
-  .slot-cards tr.slot-row > td.place {
-    flex: 1 0 100%;
-    order: 3;
-  }
-
-  .slot-cards tr.slot-row > td.slot-status {
-    flex: 1 0 100%;
-    order: 4;
-  }
-
-  .slot-cards tr.slot-row > td.people {
-    flex: 1 0 100%;
-    order: 5;
-  }
-
-  .slot-cards tr.slot-row > td.slot-actions {
-    display: contents;
-  }
-
-  .slot-cards tr.slot-row .slot-primary,
-  .slot-cards tr.slot-row .slot-more,
   .slot-cards tr.slot-row > td.slot-comment {
-    flex: 1 0 100%;
-    min-width: 0;
-  }
-
-  .slot-cards tr.slot-row .slot-primary {
-    order: 6;
-  }
-
-  .slot-cards tr.slot-row > td.slot-comment {
-    order: 7;
     margin-top: 4px;
     padding-top: 8px;
     border-top: 1px solid var(--line);
@@ -940,15 +924,29 @@ td.place {
     display: none;
   }
 
+  .slot-cards tr.slot-row .slot-primary,
   .slot-cards tr.slot-row .slot-more {
-    order: 8;
-    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .slot-cards tr.slot-row .slot-more {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 8px;
     padding-top: 8px;
     border-top: 1px solid var(--line);
   }
 
   .slot-cards .btn {
     white-space: normal;
+    max-width: 100%;
   }
 
   .slot-cards tr[data-static],

@@ -4,11 +4,16 @@
   $withActions = $withActions ?? false;
   $open = $open ?? false;
   $inline = $inline ?? false;
+  $asCell = $asCell ?? true;
   $groups = $slot->groupedBookings($activeOnly);
   $count = $activeOnly ? $slot->activeBookingsCount() : $slot->bookings->count();
   $label = $count === 0 ? 'нет записей' : \App\Support\Ru::students($count);
 @endphp
+@if ($asCell)
 <td class="people">
+@else
+<div class="people">
+@endif
   @if ($inline)
     @if ($count === 0)
       <span class="muted">нет записей</span>
@@ -39,4 +44,8 @@
   @else
     <a @class(['signup-link', 'muted' => $count === 0]) href="{{ route('slots.roster', $slot) }}">{{ $label }}</a>
   @endif
+@if ($asCell)
 </td>
+@else
+</div>
+@endif

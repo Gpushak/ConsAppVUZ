@@ -1,6 +1,12 @@
-@if ($errors->any())
+@php
+  $inline = collect(isset($inlineErrors) ? $inlineErrors : []);
+  $banner = collect($errors->getMessages())
+      ->reject(fn ($messages, $key) => $inline->contains($key))
+      ->flatten();
+@endphp
+@if ($banner->isNotEmpty())
   <div class="notice error">
-    @foreach ($errors->all() as $error)
+    @foreach ($banner as $error)
       <div>{{ $error }}</div>
     @endforeach
   </div>
