@@ -175,12 +175,14 @@ class BookingService
      * @param  array<string, mixed>  $attributes
      * @return array{created: Collection<int, Slot>, skipped: int}
      */
-    public function publish(TeacherProfile $teacher, array $attributes, ?Carbon $repeatUntil): array
+    public function publish(TeacherProfile $teacher, array $attributes, ?Carbon $repeatUntil, int $everyWeeks = 1): array
     {
-        return DB::transaction(function () use ($teacher, $attributes, $repeatUntil) {
+        return DB::transaction(function () use ($teacher, $attributes, $repeatUntil, $everyWeeks) {
             TeacherProfile::query()->whereKey($teacher->id)->lockForUpdate()->first();
 
-            $seriesId = $repeatUntil === null ? null : (string) Str::uuid();
+            $series = $repeatUntil !== null;
+            $everyWeeks = $series && $everyWeeks === 2 ? 2 : 1;
+            $seriesId = $series ? (string) Str::uuid() : null;
             $startClock = $attributes['starts_at']->format('H:i:s');
             $endClock = $attributes['ends_at']->format('H:i:s');
             $cursor = $attributes['starts_at']->copy()->startOfDay();
@@ -201,6 +203,7 @@ class BookingService
                     $created->push(Slot::query()->create([
                         'teacher_profile_id' => $teacher->id,
                         'series_id' => $seriesId,
+                        'series_weeks' => $series ? $everyWeeks : null,
                         'starts_at' => $starts,
                         'ends_at' => $ends,
                         'building' => $attributes['building'],
@@ -211,11 +214,11 @@ class BookingService
                     ]));
                 }
 
-                if ($repeatUntil === null) {
+                if (! $series) {
                     break;
                 }
 
-                $cursor->addWeek();
+                $cursor->addDays(7 * $everyWeeks);
             }
 
             if ($created->isEmpty()) {

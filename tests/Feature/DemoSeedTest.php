@@ -110,7 +110,7 @@ class DemoSeedTest extends ConsultationTestCase
             ->assertDontSee('Показать завершённые')
             ->assertDontSee('Скрыть завершённые')
             ->assertDontSee('>проведён<')
-            ->assertSee('еженедельно')
+            ->assertSee('series-mark">каждую неделю', false)
             ->assertSee('25.05.2027')
             ->assertSee('01.06.2027');
 

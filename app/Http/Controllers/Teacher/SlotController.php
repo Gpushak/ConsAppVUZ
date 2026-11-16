@@ -78,7 +78,6 @@ class SlotController extends Controller
             'span' => $span,
             'stopSlotIds' => $stopSlotIds,
             'seriesAhead' => $seriesAhead,
-            'showFinishedToggle' => false,
         ]);
     }
 
@@ -108,6 +107,7 @@ class SlotController extends Controller
             $request->user()->teacherProfile,
             $request->slotAttributes(),
             $request->repeatUntil(),
+            $request->repeatWeeks(),
         );
 
         $count = $result['created']->count();

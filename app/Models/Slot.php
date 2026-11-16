@@ -13,6 +13,7 @@ use Illuminate\Support\Collection;
 #[Fillable([
     'teacher_profile_id',
     'series_id',
+    'series_weeks',
     'starts_at',
     'ends_at',
     'building',
@@ -31,6 +32,7 @@ class Slot extends Model
             'ends_at' => 'datetime',
             'conducted_at' => 'datetime',
             'is_published' => 'boolean',
+            'series_weeks' => 'integer',
         ];
     }
 
@@ -161,8 +163,17 @@ class Slot extends Model
         return $this->activeBookingsCount() > 0;
     }
 
+    public function seriesStepLabel(): ?string
+    {
+        if ($this->series_id === null) {
+            return null;
+        }
+
+        return (int) $this->series_weeks === 2 ? 'каждые 2 недели' : 'каждую неделю';
+    }
+
     /**
-     * Later days of this weekly series that are still ahead and not conducted.
+     * Later days of this series that are still ahead and not conducted.
      *
      * @return Builder<Slot>
      */
