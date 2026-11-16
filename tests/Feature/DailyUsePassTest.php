@@ -466,7 +466,9 @@ class DailyUsePassTest extends ConsultationTestCase
             ->getContent();
         $this->assertSame(1, substr_count($roster, '<table'));
         $rosterCard = $this->cardHtml($roster, 'roster-card', 'Соколов Илья');
-        $this->assertStringContainsString('class="roster-group">ПИ-21', $rosterCard);
+        $this->assertStringContainsString('class="roster-group"', $rosterCard);
+        $this->assertStringContainsString('>Группа<', $rosterCard);
+        $this->assertStringContainsString('ПИ-21', $rosterCard);
         $this->assertStringContainsString('class="roster-name"', $rosterCard);
         $this->assertStringContainsString('Соколов Илья', $rosterCard);
         $this->assertStringContainsString('class="roster-status"', $rosterCard);

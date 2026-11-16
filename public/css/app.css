@@ -1007,6 +1007,11 @@ td.place {
   }
 }
 
+.booking-cards .cell-label,
+.roster-cards .cell-label {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .top {
     align-items: flex-start;
@@ -1431,8 +1436,19 @@ td.place {
     overflow-wrap: anywhere;
   }
 
-  .booking-cards tr.booking-card > td.booking-extra {
-    display: none;
+  .booking-cards tr.booking-card > td.booking-who,
+  .booking-cards tr.booking-card > td.booking-note {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .booking-cards .cell-label,
+  .roster-cards .cell-label {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 650;
   }
 
   .booking-cards tr.booking-card > td.booking-date,
@@ -1455,6 +1471,13 @@ td.place {
     white-space: normal;
   }
 
+  .booking-cards .booking-primary .btn.btn-quiet,
+  .roster-cards .roster-actions .btn.btn-quiet {
+    width: auto;
+    max-width: 100%;
+    align-self: flex-start;
+  }
+
   .booking-cards .where,
   .booking-cards .where-line,
   .booking-cards td.place {
@@ -1471,6 +1494,113 @@ td.place {
     overflow-wrap: anywhere;
     word-break: break-all;
     white-space: normal;
+  }
+
+  .confirm-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .confirm-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.note-label {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.note-line + .note-line {
+  margin-top: 6px;
+}
+
+.roster-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 450;
+}
+
+.roster-cards td.roster-name,
+.roster-cards td.roster-group,
+.booking-cards td.booking-who,
+.booking-cards td.booking-note {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.confirm-panel {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.confirm-who {
+  margin: 0 0 4px;
+  font-weight: 650;
+}
+
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-danger {
+  background: #fff;
+  color: #8d2f2f;
+  box-shadow: inset 0 0 0 1px #8d2f2f;
+}
+
+.btn-danger:hover {
+  background: #f8e6e6;
+  color: #8d2f2f;
+}
+
+.slot-form {
+  min-width: 0;
+}
+
+.slot-form .field input,
+.slot-form .field select,
+.slot-form .field textarea {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.slot-panel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 761px) {
+  .slot-form .slot-fields > .field {
+    position: relative;
+  }
+
+  .slot-form .slot-fields > .field > .error,
+  .slot-form #start_time-lock {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    width: max-content;
+    max-width: min(26rem, 70vw);
+    margin: 0;
+    z-index: 1;
+  }
+
+  .slot-form .slot-fields > .field:last-child > .error {
+    left: auto;
+    right: 0;
+  }
+
+  .slot-form .slot-fields:has(> .field > .error),
+  .slot-form .slot-fields:has(#start_time-lock) {
+    margin-bottom: 2.75rem;
   }
 }
 

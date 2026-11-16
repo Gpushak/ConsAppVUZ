@@ -331,7 +331,7 @@ class PlanCoverageTest extends ConsultationTestCase
 
         $this->actingAs($teacher)->post(route('teacher.bookings.cancel.store', $belovaBooking), [
             'comment' => 'не смогу быть на кафедре',
-        ])->assertRedirect(route('teacher.slots.index'));
+        ])->assertRedirect(route('slots.roster', $slot));
 
         $this->assertSame(3, Booking::query()->count());
         $this->assertSame(Booking::CANCELLED_BY_TEACHER, $belovaBooking->refresh()->status);
