@@ -66,6 +66,7 @@ class NextSlotPanelTest extends ConsultationTestCase
         $this->assertStringNotContainsString('3 студента', $panel);
         $this->assertStringContainsString(route('teacher.slots.edit', $soon), $panel);
         $this->assertStringContainsString('>Изменить</a>', $panel);
+        $this->assertStringNotContainsString('Снять с публикации', $panel);
         $this->assertStringNotContainsString('Остановить повтор', $panel);
         $this->assertStringNotContainsString('ауд. 444', $panel);
         $this->assertStringNotContainsString('ауд. 250', $panel);
@@ -108,6 +109,8 @@ class NextSlotPanelTest extends ConsultationTestCase
             $this->assertStringContainsString(route('teacher.slots.edit', $soon), $panel);
             $this->assertStringContainsString('>Остановить повтор</a>', $panel);
             $this->assertStringContainsString(route('teacher.slots.series.stop', $soon), $panel);
+            $this->assertStringContainsString('>Снять с публикации</a>', $panel);
+            $this->assertStringContainsString(route('teacher.slots.unpublish.confirm', $soon), $panel);
             $this->assertSame($weeks, $soon->refresh()->series_weeks);
 
             $week = strstr($html, '<div class="week">');
@@ -135,7 +138,84 @@ class NextSlotPanelTest extends ConsultationTestCase
         $this->assertStringNotContainsString('ауд. 111', $panel);
         $this->assertStringNotContainsString('ауд. 222', $panel);
         $this->assertStringNotContainsString('Изменить', $panel);
+        $this->assertStringNotContainsString('Снять с публикации', $panel);
         $this->assertStringNotContainsString('Остановить повтор', $panel);
+    }
+
+    public function test_unpublish_is_offered_only_for_an_empty_next_slot_and_then_the_panel_moves_on(): void
+    {
+        $teacher = $this->teacherUser('Иванова А. С.');
+        $student = $this->studentUser('Соколов Илья');
+        $span = ['from' => '2026-10-19', 'to' => '2026-10-25'];
+        $empty = $this->makeSlot($teacher, '2026-11-02 10:00:00', '2026-11-02 10:45:00', '333');
+        $later = $this->makeSlot($teacher, '2026-11-09 16:00:00', '2026-11-09 16:45:00', '444');
+
+        $open = $this->actingAs($teacher)
+            ->get(route('teacher.slots.index', $span))
+            ->assertOk()
+            ->getContent();
+        $panel = $this->panelHtml($open);
+        $this->assertStringContainsString('data-next-slot="'.$empty->id.'"', $panel);
+        $this->assertStringContainsString('>Снять с публикации</a>', $panel);
+        $this->assertStringContainsString(route('teacher.slots.unpublish.confirm', $empty), $panel);
+        $this->assertStringNotContainsString('action="'.route('teacher.slots.unpublish', $empty).'"', $panel);
+        $this->assertStringNotContainsString('ауд. 444', $panel);
+        $week = strstr($open, '<div class="week">');
+        $this->assertIsString($week);
+        $this->assertStringNotContainsString('Снять с публикации', $week);
+
+        $this->actingAs($teacher)
+            ->get(route('teacher.slots.unpublish.confirm', $empty))
+            ->assertOk()
+            ->assertSee('Слот исчезнет из кабинета студента.');
+        $this->assertTrue($empty->refresh()->is_published);
+
+        Booking::query()->create([
+            'slot_id' => $empty->id,
+            'student_profile_id' => $student->studentProfile->id,
+            'status' => Booking::BOOKED,
+        ]);
+
+        $booked = $this->actingAs($teacher)
+            ->get(route('teacher.slots.index', $span))
+            ->assertOk()
+            ->getContent();
+        $bookedPanel = $this->panelHtml($booked);
+        $this->assertStringContainsString('data-next-slot="'.$empty->id.'"', $bookedPanel);
+        $this->assertStringContainsString('>1 студент</a>', $bookedPanel);
+        $this->assertStringNotContainsString('Снять с публикации', $bookedPanel);
+        $this->assertStringNotContainsString(route('teacher.slots.unpublish.confirm', $empty), $bookedPanel);
+
+        Booking::query()->where('slot_id', $empty->id)->delete();
+
+        $this->actingAs($teacher)
+            ->post(route('teacher.slots.unpublish', $empty))
+            ->assertRedirect(route('teacher.slots.index'));
+        $this->assertFalse($empty->refresh()->is_published);
+
+        $after = $this->actingAs($teacher)
+            ->get(route('teacher.slots.index', $span))
+            ->assertOk()
+            ->getContent();
+        $next = $this->panelHtml($after);
+        $this->assertStringContainsString('data-next-slot="'.$later->id.'"', $next);
+        $this->assertStringContainsString('ауд. 444', $next);
+        $this->assertStringNotContainsString('data-next-slot="'.$empty->id.'"', $next);
+        $this->assertStringNotContainsString('ауд. 333', $next);
+        $this->assertStringContainsString(route('teacher.slots.unpublish.confirm', $later), $next);
+
+        $this->actingAs($teacher)
+            ->post(route('teacher.slots.unpublish', $later))
+            ->assertRedirect(route('teacher.slots.index'));
+
+        $none = $this->actingAs($teacher)
+            ->get(route('teacher.slots.index', $span))
+            ->assertOk()
+            ->getContent();
+        $emptyPanel = $this->panelHtml($none);
+        $this->assertStringContainsString('Ближайших консультаций нет.', $emptyPanel);
+        $this->assertStringNotContainsString('data-next-slot', $emptyPanel);
+        $this->assertStringNotContainsString('Снять с публикации', $emptyPanel);
     }
 
     private function panelHtml(string $html): string
