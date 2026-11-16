@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateSlotRequest;
 use App\Models\Booking;
 use App\Models\Slot;
 use App\Services\BookingService;
+use App\Support\DateSpan;
 use App\Support\Ru;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,9 +21,10 @@ class SlotController extends Controller
         $profile = $request->user()->teacherProfile;
         $bookings->completeEndedSlots([$profile->id]);
 
+        $span = DateSpan::fromQuery($request->query('from'), $request->query('to'));
         $slots = $profile->slots()
             ->with(['bookings.studentProfile.user'])
-            ->orderByDesc('starts_at')
+            ->orderBy('starts_at')
             ->get();
 
         $seriesIds = $slots->pluck('series_id')->filter()->unique()->values();
@@ -65,10 +67,17 @@ class SlotController extends Controller
                 return [$nearest->id => $later];
             });
 
+        $visible = $span->bounded
+            ? $slots->filter(fn (Slot $slot) => $span->contains($slot->starts_at))->values()
+            : $slots;
+
         return view('teacher.slots', [
             'slots' => $slots,
+            'days' => $span->buckets($visible),
+            'span' => $span,
             'stopSlotIds' => $stopSlotIds,
             'seriesAhead' => $seriesAhead,
+            'showFinishedToggle' => $visible->contains(fn (Slot $slot) => $slot->isFinished()),
         ]);
     }
 

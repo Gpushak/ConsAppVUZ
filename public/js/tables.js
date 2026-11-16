@@ -204,6 +204,12 @@
     apply(table);
   }
 
+  function applyFinishedCards() {
+    Array.prototype.forEach.call(document.querySelectorAll('article[data-finished]'), function (card) {
+      card.hidden = !showFinished;
+    });
+  }
+
   function updateToggle() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-finished-toggle]'), function (button) {
       button.textContent = showFinished ? 'Скрыть завершённые' : 'Показать завершённые';
@@ -234,11 +240,13 @@
         showFinished = !showFinished;
         updateToggle();
         syncFinishedOnly();
+        applyFinishedCards();
         Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), apply);
       });
     });
     updateToggle();
     syncFinishedOnly();
+    applyFinishedCards();
   }
 
   if (document.readyState === 'loading') {

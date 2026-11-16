@@ -104,7 +104,7 @@ class DailyUsePassTest extends ConsultationTestCase
         $this->actingAs($student)->post(route('bookings.store', $series->first()))->assertRedirect();
 
         $html = $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->getContent();
 
@@ -303,7 +303,7 @@ class DailyUsePassTest extends ConsultationTestCase
         $series = Slot::query()->where('room', '77')->orderBy('starts_at')->get();
         $this->actingAs($student)->post(route('bookings.store', $series->first()))->assertRedirect();
 
-        $html = $this->actingAs($teacher)->get(route('teacher.slots.index'))->assertOk()->getContent();
+        $html = $this->actingAs($teacher)->get(route('teacher.slots.index', $this->listedSpan()))->assertOk()->getContent();
         $later = $this->rowHtml($html, '03.11.2026');
 
         $this->assertSame(1, preg_match('/<div class="actions slot-primary">(.*?)<\/div>/s', $later, $primary));
@@ -553,7 +553,7 @@ class DailyUsePassTest extends ConsultationTestCase
 
     private function rowHtml(string $html, string $marker): string
     {
-        $pattern = '/<tr\b[^>]*>(?:(?!<\/tr>).)*'.preg_quote($marker, '/').'(?:(?!<\/tr>).)*<\/tr>/s';
+        $pattern = '/<(?:article|tr)\b[^>]*>(?:(?!<\/(?:article|tr)>).)*'.preg_quote($marker, '/').'(?:(?!<\/(?:article|tr)>).)*<\/(?:article|tr)>/s';
         $this->assertMatchesRegularExpression($pattern, $html);
         preg_match($pattern, $html, $match);
 

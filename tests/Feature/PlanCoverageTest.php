@@ -172,7 +172,7 @@ class PlanCoverageTest extends ConsultationTestCase
             ->assertRedirect(route('teachers.index'));
 
         $this->actingAs($student)
-            ->get(route('home'))
+            ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Иванова А. С.')
             ->assertSee('ауд. 314')
@@ -338,7 +338,7 @@ class PlanCoverageTest extends ConsultationTestCase
         $this->assertSame(2, Booking::query()->where('status', Booking::BOOKED)->count());
 
         $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertDontSee('<details class="people"', false)
             ->assertSee(route('slots.roster', $slot), false);

@@ -81,7 +81,9 @@ class DemoSeedTest extends ConsultationTestCase
         $this->assertNull($free->series_id);
         $this->assertNull($free->meeting_url);
 
-        $home = $this->actingAs($sokolov)->get(route('home'))->assertOk();
+        $span = ['from' => '2027-05-04', 'to' => '2027-06-01'];
+
+        $home = $this->actingAs($sokolov)->get(route('home', $span))->assertOk();
         $home->assertSee('Показать завершённые')
             ->assertSee('04.05.2027')
             ->assertSee('25.05.2027')
@@ -101,7 +103,7 @@ class DemoSeedTest extends ConsultationTestCase
             ->assertSee('28.05.2027');
 
         $this->actingAs($ivanova)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $span))
             ->assertOk()
             ->assertSee('Показать завершённые')
             ->assertSee('еженедельно')
@@ -110,7 +112,7 @@ class DemoSeedTest extends ConsultationTestCase
             ->assertSee('04.05.2027');
 
         $this->actingAs($petrov)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $span))
             ->assertOk()
             ->assertSee('29.05.2027')
             ->assertSee('свободен')

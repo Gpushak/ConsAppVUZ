@@ -36,7 +36,7 @@ class ListPresentationTest extends ConsultationTestCase
         $removed->update(['is_published' => false]);
 
         $html = $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Мои слоты')
             ->assertSee('Показать завершённые')
@@ -87,7 +87,7 @@ class ListPresentationTest extends ConsultationTestCase
         $removed->update(['is_published' => false]);
 
         $home = $this->actingAs($student)
-            ->get(route('home'))
+            ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Слоты избранных')
             ->assertSee('Показать завершённые')
@@ -135,7 +135,7 @@ class ListPresentationTest extends ConsultationTestCase
         ]);
 
         $home = $this->actingAs($student)
-            ->get(route('home'))
+            ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->getContent();
 
@@ -289,7 +289,7 @@ class ListPresentationTest extends ConsultationTestCase
 
     private function rowHtml(string $html, string $marker): string
     {
-        $pattern = '/<tr\b[^>]*>(?:(?!<\/tr>).)*'.preg_quote($marker, '/').'(?:(?!<\/tr>).)*<\/tr>/s';
+        $pattern = '/<(?:article|tr)\b[^>]*>(?:(?!<\/(?:article|tr)>).)*'.preg_quote($marker, '/').'(?:(?!<\/(?:article|tr)>).)*<\/(?:article|tr)>/s';
         $this->assertMatchesRegularExpression($pattern, $html);
         preg_match($pattern, $html, $match);
 
@@ -298,7 +298,7 @@ class ListPresentationTest extends ConsultationTestCase
 
     private function assertRowFinished(string $html, string $marker, bool $finished): void
     {
-        $pattern = '/<tr([^>]*)>(?:(?!<\/tr>).)*'.preg_quote($marker, '/').'/s';
+        $pattern = '/<(?:article|tr)\b([^>]*)>(?:(?!<\/(?:article|tr)>).)*'.preg_quote($marker, '/').'/s';
         $this->assertMatchesRegularExpression($pattern, $html);
         preg_match($pattern, $html, $match);
 
