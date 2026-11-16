@@ -13,6 +13,9 @@
     </div>
   </div>
   @include('partials.errors')
+  @if ($slots->isEmpty())
+    <p class="notice">Слотов пока нет. <a href="{{ route('teacher.slots.create') }}">Создайте первый слот</a>.</p>
+  @else
   <div class="table-wrap slot-cards">
     <table class="data-table slot-table">
       <thead>
@@ -27,7 +30,7 @@
         </tr>
       </thead>
       <tbody>
-        @forelse ($slots as $slot)
+        @foreach ($slots as $slot)
           @php
             $showStop = $stopSlotIds->contains($slot->id);
             $showMark = $slot->series_id !== null && ! $showStop;
@@ -47,11 +50,16 @@
                 || ($slot->canBeUnpublished() && $primary !== 'unpublish')
                 || ($showStop && $primary !== 'stop');
           @endphp
+          @php
+            $left = $slot->series_id === null ? 0 : (int) ($seriesRemaining[$slot->series_id] ?? 0);
+          @endphp
           <tr class="slot-row" @if ($slot->isFinished()) data-finished hidden @endif>
             <td class="slot-date">
               {{ $slot->dateLabel() }}
               @if ($showMark)
-                <span class="series-mark">еженедельно</span>
+                <span class="series-mark">еженедельно@if ($left > 0), {{ \App\Support\Ru::aheadDays($left) }}@endif</span>
+              @elseif ($left > 0)
+                <span class="series-mark">{{ \App\Support\Ru::aheadDays($left) }}</span>
               @endif
             </td>
             <td class="slot-time">{{ $slot->timeRange() }}</td>
@@ -91,12 +99,9 @@
               @endif
             </td>
           </tr>
-        @empty
-          <tr data-static>
-            <td colspan="7" class="muted">Слотов пока нет.</td>
-          </tr>
-        @endforelse
+        @endforeach
       </tbody>
     </table>
   </div>
+  @endif
 @endsection

@@ -51,9 +51,17 @@ class SlotController extends Controller
             ->map(fn ($group) => $group->sortBy(fn (Slot $slot) => $slot->starts_at->getTimestamp())->first()->id)
             ->values();
 
+        $seriesRemaining = $slots
+            ->filter(fn (Slot $slot) => $slot->series_id !== null
+                && $slot->is_published
+                && $slot->conducted_at === null
+                && $slot->starts_at->isFuture())
+            ->countBy('series_id');
+
         return view('teacher.slots', [
             'slots' => $slots,
             'stopSlotIds' => $stopSlotIds,
+            'seriesRemaining' => $seriesRemaining,
         ]);
     }
 
@@ -119,8 +127,12 @@ class SlotController extends Controller
     {
         $this->authorize('stopSeries', $slot);
 
+        $counts = $slot->futureSeriesCounts();
+
         return view('teacher.stop-series', [
             'slot' => $slot,
+            'remaining' => $counts['remaining'],
+            'empty' => $counts['empty'],
         ]);
     }
 

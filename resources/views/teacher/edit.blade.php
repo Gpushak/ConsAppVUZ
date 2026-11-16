@@ -42,7 +42,7 @@
     <h1>Изменить слот</h1>
   </div>
   <div class="panel slot-panel">
-    @include('partials.errors')
+    @include('partials.errors', ['inlineErrors' => ['start_time']])
     <p class="meta">{{ $slot->dateLabel() }}, {{ $slot->timeRange() }}</p>
     <form class="slot-form" method="POST" action="{{ route('teacher.slots.update', $slot) }}" data-slot-form>
       @csrf
@@ -73,10 +73,17 @@
           <label for="start_time">Начало</label>
           @if ($locked)
             <input type="hidden" name="start_time" value="{{ $startValue }}">
-            <input id="start_time" type="time" value="{{ $startValue }}" step="300" disabled>
+            <input id="start_time" type="time" value="{{ $startValue }}" step="300" disabled @if ($errors->has('start_time')) aria-invalid="true" aria-describedby="start_time-error" @endif>
           @else
-            <input id="start_time" type="time" name="start_time" value="{{ $startValue }}" step="300" required>
+            <input id="start_time" type="time" name="start_time" value="{{ $startValue }}" step="300" required @if ($errors->has('start_time')) aria-invalid="true" aria-describedby="start_time-error" @endif>
           @endif
+          @error('start_time')
+            <p class="error" id="start_time-error">{{ $message }}</p>
+          @else
+            @if ($locked)
+              <p class="field-note" id="start_time-lock">Время нельзя изменить: на слот уже есть запись.</p>
+            @endif
+          @enderror
         </div>
         <div class="field">
           <label for="end_time">Конец</label>
@@ -88,9 +95,6 @@
           @endif
         </div>
       </div>
-      @if ($locked)
-        <p class="field-note">Время нельзя изменить: на слот уже есть запись.</p>
-      @endif
       <div class="slot-place" data-in-person @if ($online) hidden @endif>
         <div class="field">
           <label for="building">Корпус</label>

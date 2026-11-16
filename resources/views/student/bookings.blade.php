@@ -11,10 +11,10 @@
   </div>
   @include('partials.errors')
   @if ($bookings->isEmpty())
-    <p class="notice">Записей пока нет</p>
+    <p class="notice">Записей пока нет. <a href="{{ route('home') }}">Посмотрите слоты избранных</a>.</p>
   @else
-    <div class="table-wrap">
-      <table class="data-table">
+    <div class="table-wrap slot-cards">
+      <table class="data-table slot-table">
         <thead>
           <tr>
             <th>Дата</th>
@@ -28,26 +28,31 @@
         </thead>
         <tbody>
           @foreach ($bookings as $booking)
-            <tr @if ($booking->isFinished()) data-finished hidden @endif>
-              <td>{{ $booking->slot->dateLabel() }}</td>
-              <td>{{ $booking->slot->timeRange() }}</td>
-              <td>{{ $booking->slot->teacherProfile->user->name }}</td>
+            @php
+              $comment = trim((string) $booking->slot->comment.' '.(string) $booking->teacher_comment);
+            @endphp
+            <tr class="slot-row" @if ($booking->isFinished()) data-finished hidden @endif>
+              <td class="slot-date">{{ $booking->slot->dateLabel() }}</td>
+              <td class="slot-time">{{ $booking->slot->timeRange() }}</td>
+              <td class="slot-who">{{ $booking->slot->teacherProfile->user->name }}</td>
               <td class="place">@include('partials.slot-place', ['slot' => $booking->slot])</td>
-              <td class="soft">
+              <td @class(['soft', 'slot-comment', 'is-empty' => $comment === ''])>
                 @if ($booking->slot->comment)
                   <div>{{ $booking->slot->comment }}</div>
                 @endif
                 @if ($booking->teacher_comment)
                   <div>{{ $booking->teacher_comment }}</div>
                 @endif
-                @if (! $booking->slot->comment && ! $booking->teacher_comment)
+                @if ($comment === '')
                   —
                 @endif
               </td>
-              <td><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
-              <td>
+              <td class="slot-status"><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
+              <td class="slot-actions">
                 @can('cancel', $booking)
-                  <a class="btn btn-small btn-ghost" href="{{ route('bookings.cancel', $booking) }}">Отменить</a>
+                  <div class="actions slot-primary">
+                    <a class="btn btn-small" href="{{ route('bookings.cancel', $booking) }}">Отменить</a>
+                  </div>
                 @endcan
               </td>
             </tr>

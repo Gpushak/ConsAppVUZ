@@ -38,7 +38,7 @@
     <h1>Новый слот</h1>
   </div>
   <div class="panel slot-panel">
-    @include('partials.errors')
+    @include('partials.errors', ['inlineErrors' => ['start_time']])
     <form class="slot-form" method="POST" action="{{ route('teacher.slots.store') }}" data-slot-form>
       @csrf
       <div class="slot-fields">
@@ -61,7 +61,10 @@
         </div>
         <div class="field">
           <label for="start_time">Начало</label>
-          <input id="start_time" type="time" name="start_time" value="{{ $timeValue('start_time') }}" placeholder="16:00" step="300" required>
+          <input id="start_time" type="time" name="start_time" value="{{ $timeValue('start_time') }}" placeholder="16:00" step="300" required @if ($errors->has('start_time')) aria-invalid="true" aria-describedby="start_time-error" @endif>
+          @error('start_time')
+            <p class="error" id="start_time-error">{{ $message }}</p>
+          @enderror
         </div>
         <div class="field">
           <label for="end_time">Конец</label>

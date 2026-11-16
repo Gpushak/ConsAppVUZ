@@ -160,6 +160,32 @@ class Slot extends Model
         return $this->activeBookingsCount() > 0;
     }
 
+    /**
+     * @return array{remaining: int, empty: int}
+     */
+    public function futureSeriesCounts(): array
+    {
+        if ($this->series_id === null) {
+            return ['remaining' => 0, 'empty' => 0];
+        }
+
+        $future = static::query()
+            ->where('series_id', $this->series_id)
+            ->where('teacher_profile_id', $this->teacher_profile_id)
+            ->where('is_published', true)
+            ->whereNull('conducted_at')
+            ->where('starts_at', '>', now())
+            ->withCount(['bookings as active_bookings_count' => function ($query) {
+                $query->where('status', Booking::BOOKED);
+            }])
+            ->get();
+
+        return [
+            'remaining' => $future->count(),
+            'empty' => $future->where('active_bookings_count', 0)->count(),
+        ];
+    }
+
     public function statusLabel(): string
     {
         if ($this->conducted_at !== null) {
