@@ -52,17 +52,23 @@ class SlotController extends Controller
             ->map(fn ($group) => $group->sortBy(fn (Slot $slot) => $slot->starts_at->getTimestamp())->first()->id)
             ->values();
 
-        $seriesRemaining = $slots
+        $seriesAhead = $slots
             ->filter(fn (Slot $slot) => $slot->series_id !== null
                 && $slot->is_published
                 && $slot->conducted_at === null
                 && $slot->starts_at->isFuture())
-            ->countBy('series_id');
+            ->groupBy('series_id')
+            ->mapWithKeys(function ($group) {
+                $nearest = $group->sortBy(fn (Slot $slot) => $slot->starts_at->getTimestamp())->first();
+                $later = $group->filter(fn (Slot $slot) => $slot->starts_at->greaterThan($nearest->starts_at))->count();
+
+                return [$nearest->id => $later];
+            });
 
         return view('teacher.slots', [
             'slots' => $slots,
             'stopSlotIds' => $stopSlotIds,
-            'seriesRemaining' => $seriesRemaining,
+            'seriesAhead' => $seriesAhead,
         ]);
     }
 
