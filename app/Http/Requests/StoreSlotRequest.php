@@ -73,7 +73,7 @@ class StoreSlotRequest extends FormRequest
     {
         return [
             'date.required' => 'Укажите дату.',
-            'date.regex' => 'Укажите дату в формате ДД.ММ.ГГГГ.',
+            'date.regex' => 'Укажите дату.',
             'start_time.required' => 'Укажите начало.',
             'start_time.regex' => 'Укажите начало в формате ЧЧ:ММ.',
             'end_time.required' => 'Укажите конец.',
@@ -88,7 +88,7 @@ class StoreSlotRequest extends FormRequest
             'meeting_url.regex' => 'Ссылка должна начинаться с http:// или https://.',
             'meeting_url.max' => 'Ссылка не длиннее 500 символов.',
             'repeat_until.required' => 'Укажите дату окончания повтора.',
-            'repeat_until.regex' => 'Укажите дату в формате ДД.ММ.ГГГГ.',
+            'repeat_until.regex' => 'Укажите дату.',
         ];
     }
 
@@ -100,7 +100,7 @@ class StoreSlotRequest extends FormRequest
             }
 
             if ($this->strictDay((string) $this->input('date')) === null) {
-                $validator->errors()->add('date', 'Укажите дату в формате ДД.ММ.ГГГГ.');
+                $validator->errors()->add('date', 'Укажите дату.');
 
                 return;
             }
@@ -123,7 +123,7 @@ class StoreSlotRequest extends FormRequest
                 $until = $this->strictDay((string) $this->input('repeat_until'));
 
                 if ($until === null) {
-                    $validator->errors()->add('repeat_until', 'Укажите дату в формате ДД.ММ.ГГГГ.');
+                    $validator->errors()->add('repeat_until', 'Укажите дату.');
 
                     return;
                 }

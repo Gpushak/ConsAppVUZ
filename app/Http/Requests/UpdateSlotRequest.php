@@ -66,7 +66,7 @@ class UpdateSlotRequest extends FormRequest
     {
         return [
             'date.required' => 'Укажите дату.',
-            'date.regex' => 'Укажите дату в формате ДД.ММ.ГГГГ.',
+            'date.regex' => 'Укажите дату.',
             'start_time.required' => 'Укажите начало.',
             'start_time.regex' => 'Укажите начало в формате ЧЧ:ММ.',
             'end_time.required' => 'Укажите конец.',
@@ -91,7 +91,7 @@ class UpdateSlotRequest extends FormRequest
             }
 
             if ($this->strictDay((string) $this->input('date')) === null) {
-                $validator->errors()->add('date', 'Укажите дату в формате ДД.ММ.ГГГГ.');
+                $validator->errors()->add('date', 'Укажите дату.');
 
                 return;
             }

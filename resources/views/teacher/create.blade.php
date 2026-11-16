@@ -57,7 +57,7 @@
         </fieldset>
         <div class="field">
           <label for="date">Дата</label>
-          <input id="date" type="date" name="date" value="{{ $dateValue }}" placeholder="31.10.2026" required>
+          <input id="date" type="date" name="date" value="{{ $dateValue }}" required>
         </div>
         <div class="field">
           <label for="start_time">Начало</label>

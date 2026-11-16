@@ -11,7 +11,7 @@
     <label for="teacher-search">Поиск</label>
     <input id="teacher-search" type="search" placeholder="Имя или кафедра" data-teacher-search autocomplete="off">
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap person-cards">
     <table class="data-table" data-teacher-directory>
       <thead>
         <tr>
@@ -23,11 +23,11 @@
       </thead>
       <tbody>
         @forelse ($teachers as $teacher)
-          <tr data-search="{{ $teacher->user->name }} {{ $teacher->department }}">
-            <td>{{ $teacher->user->name }}</td>
-            <td>{{ $teacher->position }}</td>
-            <td>{{ $teacher->department }}</td>
-            <td>
+          <tr class="person-card" data-search="{{ $teacher->user->name }} {{ $teacher->department }}">
+            <td class="person-name">{{ $teacher->user->name }}</td>
+            <td class="person-fact">{{ $teacher->position }}</td>
+            <td class="person-extra">{{ $teacher->department }}</td>
+            <td class="person-actions">
               @if ($favoriteIds->contains($teacher->id))
                 <form class="fav-form" method="POST" action="{{ route('teachers.unfavorite', $teacher) }}">
                   @csrf
