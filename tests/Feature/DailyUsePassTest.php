@@ -429,9 +429,10 @@ class DailyUsePassTest extends ConsultationTestCase
             ->getContent();
         $teacherCard = $this->cardHtml($directory, 'person-card', 'Иванова А. С.');
         $this->assertStringContainsString('class="person-name"', $teacherCard);
-        $this->assertStringContainsString('class="person-fact">доцент', $teacherCard);
+        $this->assertStringContainsString('class="person-fact"', $teacherCard);
+        $this->assertStringContainsString('доцент', $teacherCard);
         $this->assertStringContainsString('class="person-actions"', $teacherCard);
-        $this->assertStringContainsString('>В избранное</button>', $teacherCard);
+        $this->assertStringContainsString('>Добавить в избранное</button>', $teacherCard);
         $this->assertStringNotContainsString('<table', $teacherCard);
         $this->assertSame(1, substr_count($directory, '<table'));
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\TeacherProfile;
+use App\Support\SearchText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,16 +16,34 @@ class TeacherDirectoryController extends Controller
         $student = $request->user()->studentProfile;
         $collator = new \Collator('ru_RU');
         $favoriteIds = $student->favoriteTeachers()->pluck('teacher_profiles.id');
+        $query = (string) $request->query('q', '');
         $teachers = TeacherProfile::query()
             ->with('user')
-            ->whereHas('user', fn ($query) => $query->where('is_active', true))
+            ->whereHas('user', fn ($builder) => $builder->where('is_active', true))
             ->get()
-            ->sort(fn ($left, $right) => $collator->compare($left->user->name, $right->user->name) ?: 0)
+            ->each(function (TeacherProfile $teacher) use ($query) {
+                $teacher->setAttribute('search_text', SearchText::fold(implode(' ', [
+                    $teacher->user->name,
+                    $teacher->position,
+                    $teacher->department,
+                ])));
+                $teacher->setAttribute('search_match', SearchText::matches($teacher->search_text, $query));
+            })
+            ->sort(function (TeacherProfile $left, TeacherProfile $right) use ($collator, $favoriteIds) {
+                $favorite = ((int) $favoriteIds->contains($right->id)) <=> ((int) $favoriteIds->contains($left->id));
+                if ($favorite !== 0) {
+                    return $favorite;
+                }
+
+                return $collator->compare($left->user->name, $right->user->name) ?: 0;
+            })
             ->values();
 
         return view('student.teachers', [
             'teachers' => $teachers,
             'favoriteIds' => $favoriteIds,
+            'query' => $query,
+            'searchHasMatch' => $teachers->contains(fn (TeacherProfile $teacher) => (bool) $teacher->search_match),
         ]);
     }
 

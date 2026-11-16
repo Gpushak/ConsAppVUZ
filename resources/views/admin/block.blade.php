@@ -7,6 +7,7 @@
     <h1>Заблокировать пользователя</h1>
   </div>
   @include('partials.errors')
+  <p class="account-line"><strong>{{ $user->name }}</strong>, {{ $user->email }}, {{ $user->role->name }}.</p>
   <p class="notice">Вход станет недоступен, открытая сессия прервётся.</p>
   <form method="POST" action="{{ route('admin.users.block', $user) }}">
     @csrf
