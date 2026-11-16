@@ -46,7 +46,11 @@ class SiteImprovementTest extends ConsultationTestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertSame(2, substr_count($html, '>Остановить повтор</a>'));
+        $this->assertSame(1, preg_match('/<section class="next-slot\b.*?<\/section>/s', $html, $panel));
+        $this->assertSame(1, substr_count($panel[0], '>Остановить повтор</a>'));
+        $week = strstr($html, '<div class="week">');
+        $this->assertIsString($week);
+        $this->assertSame(2, substr_count($week, '>Остановить повтор</a>'));
 
         $nearestRow = $this->rowHtml($html, '27.10.2026');
         $this->assertStringContainsString('>Остановить повтор</a>', $nearestRow);
