@@ -299,7 +299,9 @@ class PlanCoverageTest extends ConsultationTestCase
         $this->actingAs($teacher)
             ->get(route('teacher.slots.index'))
             ->assertOk()
-            ->assertSee('проведён');
+            ->assertDontSee('ауд. 314')
+            ->assertDontSee('>проведён<')
+            ->assertDontSee('Показать завершённые');
 
         $this->actingAs($teacher)
             ->get(route('slots.roster', $started))

@@ -73,7 +73,7 @@ class SlotController extends Controller
             : $listed;
 
         return view('teacher.slots', [
-            'slots' => $slots,
+            'slots' => $listed,
             'days' => $span->buckets($visible),
             'span' => $span,
             'stopSlotIds' => $stopSlotIds,

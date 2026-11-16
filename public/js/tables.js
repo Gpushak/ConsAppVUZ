@@ -56,6 +56,21 @@
     return left.localeCompare(right, 'ru', { numeric: true, sensitivity: 'base' });
   }
 
+  function isPersonDirectory(table) {
+    return table.hasAttribute('data-teacher-directory') || table.hasAttribute('data-user-directory');
+  }
+
+  function directorySearch(table) {
+    if (table.hasAttribute('data-teacher-directory')) {
+      return document.querySelector('[data-teacher-search]');
+    }
+    if (table.hasAttribute('data-user-directory')) {
+      return document.querySelector('[data-user-search]');
+    }
+
+    return null;
+  }
+
   function dataRows(table) {
     return Array.prototype.filter.call(table.tBodies[0].rows, function (row) {
       return !row.hasAttribute('data-static');
@@ -65,12 +80,8 @@
   function apply(table) {
     var select = table.querySelector('select[data-status-filter]');
     var query = select ? fold(select.value) : '';
-    var search = document.querySelector('[data-teacher-search]');
-    var words = [];
-
-    if (search && table.hasAttribute('data-teacher-directory')) {
-      words = searchWords(search.value);
-    }
+    var search = directorySearch(table);
+    var words = search ? searchWords(search.value) : [];
 
     var statusIndex = select ? select.parentNode.cellIndex : -1;
     var filtering = query !== '' || words.length > 0;
@@ -211,7 +222,7 @@
       headerRow.parentNode.appendChild(filterRow);
     }
 
-    if ((statusIndex >= 0 || table.hasAttribute('data-teacher-directory')) && dataRows(table).length && !table.querySelector('[data-nomatch]')) {
+    if ((statusIndex >= 0 || isPersonDirectory(table)) && dataRows(table).length && !table.querySelector('[data-nomatch]')) {
       var empty = document.createElement('tr');
       empty.setAttribute('data-static', '');
       empty.setAttribute('data-nomatch', '');
@@ -286,17 +297,45 @@
     });
   }
 
+  function bootNewTeacher() {
+    var button = document.querySelector('[data-new-teacher]');
+    var panel = document.getElementById('new-teacher');
+
+    if (!button || !panel || button.dataset.ready === '1') {
+      return;
+    }
+    button.dataset.ready = '1';
+
+    function setOpen(open) {
+      panel.hidden = !open;
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    button.addEventListener('click', function () {
+      setOpen(panel.hidden);
+    });
+
+    var cancel = panel.querySelector('[data-new-teacher-cancel]');
+    if (cancel) {
+      cancel.addEventListener('click', function () {
+        setOpen(false);
+      });
+    }
+  }
+
   function boot() {
     Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), enhance);
-    var search = document.querySelector('[data-teacher-search]');
-    if (search) {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-teacher-search], [data-user-search]'), function (search) {
       search.addEventListener('input', function () {
-        var table = document.querySelector('table[data-teacher-directory]');
+        var selector = search.hasAttribute('data-user-search')
+          ? 'table[data-user-directory]'
+          : 'table[data-teacher-directory]';
+        var table = document.querySelector(selector);
         if (table) {
           apply(table);
         }
       });
-    }
+    });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-finished-toggle]'), function (button) {
       button.addEventListener('click', function () {
@@ -311,6 +350,7 @@
     syncFinishedOnly();
     applyFinishedCards();
     bootSlotCards();
+    bootNewTeacher();
   }
 
   if (document.readyState === 'loading') {
