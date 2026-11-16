@@ -87,6 +87,7 @@ class DemoSeedTest extends ConsultationTestCase
         $home->assertDontSee('Показать завершённые')
             ->assertDontSee('Скрыть завершённые')
             ->assertSee('04.05.2027')
+            ->assertDontSee('>проведён<')
             ->assertSee('25.05.2027')
             ->assertSee('26.05.2027')
             ->assertSee('27.05.2027')
@@ -106,11 +107,12 @@ class DemoSeedTest extends ConsultationTestCase
         $this->actingAs($ivanova)
             ->get(route('teacher.slots.index', $span))
             ->assertOk()
-            ->assertSee('Показать завершённые')
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('Скрыть завершённые')
+            ->assertDontSee('>проведён<')
             ->assertSee('еженедельно')
             ->assertSee('25.05.2027')
-            ->assertSee('01.06.2027')
-            ->assertSee('04.05.2027');
+            ->assertSee('01.06.2027');
 
         $this->actingAs($petrov)
             ->get(route('teacher.slots.index', $span))

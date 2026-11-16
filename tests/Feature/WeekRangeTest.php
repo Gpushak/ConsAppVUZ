@@ -49,26 +49,32 @@ class WeekRangeTest extends ConsultationTestCase
     public function test_slot_outside_the_range_is_absent_and_an_empty_day_says_so(): void
     {
         [$teacher, $student] = $this->pair();
-        $this->slotOn($teacher, '2026-10-26', '201');
-        $this->slotOn($teacher, '2026-10-28', '241');
+        $this->slotOn($teacher, '2026-10-20', '201');
+        $this->slotOn($teacher, '2026-10-24', '241');
+        $this->slotOn($teacher, '2026-10-25', '251', '12:00', '12:45');
 
-        $query = ['from' => '2026-10-27', 'to' => '2026-10-30'];
+        $query = ['from' => '2026-10-22', 'to' => '2026-10-25'];
 
         foreach ($this->pages($teacher, $student) as [$user, $name]) {
             $html = $this->actingAs($user)
                 ->get(route($name, $query))
                 ->assertOk()
-                ->assertSee('value="2026-10-27"', false)
-                ->assertSee('value="2026-10-30"', false)
-                ->assertSee('ауд. 241')
+                ->assertSee('value="2026-10-22"', false)
+                ->assertSee('value="2026-10-25"', false)
+                ->assertSee('ауд. 251')
+                ->assertDontSee('ауд. 241')
                 ->assertDontSee('ауд. 201')
+                ->assertDontSee('Показать завершённые')
                 ->assertDontSee(DateSpan::ORDER_ERROR)
                 ->getContent();
 
-            $empty = $this->dayHtml($html, '29.10.2026');
+            $empty = $this->dayHtml($html, '23.10.2026');
             $this->assertStringContainsString('нет слотов', $empty);
-            $filled = $this->dayHtml($html, '28.10.2026');
-            $this->assertStringContainsString('ауд. 241', $filled);
+            $finishedDay = $this->dayHtml($html, '24.10.2026');
+            $this->assertStringContainsString('нет слотов', $finishedDay);
+            $this->assertStringNotContainsString('ауд. 241', $finishedDay);
+            $filled = $this->dayHtml($html, '25.10.2026');
+            $this->assertStringContainsString('ауд. 251', $filled);
             $this->assertStringNotContainsString('нет слотов', $filled);
         }
     }

@@ -398,7 +398,46 @@ thead th {
 
 .directory-search {
   max-width: 28rem;
+  width: 100%;
+  min-width: 0;
   margin-bottom: 14px;
+}
+
+.directory-search input {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.user-tools {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 100%;
+  min-width: 0;
+  margin-bottom: 14px;
+}
+
+.user-tools .directory-search {
+  flex: 1 1 12rem;
+  width: auto;
+  margin-bottom: 0;
+}
+
+.user-tools > .btn {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+#new-teacher {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+#new-teacher .form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 th.sortable {
@@ -1858,5 +1897,9 @@ tr.person-card[data-favorite] {
 
   .directory-search {
     max-width: none;
+  }
+
+  .user-tools > .btn {
+    white-space: normal;
   }
 }
