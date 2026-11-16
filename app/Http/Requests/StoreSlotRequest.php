@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Slot;
 use App\Support\Building;
+use App\Support\SeriesCadence;
 use App\Support\Term;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -173,6 +174,12 @@ class StoreSlotRequest extends FormRequest
 
                 if ($until->lt($starts->copy()->startOfDay())) {
                     $validator->errors()->add('repeat_until', 'Дата окончания не раньше даты слота.');
+
+                    return;
+                }
+
+                if (! SeriesCadence::fits($starts, $until, $this->repeatWeeks())) {
+                    $validator->errors()->add('repeat_until', SeriesCadence::rejection($starts, $this->repeatWeeks()));
 
                     return;
                 }
