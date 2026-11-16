@@ -18,10 +18,71 @@
     <h1>Пользователи</h1>
   </div>
   @include('partials.errors', ['inlineErrors' => $inlineErrors])
-  <form class="field directory-search" method="GET" action="{{ route('admin.users.index') }}">
-    <label for="user-search">Поиск</label>
-    <input id="user-search" type="search" name="q" value="{{ $query }}" placeholder="ФИО" data-user-search autocomplete="off">
-  </form>
+  <div class="user-tools">
+    <form class="field directory-search" method="GET" action="{{ route('admin.users.index') }}">
+      <label for="user-search">Поиск</label>
+      <input id="user-search" type="search" name="q" value="{{ $query }}" placeholder="ФИО" data-user-search autocomplete="off">
+    </form>
+    <button class="btn" type="button" data-new-teacher aria-controls="new-teacher" aria-expanded="{{ $creating ? 'true' : 'false' }}">Новый преподаватель</button>
+  </div>
+  <section class="panel" id="new-teacher" @unless ($creating) hidden @endunless>
+    <h2>Новый преподаватель</h2>
+    <p class="field-note">Преподаватели не регистрируются сами. Временный пароль передайте лично: письма нет.</p>
+    <form method="POST" action="{{ route('admin.teachers.store') }}" novalidate>
+      @csrf
+      <input type="hidden" name="form" value="teacher">
+      <div class="field">
+        <label for="name">ФИО</label>
+        <input id="name" type="text" name="name" value="{{ $creating ? old('name') : '' }}" @if ($creating && $errors->has('name')) aria-invalid="true" aria-describedby="name-error" @endif>
+        @if ($creating)
+          @error('name')
+            <p class="error" id="name-error">{{ $message }}</p>
+          @enderror
+        @endif
+      </div>
+      <div class="field">
+        <label for="email">Почта</label>
+        <input id="email" type="email" name="email" value="{{ $creating ? old('email') : '' }}" inputmode="email" autocomplete="off" @if ($creating && $errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif>
+        @if ($creating)
+          @error('email')
+            <p class="error" id="email-error">{{ $message }}</p>
+          @enderror
+        @endif
+      </div>
+      <div class="field">
+        <label for="position">Должность</label>
+        <input id="position" type="text" name="position" value="{{ $creating ? old('position') : '' }}" @if ($creating && $errors->has('position')) aria-invalid="true" aria-describedby="position-error" @endif>
+        @if ($creating)
+          @error('position')
+            <p class="error" id="position-error">{{ $message }}</p>
+          @enderror
+        @endif
+      </div>
+      <div class="field">
+        <label for="department">Кафедра</label>
+        <input id="department" type="text" name="department" value="{{ $creating ? old('department') : '' }}" @if ($creating && $errors->has('department')) aria-invalid="true" aria-describedby="department-error" @endif>
+        @if ($creating)
+          @error('department')
+            <p class="error" id="department-error">{{ $message }}</p>
+          @enderror
+        @endif
+      </div>
+      <div class="field">
+        <label for="password">Временный пароль</label>
+        <input id="password" type="text" name="password" value="{{ $creating ? old('password') : '' }}" autocomplete="off" @if ($creating && $errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+        <p class="field-note">Не короче 8 символов.</p>
+        @if ($creating)
+          @error('password')
+            <p class="error" id="password-error">{{ $message }}</p>
+          @enderror
+        @endif
+      </div>
+      <p class="form-actions">
+        <button class="btn" type="submit">Создать преподавателя</button>
+        <button class="btn btn-ghost" type="button" data-new-teacher-cancel>Отмена</button>
+      </p>
+    </form>
+  </section>
   <div class="table-wrap person-cards admin-users">
     <table class="data-table" data-user-directory>
       <thead>
@@ -108,62 +169,6 @@
       </tbody>
     </table>
   </div>
-
-  <section class="panel" id="new-teacher">
-    <h2>Новый преподаватель</h2>
-    <p class="field-note">Преподаватели не регистрируются сами. Временный пароль передайте лично: письма нет.</p>
-    <form method="POST" action="{{ route('admin.teachers.store') }}" novalidate>
-      @csrf
-      <input type="hidden" name="form" value="teacher">
-      <div class="field">
-        <label for="name">ФИО</label>
-        <input id="name" type="text" name="name" value="{{ $creating ? old('name') : '' }}" @if ($creating && $errors->has('name')) aria-invalid="true" aria-describedby="name-error" @endif>
-        @if ($creating)
-          @error('name')
-            <p class="error" id="name-error">{{ $message }}</p>
-          @enderror
-        @endif
-      </div>
-      <div class="field">
-        <label for="email">Почта</label>
-        <input id="email" type="email" name="email" value="{{ $creating ? old('email') : '' }}" inputmode="email" autocomplete="off" @if ($creating && $errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif>
-        @if ($creating)
-          @error('email')
-            <p class="error" id="email-error">{{ $message }}</p>
-          @enderror
-        @endif
-      </div>
-      <div class="field">
-        <label for="position">Должность</label>
-        <input id="position" type="text" name="position" value="{{ $creating ? old('position') : '' }}" @if ($creating && $errors->has('position')) aria-invalid="true" aria-describedby="position-error" @endif>
-        @if ($creating)
-          @error('position')
-            <p class="error" id="position-error">{{ $message }}</p>
-          @enderror
-        @endif
-      </div>
-      <div class="field">
-        <label for="department">Кафедра</label>
-        <input id="department" type="text" name="department" value="{{ $creating ? old('department') : '' }}" @if ($creating && $errors->has('department')) aria-invalid="true" aria-describedby="department-error" @endif>
-        @if ($creating)
-          @error('department')
-            <p class="error" id="department-error">{{ $message }}</p>
-          @enderror
-        @endif
-      </div>
-      <div class="field">
-        <label for="password">Временный пароль</label>
-        <input id="password" type="text" name="password" value="{{ $creating ? old('password') : '' }}" autocomplete="off" @if ($creating && $errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
-        <p class="field-note">Не короче 8 символов.</p>
-        @if ($creating)
-          @error('password')
-            <p class="error" id="password-error">{{ $message }}</p>
-          @enderror
-        @endif
-      </div>
-      <p class="form-actions"><button class="btn" type="submit">Создать преподавателя</button></p>
-    </form>
-  </section>
   @if ($creating || $profileId !== '')
     <script>
       document.getElementById(@json($creating ? 'new-teacher' : 'user-'.$profileId))?.scrollIntoView();

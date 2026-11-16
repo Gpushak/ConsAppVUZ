@@ -284,6 +284,70 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
         $this->assertTrue($student->refresh()->is_active);
     }
 
+    public function test_new_teacher_form_is_absent_until_the_button_and_stays_open_on_errors(): void
+    {
+        $admin = $this->adminUser();
+
+        $closed = $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('>Новый преподаватель</button>', false)
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<button\b[^>]*data-new-teacher[^>]*aria-expanded="false"[^>]*>Новый преподаватель<\/button>/',
+            $closed,
+        );
+        $this->assertMatchesRegularExpression(
+            '/<section\b[^>]*id="new-teacher"[^>]*\bhidden\b[^>]*>[\s\S]*Преподаватели не регистрируются сами\.[\s\S]*Создать преподавателя[\s\S]*Отмена/',
+            $closed,
+        );
+        $this->assertLessThan(
+            strpos($closed, 'id="new-teacher"'),
+            strpos($closed, 'data-new-teacher'),
+        );
+
+        $script = file_get_contents(public_path('js/tables.js'));
+        $this->assertIsString($script);
+        $this->assertStringContainsString('data-new-teacher', $script);
+        $this->assertStringContainsString('data-new-teacher-cancel', $script);
+        $this->assertStringContainsString('setOpen(panel.hidden)', $script);
+
+        $open = $this->followingRedirects()
+            ->actingAs($admin)
+            ->post(route('admin.teachers.store'), [
+                'form' => 'teacher',
+                'name' => '',
+                'email' => 'not-an-email',
+                'position' => '',
+                'department' => '',
+                'password' => 'short',
+            ])
+            ->assertOk()
+            ->assertSee('Укажите ФИО.')
+            ->assertSee('Почта указана неверно.')
+            ->assertSee('Укажите должность.')
+            ->assertSee('Укажите кафедру.')
+            ->assertSee('Пароль не короче 8 символов.')
+            ->assertSee('Преподаватели не регистрируются сами.')
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<section\b[^>]*id="new-teacher"(?![^>]*\bhidden\b)[^>]*>/',
+            $open,
+        );
+        $this->assertMatchesRegularExpression(
+            '/<button\b[^>]*data-new-teacher[^>]*aria-expanded="true"/',
+            $open,
+        );
+        $this->assertStringContainsString('id="name-error"', $open);
+        $this->assertStringContainsString('id="email-error"', $open);
+        $this->assertStringContainsString('id="position-error"', $open);
+        $this->assertStringContainsString('id="department-error"', $open);
+        $this->assertStringContainsString('id="password-error"', $open);
+        $this->assertStringNotContainsString('The ', $open);
+    }
+
     public function test_new_teacher_errors_name_the_field_and_profile_errors_stay_on_that_teacher(): void
     {
         $admin = $this->adminUser();

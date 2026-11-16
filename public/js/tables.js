@@ -297,6 +297,32 @@
     });
   }
 
+  function bootNewTeacher() {
+    var button = document.querySelector('[data-new-teacher]');
+    var panel = document.getElementById('new-teacher');
+
+    if (!button || !panel || button.dataset.ready === '1') {
+      return;
+    }
+    button.dataset.ready = '1';
+
+    function setOpen(open) {
+      panel.hidden = !open;
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    button.addEventListener('click', function () {
+      setOpen(panel.hidden);
+    });
+
+    var cancel = panel.querySelector('[data-new-teacher-cancel]');
+    if (cancel) {
+      cancel.addEventListener('click', function () {
+        setOpen(false);
+      });
+    }
+  }
+
   function boot() {
     Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), enhance);
     Array.prototype.forEach.call(document.querySelectorAll('[data-teacher-search], [data-user-search]'), function (search) {
@@ -324,6 +350,7 @@
     syncFinishedOnly();
     applyFinishedCards();
     bootSlotCards();
+    bootNewTeacher();
   }
 
   if (document.readyState === 'loading') {
