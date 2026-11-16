@@ -11,14 +11,18 @@
   </div>
   @include('partials.errors')
   @php
-    $visible = $favorites->filter(fn ($teacher) => ($slotsByTeacher[$teacher->id] ?? collect())->isNotEmpty());
+    $withSlots = $favorites->filter(fn ($teacher) => ($slotsByTeacher[$teacher->id] ?? collect())->isNotEmpty());
+    $openTeachers = $favorites->filter(fn ($teacher) => ($slotsByTeacher[$teacher->id] ?? collect())->contains(fn ($slot) => ! $slot->isFinished()));
+    $hasFinished = $slotsByTeacher->flatten()->contains(fn ($slot) => $slot->isFinished());
   @endphp
   @if ($favorites->isEmpty())
     <p class="notice">Избранных преподавателей нет. <a href="{{ route('teachers.index') }}">Откройте преподавателей</a> и отметьте, чьи слоты смотреть.</p>
-  @elseif ($visible->isEmpty())
-    <p class="notice">Свободных слотов нет</p>
-  @else
-    @foreach ($visible as $teacher)
+  @elseif ($openTeachers->isEmpty())
+    <p class="notice">Свободных слотов нет. @if ($hasFinished)Нажмите «Показать завершённые» или <a href="{{ route('teachers.index') }}">откройте преподавателей</a>.@else<a href="{{ route('teachers.index') }}">Откройте преподавателей</a>, чтобы выбрать, чьи слоты смотреть.@endif</p>
+  @endif
+  @if ($withSlots->isNotEmpty())
+    <div @if ($openTeachers->isEmpty()) data-only-finished hidden @endif>
+    @foreach ($withSlots as $teacher)
       <section class="section">
         <h2>{{ $teacher->user->name }}</h2>
         <p class="meta">{{ $teacher->position }}, {{ $teacher->department }}</p>
@@ -66,5 +70,6 @@
         </div>
       </section>
     @endforeach
+    </div>
   @endif
 @endsection

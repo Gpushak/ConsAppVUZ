@@ -317,6 +317,225 @@ class DailyUsePassTest extends ConsultationTestCase
         $this->assertSame(1, preg_match_all('/<div class="actions slot-primary">/', $anchor));
     }
 
+    public function test_favorites_without_open_slots_name_the_next_step(): void
+    {
+        $student = $this->studentUser('Соколов Илья');
+        $teacher = $this->teacherUser('Иванова А. С.');
+        $student->studentProfile->favoriteTeachers()->attach($teacher->teacherProfile->id);
+
+        $empty = $this->actingAs($student)
+            ->get(route('home'))
+            ->assertOk()
+            ->assertSee('Свободных слотов нет')
+            ->assertSee('Откройте преподавателей')
+            ->assertSee(route('teachers.index'), false)
+            ->assertDontSee('Показать завершённые')
+            ->assertDontSee('data-only-finished', false)
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/Свободных слотов нет\.\s*<a href="[^"]*">Откройте преподавателей<\/a>, чтобы выбрать, чьи слоты смотреть\./',
+            $empty,
+        );
+
+        Slot::query()->create([
+            'teacher_profile_id' => $teacher->teacherProfile->id,
+            'starts_at' => now()->subDay()->setTime(10, 0),
+            'ends_at' => now()->subDay()->setTime(10, 45),
+            'building' => 'Главный А',
+            'room' => '314',
+            'is_published' => true,
+            'conducted_at' => now()->subDay()->setTime(10, 45),
+        ]);
+
+        $finished = $this->actingAs($student)
+            ->get(route('home'))
+            ->assertOk()
+            ->assertSee('Свободных слотов нет')
+            ->assertSee('Показать завершённые')
+            ->assertSee('откройте преподавателей')
+            ->assertSee(route('teachers.index'), false)
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/Свободных слотов нет\.\s*Нажмите «Показать завершённые» или <a href="[^"]*">откройте преподавателей<\/a>\./',
+            $finished,
+        );
+        $this->assertMatchesRegularExpression('/<div\s+data-only-finished\s+hidden\s*>/', $finished);
+        $this->assertStringContainsString('Иванова А. С.', $finished);
+    }
+
+    public function test_phone_lists_are_cards_without_a_wide_table(): void
+    {
+        $css = file_get_contents(public_path('css/app.css'));
+        $this->assertIsString($css);
+        $phone = $this->phoneCss($css);
+
+        $this->assertMatchesRegularExpression(
+            '/\.place-link\s*\{[^}]*max-width:\s*100%;[^}]*overflow-wrap:\s*anywhere;[^}]*word-break:\s*break-all/s',
+            $css,
+        );
+        $this->assertLessThan(
+            strpos($phone, '.person-cards table'),
+            strpos($phone, 'width: max-content'),
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.table-wrap\.person-cards,\s*\.table-wrap\.roster-cards\s*\{[^}]*overflow-x:\s*clip/s',
+            $phone,
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.person-cards table,\s*\.roster-cards table,[\s\S]*?display:\s*block;[\s\S]*?width:\s*100%;[\s\S]*?min-width:\s*0;/s',
+            $phone,
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.person-cards thead,\s*\.roster-cards thead\s*\{[^}]*display:\s*none/s',
+            $phone,
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.person-cards tr\.person-card,\s*\.roster-cards tr\.roster-card\s*\{[^}]*flex-direction:\s*column/s',
+            $phone,
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.person-cards tr\.person-card > td\.person-extra\s*\{[^}]*display:\s*none/s',
+            $phone,
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.person-cards \.person-actions,\s*\.roster-cards \.roster-actions,[\s\S]*?flex-direction:\s*column/s',
+            $phone,
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/\.person-cards table[^{]*\{[^}]*width:\s*max-content/s',
+            $phone,
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/\.roster-cards table[^{]*\{[^}]*width:\s*max-content/s',
+            $phone,
+        );
+
+        $student = $this->studentUser('Соколов Илья', 'ПИ-21');
+        $other = $this->studentUser('Белова Анна', 'ПИ-22');
+        $teacher = $this->teacherUser('Иванова А. С.');
+        $admin = $this->adminUser();
+
+        $directory = $this->actingAs($student)
+            ->get(route('teachers.index'))
+            ->assertOk()
+            ->getContent();
+        $teacherCard = $this->cardHtml($directory, 'person-card', 'Иванова А. С.');
+        $this->assertStringContainsString('class="person-name"', $teacherCard);
+        $this->assertStringContainsString('class="person-fact">доцент', $teacherCard);
+        $this->assertStringContainsString('class="person-actions"', $teacherCard);
+        $this->assertStringContainsString('>В избранное</button>', $teacherCard);
+        $this->assertStringNotContainsString('<table', $teacherCard);
+        $this->assertSame(1, substr_count($directory, '<table'));
+
+        $users = $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->getContent();
+        $adminCard = $this->cardHtml($users, 'person-card', 'Иванова А. С.');
+        $this->assertStringContainsString('class="person-name"', $adminCard);
+        $this->assertStringContainsString('class="person-fact"', $adminCard);
+        $this->assertStringContainsString('доцент, программная инженерия', $adminCard);
+        $this->assertStringContainsString('class="person-state"', $adminCard);
+        $this->assertStringContainsString('активен', $adminCard);
+        $this->assertStringContainsString('class="person-actions"', $adminCard);
+        $this->assertStringContainsString('>Заблокировать</a>', $adminCard);
+        $this->assertStringNotContainsString('<table', $adminCard);
+        $studentCard = $this->cardHtml($users, 'person-card', 'Соколов Илья');
+        $this->assertStringContainsString('class="person-fact"', $studentCard);
+        $this->assertStringContainsString('ПИ-21', $studentCard);
+        $this->assertStringContainsString('активен', $studentCard);
+        $this->assertSame(1, substr_count($users, '<table'));
+
+        $slot = $this->futureSlot($teacher, '11:00', '11:45', 'Главный А', '314');
+        $this->actingAs($student)->post(route('bookings.store', $slot))->assertRedirect();
+        $this->actingAs($other)->post(route('bookings.store', $slot))->assertRedirect();
+
+        $roster = $this->actingAs($teacher)
+            ->get(route('slots.roster', $slot))
+            ->assertOk()
+            ->assertSeeInOrder(['ПИ-21', 'Соколов Илья', 'ПИ-22', 'Белова Анна'])
+            ->getContent();
+        $this->assertSame(1, substr_count($roster, '<table'));
+        $rosterCard = $this->cardHtml($roster, 'roster-card', 'Соколов Илья');
+        $this->assertStringContainsString('class="roster-group">ПИ-21', $rosterCard);
+        $this->assertStringContainsString('class="roster-name"', $rosterCard);
+        $this->assertStringContainsString('Соколов Илья', $rosterCard);
+        $this->assertStringContainsString('class="roster-status"', $rosterCard);
+        $this->assertStringContainsString('>Отменить</a>', $rosterCard);
+        $this->assertStringNotContainsString('<table', $rosterCard);
+        $this->assertStringContainsString('class="roster-card"', $this->cardHtml($roster, 'roster-card', 'Белова Анна'));
+    }
+
+    public function test_native_date_control_does_not_claim_dd_mm_yyyy(): void
+    {
+        $teacher = $this->teacherUser('Иванова А. С.');
+        $create = $this->actingAs($teacher)
+            ->get(route('teacher.slots.create'))
+            ->assertOk()
+            ->assertSee('type="date"', false)
+            ->getContent();
+
+        $this->assertStringNotContainsString('ДД.ММ.ГГГГ', $create);
+        $this->assertStringNotContainsString('placeholder="31.10.2026"', $create);
+
+        $slot = $this->futureSlot($teacher, '10:00', '10:45', 'А', '12');
+        $edit = $this->actingAs($teacher)
+            ->get(route('teacher.slots.edit', $slot))
+            ->assertOk()
+            ->getContent();
+        $this->assertStringNotContainsString('ДД.ММ.ГГГГ', $edit);
+
+        $failed = $this->followingRedirects()
+            ->actingAs($teacher)
+            ->from(route('teacher.slots.create'))
+            ->post(route('teacher.slots.store'), [
+                'format' => 'online',
+                'date' => '31.02.2026',
+                'start_time' => '18:00',
+                'end_time' => '18:45',
+                'meeting_url' => 'https://meet.example.com/x',
+            ])
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('ДД.ММ.ГГГГ', $failed);
+        $this->assertStringContainsString('Укажите дату.', $failed);
+    }
+
+    private function phoneCss(string $css): string
+    {
+        $start = strpos($css, '@media (max-width: 760px)');
+        $this->assertNotFalse($start);
+        $open = strpos($css, '{', $start);
+        $this->assertNotFalse($open);
+        $depth = 0;
+        $length = strlen($css);
+
+        for ($i = $open; $i < $length; $i++) {
+            if ($css[$i] === '{') {
+                $depth++;
+            } elseif ($css[$i] === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    return substr($css, $start, $i - $start + 1);
+                }
+            }
+        }
+
+        $this->fail('Phone breakpoint CSS was not closed.');
+    }
+
+    private function cardHtml(string $html, string $class, string $marker): string
+    {
+        $pattern = '/<tr class="'.preg_quote($class, '/').'"[^>]*>(?:(?!<\/tr>).)*'.preg_quote($marker, '/').'(?:(?!<\/tr>).)*<\/tr>/s';
+        $this->assertMatchesRegularExpression($pattern, $html);
+        preg_match($pattern, $html, $match);
+
+        return $match[0];
+    }
+
     private function whereHtml(string $html, string $url): string
     {
         $pattern = '/<div class="where">(?:(?!<\/div>).)*'.preg_quote($url, '/').'(?:(?!<\/div>).)*<\/div>/s';

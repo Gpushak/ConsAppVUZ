@@ -211,6 +211,12 @@
     });
   }
 
+  function syncFinishedOnly() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-only-finished]'), function (section) {
+      section.hidden = !showFinished;
+    });
+  }
+
   function boot() {
     Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), enhance);
     var search = document.querySelector('[data-teacher-search]');
@@ -227,10 +233,12 @@
       button.addEventListener('click', function () {
         showFinished = !showFinished;
         updateToggle();
+        syncFinishedOnly();
         Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), apply);
       });
     });
     updateToggle();
+    syncFinishedOnly();
   }
 
   if (document.readyState === 'loading') {

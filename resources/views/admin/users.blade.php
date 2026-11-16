@@ -7,7 +7,7 @@
     <h1>Пользователи</h1>
   </div>
   @include('partials.errors')
-  <div class="table-wrap">
+  <div class="table-wrap person-cards">
     <table class="data-table">
       <thead>
         <tr>
@@ -21,25 +21,25 @@
       </thead>
       <tbody>
         @foreach ($users as $user)
-          <tr>
-            <td>{{ $user->name }}</td>
-            <td>{{ $user->email }}</td>
-            <td>{{ $user->role->name }}</td>
-            <td>
+          <tr class="person-card">
+            <td class="person-name">{{ $user->name }}</td>
+            <td class="person-extra">{{ $user->email }}</td>
+            <td class="person-extra">{{ $user->role->name }}</td>
+            <td class="person-fact">
               @if ($user->teacherProfile)
                 {{ $user->teacherProfile->position }}, {{ $user->teacherProfile->department }}
               @else
                 {{ $user->studentProfile->group_name ?? '—' }}
               @endif
             </td>
-            <td>
+            <td class="person-state">
               @if ($user->is_active)
                 <span class="state-on">активен</span>
               @else
                 <span class="state-off">заблокирован</span>
               @endif
             </td>
-            <td>
+            <td class="person-actions">
               @can('block', $user)
                 <div class="actions">
                   @if ($user->is_active)

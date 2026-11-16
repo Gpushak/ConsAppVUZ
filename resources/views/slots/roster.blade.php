@@ -12,7 +12,7 @@
   @if ($signups->isEmpty())
     <p class="notice">На этот слот ещё никто не записался.</p>
   @else
-    <div class="table-wrap">
+    <div class="table-wrap roster-cards">
       <table class="data-table">
         <thead>
           <tr>
@@ -26,17 +26,17 @@
         </thead>
         <tbody>
           @foreach ($signups as $booking)
-            <tr>
-              <td>{{ $booking->studentProfile->group_name }}</td>
-              <td>
+            <tr class="roster-card">
+              <td class="roster-group">{{ $booking->studentProfile->group_name }}</td>
+              <td class="roster-name">
                 {{ $booking->studentProfile->user->name }}
                 @if (filled($booking->teacher_comment))
                   <span class="muted">{{ $booking->teacher_comment }}</span>
                 @endif
               </td>
-              <td><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
+              <td class="roster-status"><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
               @if ($teacherActions)
-                <td class="fit">
+                <td class="roster-actions">
                   @if ($booking->isActive())
                     <a class="btn btn-small btn-ghost" href="{{ route('teacher.bookings.cancel', $booking) }}">Отменить</a>
                   @endif
