@@ -25,6 +25,17 @@ final class Ru
         return mb_strtoupper(mb_substr($phrase, 0, 1)).mb_substr($phrase, 1).'.';
     }
 
+    public static function seriesDaysWillChange(int $count): string
+    {
+        if ($count < 1) {
+            return 'Оставшиеся дни серии не изменятся.';
+        }
+
+        $verb = self::form($count) === 'one' ? 'Будет изменён' : 'Будут изменены';
+
+        return $verb.' ещё '.$count.' '.self::plural($count, 'день', 'дня', 'дней').' серии.';
+    }
+
     public static function emptyDaysWillBeUnpublished(int $count): string
     {
         if ($count < 1) {

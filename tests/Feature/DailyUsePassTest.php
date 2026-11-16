@@ -109,11 +109,17 @@ class DailyUsePassTest extends ConsultationTestCase
             ->getContent();
 
         $anchor = $this->rowHtml($html, '27.10.2026');
-        $this->assertStringContainsString('впереди ещё 4 дня', $anchor);
+        $this->assertStringContainsString('впереди ещё 3 дня', $anchor);
         $this->assertStringNotContainsString('еженедельно', $anchor);
 
         $later = $this->rowHtml($html, '03.11.2026');
-        $this->assertStringContainsString('еженедельно, впереди ещё 4 дня', $later);
+        $this->assertStringContainsString('еженедельно', $later);
+        $this->assertStringNotContainsString('впереди ещё', $later);
+
+        $last = $this->rowHtml($html, '17.11.2026');
+        $this->assertStringContainsString('еженедельно', $last);
+        $this->assertStringNotContainsString('впереди ещё', $last);
+        $this->assertSame(1, substr_count($html, 'впереди ещё'));
 
         $this->actingAs($teacher)
             ->get(route('teacher.slots.series.stop', $series->first()))

@@ -232,10 +232,11 @@ class BookingService
 
     /**
      * @param  array{starts_at: Carbon, ends_at: Carbon, building: ?string, room: ?string, comment: ?string, meeting_url: ?string}  $attributes
+     * @return array{changed: int, skipped: int}
      */
-    public function updateSlot(Slot $slot, array $attributes): void
+    public function updateSlot(Slot $slot, array $attributes, bool $applyToSeries = false): array
     {
-        DB::transaction(function () use ($slot, $attributes) {
+        return DB::transaction(function () use ($slot, $attributes, $applyToSeries) {
             TeacherProfile::query()->whereKey($slot->teacher_profile_id)->lockForUpdate()->first();
             $locked = Slot::query()->whereKey($slot->id)->lockForUpdate()->firstOrFail();
 
@@ -245,6 +246,7 @@ class BookingService
                 ]);
             }
 
+            $originalStarts = $locked->starts_at->copy();
             $timeChanged = $locked->starts_at->format('Y-m-d H:i') !== $attributes['starts_at']->format('Y-m-d H:i')
                 || $locked->ends_at->format('Y-m-d H:i') !== $attributes['ends_at']->format('Y-m-d H:i');
 
@@ -274,7 +276,69 @@ class BookingService
                 'comment' => $attributes['comment'],
                 'meeting_url' => $attributes['meeting_url'],
             ]);
+
+            if (! $applyToSeries || $locked->series_id === null) {
+                return ['changed' => 0, 'skipped' => 0];
+            }
+
+            return $this->applyToLaterSeriesDays($locked, $attributes, $originalStarts);
         });
+    }
+
+    /**
+     * @param  array{starts_at: Carbon, ends_at: Carbon, building: ?string, room: ?string, comment: ?string, meeting_url: ?string}  $attributes
+     * @return array{changed: int, skipped: int}
+     */
+    private function applyToLaterSeriesDays(Slot $source, array $attributes, Carbon $originalStarts): array
+    {
+        $later = $source->laterSeriesDays($originalStarts)
+            ->orderBy('starts_at')
+            ->lockForUpdate()
+            ->get();
+
+        $changed = 0;
+        $skipped = 0;
+        $clockStart = $attributes['starts_at']->format('H:i:s');
+        $clockEnd = $attributes['ends_at']->format('H:i:s');
+
+        foreach ($later as $item) {
+            if ($item->conducted_at !== null || ! $item->starts_at->greaterThan(now())) {
+                continue;
+            }
+
+            $newStart = Carbon::parse($item->starts_at->toDateString().' '.$clockStart);
+            $newEnd = Carbon::parse($item->starts_at->toDateString().' '.$clockEnd);
+            $moveTime = $item->starts_at->format('H:i') !== $newStart->format('H:i')
+                || $item->ends_at->format('H:i') !== $newEnd->format('H:i');
+
+            $active = Booking::query()
+                ->where('slot_id', $item->id)
+                ->where('status', Booking::BOOKED)
+                ->lockForUpdate()
+                ->exists();
+
+            if ($active) {
+                $moveTime = false;
+            }
+
+            if ($moveTime && Slot::teacherHasOverlap($item->teacher_profile_id, $newStart, $newEnd, $item->id)) {
+                $skipped++;
+
+                continue;
+            }
+
+            $item->update([
+                'starts_at' => $moveTime ? $newStart : $item->starts_at,
+                'ends_at' => $moveTime ? $newEnd : $item->ends_at,
+                'building' => $attributes['building'],
+                'room' => $attributes['room'],
+                'comment' => $attributes['comment'],
+                'meeting_url' => $attributes['meeting_url'],
+            ]);
+            $changed++;
+        }
+
+        return ['changed' => $changed, 'skipped' => $skipped];
     }
 
     public function stopSeries(Slot $slot): void

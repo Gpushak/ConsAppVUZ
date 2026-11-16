@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateSlotRequest;
 use App\Models\Booking;
 use App\Models\Slot;
 use App\Services\BookingService;
+use App\Support\Ru;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -51,17 +52,23 @@ class SlotController extends Controller
             ->map(fn ($group) => $group->sortBy(fn (Slot $slot) => $slot->starts_at->getTimestamp())->first()->id)
             ->values();
 
-        $seriesRemaining = $slots
+        $seriesAhead = $slots
             ->filter(fn (Slot $slot) => $slot->series_id !== null
                 && $slot->is_published
                 && $slot->conducted_at === null
                 && $slot->starts_at->isFuture())
-            ->countBy('series_id');
+            ->groupBy('series_id')
+            ->mapWithKeys(function ($group) {
+                $nearest = $group->sortBy(fn (Slot $slot) => $slot->starts_at->getTimestamp())->first();
+                $later = $group->filter(fn (Slot $slot) => $slot->starts_at->greaterThan($nearest->starts_at))->count();
+
+                return [$nearest->id => $later];
+            });
 
         return view('teacher.slots', [
             'slots' => $slots,
             'stopSlotIds' => $stopSlotIds,
-            'seriesRemaining' => $seriesRemaining,
+            'seriesAhead' => $seriesAhead,
         ]);
     }
 
@@ -118,9 +125,28 @@ class SlotController extends Controller
 
     public function update(UpdateSlotRequest $request, Slot $slot, BookingService $bookings): RedirectResponse
     {
-        $bookings->updateSlot($slot, $request->slotAttributes());
+        $apply = $request->applyToSeries();
+        $result = $bookings->updateSlot($slot, $request->slotAttributes(), $apply);
 
-        return redirect()->route('teacher.slots.index')->with('status', 'Слот изменён.');
+        return redirect()->route('teacher.slots.index')->with('status', $this->slotUpdatedMessage($apply, $result));
+    }
+
+    /**
+     * @param  array{changed: int, skipped: int}  $result
+     */
+    private function slotUpdatedMessage(bool $apply, array $result): string
+    {
+        if (! $apply) {
+            return 'Слот изменён.';
+        }
+
+        $message = 'Слот изменён. '.Ru::seriesDaysWillChange($result['changed']);
+
+        if ($result['skipped'] > 0) {
+            $message .= ' Дни с пересечением пропущены.';
+        }
+
+        return $message;
     }
 
     public function stopSeriesForm(Slot $slot): View

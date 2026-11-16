@@ -118,6 +118,15 @@
         <label for="meeting_url">{{ $online ? 'Ссылка' : 'Ссылка, необязательно' }}</label>
         <input id="meeting_url" type="text" name="meeting_url" value="{{ old('meeting_url', $slot->meeting_url) }}" placeholder="https://" @required($online)>
       </div>
+      @if ($slot->series_id !== null)
+        <div class="series-apply">
+          <label class="choice" for="apply_to_series">
+            <input id="apply_to_series" type="checkbox" name="apply_to_series" value="1" @checked(old('apply_to_series'))>
+            Применить к оставшимся дням серии
+          </label>
+          <p class="field-note" id="series-apply-note">{{ \App\Support\Ru::seriesDaysWillChange($slot->laterSeriesDays()->count()) }}</p>
+        </div>
+      @endif
       <p class="form-actions"><button class="btn" type="submit">Сохранить</button></p>
     </form>
   </div>

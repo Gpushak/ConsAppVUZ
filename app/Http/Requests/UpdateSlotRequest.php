@@ -128,6 +128,11 @@ class UpdateSlotRequest extends FormRequest
         });
     }
 
+    public function applyToSeries(): bool
+    {
+        return $this->boolean('apply_to_series') && $this->slot()->series_id !== null;
+    }
+
     /**
      * @return array<string, mixed>
      */

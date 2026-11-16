@@ -51,15 +51,15 @@
                 || ($showStop && $primary !== 'stop');
           @endphp
           @php
-            $left = $slot->series_id === null ? 0 : (int) ($seriesRemaining[$slot->series_id] ?? 0);
+            $ahead = $seriesAhead->get($slot->id);
           @endphp
           <tr class="slot-row" @if ($slot->isFinished()) data-finished hidden @endif>
             <td class="slot-date">
               {{ $slot->dateLabel() }}
               @if ($showMark)
-                <span class="series-mark">еженедельно@if ($left > 0), {{ \App\Support\Ru::aheadDays($left) }}@endif</span>
-              @elseif ($left > 0)
-                <span class="series-mark">{{ \App\Support\Ru::aheadDays($left) }}</span>
+                <span class="series-mark">еженедельно@if ($ahead), {{ \App\Support\Ru::aheadDays($ahead) }}@endif</span>
+              @elseif ($ahead)
+                <span class="series-mark">{{ \App\Support\Ru::aheadDays($ahead) }}</span>
               @endif
             </td>
             <td class="slot-time">{{ $slot->timeRange() }}</td>

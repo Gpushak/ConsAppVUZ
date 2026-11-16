@@ -650,6 +650,14 @@ li.me {
   font-weight: 450;
 }
 
+.series-apply {
+  margin: 4px 0 12px;
+}
+
+.series-apply .choice {
+  margin-bottom: 0;
+}
+
 .slot-when .slot-time-text {
   margin-left: 8px;
 }
@@ -1116,5 +1124,93 @@ td.place {
     max-width: none;
     white-space: normal;
     border: 0;
+  }
+
+  .table-wrap.booking-cards {
+    overflow-x: clip;
+    background: transparent;
+    border: 0;
+    max-width: 100%;
+  }
+
+  .booking-cards table,
+  .booking-cards tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .booking-cards thead {
+    display: none;
+  }
+
+  .booking-cards tr.booking-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0 0 12px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    overflow-x: clip;
+    overflow-wrap: anywhere;
+  }
+
+  .booking-cards tr.booking-card > td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .booking-cards tr.booking-card > td.booking-extra {
+    display: none;
+  }
+
+  .booking-cards tr.booking-card > td.booking-date,
+  .booking-cards tr.booking-card > td.booking-time {
+    font-weight: 650;
+  }
+
+  .booking-cards .booking-primary {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .booking-cards .booking-primary .btn {
+    width: 100%;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .booking-cards .where,
+  .booking-cards .where-line,
+  .booking-cards td.place {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .booking-cards .place-link {
+    display: block;
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+    white-space: normal;
   }
 }
