@@ -63,7 +63,9 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::post('/teachers', [UserController::class, 'storeTeacher'])->name('admin.teachers.store');
             Route::get('/users/{user}/block', [UserController::class, 'blockForm'])->name('admin.users.block.confirm');
             Route::post('/users/{user}/block', [UserController::class, 'block'])->name('admin.users.block');
+            Route::get('/users/{user}/unblock', [UserController::class, 'unblockForm'])->name('admin.users.unblock.confirm');
             Route::post('/users/{user}/unblock', [UserController::class, 'unblock'])->name('admin.users.unblock');
+            Route::get('/users/{user}/password', [UserController::class, 'passwordForm'])->name('admin.users.password.confirm');
             Route::post('/users/{user}/password', [UserController::class, 'resetPassword'])->name('admin.users.password');
             Route::post('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('admin.users.profile');
         });

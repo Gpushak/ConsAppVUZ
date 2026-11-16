@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -75,6 +76,15 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('status', 'Пользователь заблокирован.');
     }
 
+    public function unblockForm(User $user): View
+    {
+        $this->authorize('block', $user);
+
+        return view('admin.unblock', [
+            'user' => $user,
+        ]);
+    }
+
     public function unblock(User $user): RedirectResponse
     {
         $this->authorize('block', $user);
@@ -82,6 +92,15 @@ class UserController extends Controller
         $this->endSessions($user);
 
         return redirect()->route('admin.users.index')->with('status', 'Пользователь разблокирован.');
+    }
+
+    public function passwordForm(User $user): View
+    {
+        $this->authorize('resetPassword', $user);
+
+        return view('admin.password', [
+            'user' => $user,
+        ]);
     }
 
     public function resetPassword(Request $request, User $user): RedirectResponse
@@ -112,7 +131,7 @@ class UserController extends Controller
             'department' => trim((string) $request->input('department')),
         ]);
 
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'position' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
         ], [
@@ -121,6 +140,15 @@ class UserController extends Controller
             'position.max' => 'Должность не длиннее 255 символов.',
             'department.max' => 'Кафедра не длиннее 255 символов.',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('admin.users.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $validator->validated();
 
         $user->teacherProfile->update([
             'position' => $data['position'],

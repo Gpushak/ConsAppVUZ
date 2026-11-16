@@ -5,6 +5,32 @@
     return String(value || '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('ru');
   }
 
+  // Same folding as App\Support\SearchText: ё/е, punctuation, then a word prefix.
+  function searchFold(value) {
+    return String(value || '')
+      .toLocaleLowerCase('ru')
+      .replace(/ё/g, 'е')
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function searchWords(value) {
+    var folded = searchFold(value);
+
+    return folded ? folded.split(' ').filter(Boolean) : [];
+  }
+
+  function searchMatches(haystack, tokens) {
+    var words = searchWords(haystack);
+
+    return tokens.every(function (token) {
+      return words.some(function (word) {
+        return word.indexOf(token) === 0;
+      });
+    });
+  }
+
   function clean(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
   }
@@ -43,7 +69,7 @@
     var words = [];
 
     if (search && table.hasAttribute('data-teacher-directory')) {
-      words = fold(search.value).split(' ').filter(Boolean);
+      words = searchWords(search.value);
     }
 
     var statusIndex = select ? select.parentNode.cellIndex : -1;
@@ -62,10 +88,7 @@
       }
 
       if (visible && words.length && row.hasAttribute('data-search')) {
-        var haystack = fold(row.getAttribute('data-search'));
-        visible = words.every(function (word) {
-          return haystack.indexOf(word) !== -1;
-        });
+        visible = searchMatches(row.getAttribute('data-search'), words);
       }
 
       row.hidden = !visible;
@@ -188,7 +211,7 @@
       headerRow.parentNode.appendChild(filterRow);
     }
 
-    if ((statusIndex >= 0 || table.hasAttribute('data-teacher-directory')) && dataRows(table).length) {
+    if ((statusIndex >= 0 || table.hasAttribute('data-teacher-directory')) && dataRows(table).length && !table.querySelector('[data-nomatch]')) {
       var empty = document.createElement('tr');
       empty.setAttribute('data-static', '');
       empty.setAttribute('data-nomatch', '');

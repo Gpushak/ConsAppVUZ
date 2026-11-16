@@ -397,7 +397,7 @@ thead th {
 }
 
 .directory-search {
-  max-width: 22rem;
+  max-width: 28rem;
   margin-bottom: 14px;
 }
 
@@ -610,10 +610,12 @@ li.me {
   font-size: 13px;
 }
 
-.password-box form {
+.password-box[open] > form {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 6px;
+  max-width: 100%;
 }
 
 .password-box input {
@@ -624,10 +626,12 @@ li.me {
   font: inherit;
 }
 
-.profile-box form {
+.profile-box[open] > form {
   display: grid;
   gap: 8px;
-  width: 16rem;
+  width: 100%;
+  max-width: 16rem;
+  min-width: 0;
 }
 
 .profile-box label {
@@ -1467,5 +1471,73 @@ td.place {
     overflow-wrap: anywhere;
     word-break: break-all;
     white-space: normal;
+  }
+}
+
+/* Teacher directory and admin users. Does not restyle the week grid. */
+.cell-label {
+  display: none;
+}
+
+.table-wrap.teacher-directory,
+.table-wrap.admin-users {
+  max-width: 100%;
+}
+
+.table-wrap.teacher-directory th,
+.table-wrap.teacher-directory td,
+.table-wrap.admin-users th,
+.table-wrap.admin-users td {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.table-wrap.teacher-directory table,
+.table-wrap.admin-users table {
+  width: 100%;
+}
+
+tr.person-card[data-favorite] {
+  background: #f3faf6;
+}
+
+.fav-form .chip {
+  white-space: nowrap;
+}
+
+.account-line {
+  margin: 0 0 12px;
+}
+
+@media (max-width: 760px) {
+  .person-cards .cell-label {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .person-cards tr.person-card > td.person-mail,
+  .person-cards tr.person-card > td.person-role,
+  .person-cards tr.person-card > td.person-dept {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .person-cards .person-actions details:not([open]) > form {
+    display: none;
+  }
+
+  .person-cards tr.person-card[data-favorite] {
+    border-color: #8fceaa;
+    box-shadow: inset 4px 0 0 #146c36;
+  }
+
+  .directory-search {
+    max-width: none;
   }
 }

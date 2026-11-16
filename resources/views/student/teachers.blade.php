@@ -7,11 +7,21 @@
     <h1>Преподаватели</h1>
   </div>
   @include('partials.errors')
-  <div class="field directory-search">
+  @php
+    $favoriteCount = $teachers->filter(fn ($teacher) => $favoriteIds->contains($teacher->id))->count();
+  @endphp
+  <p class="meta">
+    @if ($favoriteCount === 0)
+      Избранных нет. Добавьте преподавателя, чтобы его слоты были на главной.
+    @else
+      В избранном {{ $favoriteCount }} — их слоты на главной.
+    @endif
+  </p>
+  <form class="field directory-search" method="GET" action="{{ route('teachers.index') }}">
     <label for="teacher-search">Поиск</label>
-    <input id="teacher-search" type="search" placeholder="Имя или кафедра" data-teacher-search autocomplete="off">
-  </div>
-  <div class="table-wrap person-cards">
+    <input id="teacher-search" type="search" name="q" value="{{ $query }}" placeholder="Имя, должность или кафедра" data-teacher-search autocomplete="off">
+  </form>
+  <div class="table-wrap person-cards teacher-directory">
     <table class="data-table" data-teacher-directory>
       <thead>
         <tr>
@@ -23,21 +33,21 @@
       </thead>
       <tbody>
         @forelse ($teachers as $teacher)
-          <tr class="person-card" data-search="{{ $teacher->user->name }} {{ $teacher->department }}">
+          <tr class="person-card" data-search="{{ $teacher->search_text }}" @if ($favoriteIds->contains($teacher->id)) data-favorite @endif @unless ($teacher->search_match) hidden @endunless>
             <td class="person-name">{{ $teacher->user->name }}</td>
-            <td class="person-fact">{{ $teacher->position }}</td>
-            <td class="person-extra">{{ $teacher->department }}</td>
+            <td class="person-fact"><span class="cell-label">Должность</span>{{ $teacher->position }}</td>
+            <td class="person-dept"><span class="cell-label">Кафедра</span>{{ $teacher->department }}</td>
             <td class="person-actions">
               @if ($favoriteIds->contains($teacher->id))
                 <form class="fav-form" method="POST" action="{{ route('teachers.unfavorite', $teacher) }}">
                   @csrf
-                  <span class="fav-on">в избранном</span>
-                  <button class="btn btn-small btn-ghost" type="submit">Убрать</button>
+                  <span class="chip chip-free">В избранном</span>
+                  <button class="btn btn-small btn-ghost" type="submit">Убрать из избранного</button>
                 </form>
               @else
-                <form method="POST" action="{{ route('teachers.favorite', $teacher) }}">
+                <form class="fav-form" method="POST" action="{{ route('teachers.favorite', $teacher) }}">
                   @csrf
-                  <button class="btn btn-small" type="submit">В избранное</button>
+                  <button class="btn btn-small" type="submit">Добавить в избранное</button>
                 </form>
               @endif
             </td>
@@ -47,6 +57,11 @@
             <td colspan="4" class="muted">Преподавателей пока нет.</td>
           </tr>
         @endforelse
+        @if ($teachers->isNotEmpty())
+          <tr data-static data-nomatch @if ($searchHasMatch) hidden @endif>
+            <td colspan="4" class="muted">Нет совпадений</td>
+          </tr>
+        @endif
       </tbody>
     </table>
   </div>

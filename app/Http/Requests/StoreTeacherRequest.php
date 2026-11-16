@@ -51,6 +51,15 @@ class StoreTeacherRequest extends FormRequest
             'department.required' => 'Укажите кафедру.',
             'password.required' => 'Укажите временный пароль.',
             'password.min' => 'Пароль не короче 8 символов.',
+            'name.max' => 'ФИО не длиннее 255 символов.',
+            'email.max' => 'Почта не длиннее 255 символов.',
+            'position.max' => 'Должность не длиннее 255 символов.',
+            'department.max' => 'Кафедра не длиннее 255 символов.',
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return route('admin.users.index');
     }
 }
