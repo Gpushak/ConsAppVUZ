@@ -920,6 +920,53 @@ td.place {
   text-align: center;
 }
 
+.week .slot[data-slot-card] {
+  cursor: pointer;
+}
+
+.week .slot-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+}
+
+.week .slot-toggle .time,
+.week .slot-toggle .who-line,
+.week .slot-toggle .chip {
+  margin: 0;
+}
+
+.week .slot-toggle .chip {
+  align-self: flex-start;
+}
+
+.week .slot-toggle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.week .day .slot-date-text {
+  display: none;
+}
+
+.week .slot-details {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
 @media (max-width: 900px) {
   .week {
     grid-template-columns: 1fr;
@@ -929,6 +976,30 @@ td.place {
   .day-head {
     margin-bottom: 6px;
     border-bottom: 0;
+  }
+
+  .week .slot-toggle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "time chip"
+      "who who";
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+  }
+
+  .week .slot-toggle .time {
+    grid-area: time;
+  }
+
+  .week .slot-toggle .chip {
+    grid-area: chip;
+    justify-self: end;
+  }
+
+  .week .slot-toggle .who-line {
+    grid-area: who;
   }
 }
 
