@@ -3,6 +3,27 @@
 @section('title', 'Мои слоты')
 
 @section('content')
+  <section class="next-slot" aria-labelledby="next-slot-title">
+    <p class="next-slot-label" id="next-slot-title">Ближайшая консультация</p>
+    @if ($nextSlot)
+      <div class="nearest" data-next-slot="{{ $nextSlot->id }}">
+        <p class="nearest-when">{{ $nextSlot->dateLabel() }}, {{ $nextSlot->timeRange() }}</p>
+        @include('partials.slot-place', ['slot' => $nextSlot])
+        <p class="nearest-status"><span class="chip {{ $nextSlot->chipClass() }}">{{ $nextSlot->statusLabel() }}</span></p>
+        @include('partials.signup-list', ['slot' => $nextSlot, 'activeOnly' => true, 'asCell' => false])
+        <div class="actions">
+          @if ($nextSlot->canBeEdited())
+            <a class="btn btn-small" href="{{ route('teacher.slots.edit', $nextSlot) }}">Изменить</a>
+          @endif
+          @if ($nextSlot->series_id !== null)
+            <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $nextSlot) }}">Остановить повтор</a>
+          @endif
+        </div>
+      </div>
+    @else
+      <p class="nearest-empty">Ближайших консультаций нет.</p>
+    @endif
+  </section>
   <div class="page-head">
     <h1>Мои слоты</h1>
     <div class="actions">

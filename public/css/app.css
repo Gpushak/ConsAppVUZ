@@ -876,6 +876,38 @@ td.place {
   color: var(--muted);
 }
 
+.next-slot {
+  margin: 0 0 18px;
+  padding: 16px;
+  min-width: 0;
+  max-width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.next-slot-label {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.next-slot .nearest {
+  margin-top: 10px;
+}
+
+.next-slot .people {
+  margin-top: 8px;
+}
+
+.next-slot .actions {
+  margin-top: 12px;
+}
+
+.next-slot .btn {
+  white-space: normal;
+}
+
 .cal-nav {
   display: flex;
   align-items: center;
