@@ -43,10 +43,11 @@ class Slot extends Model
         return $this->hasMany(Booking::class);
     }
 
-    public static function teacherHasOverlap(int $teacherProfileId, Carbon $starts, Carbon $ends): bool
+    public static function teacherHasOverlap(int $teacherProfileId, Carbon $starts, Carbon $ends, ?int $exceptId = null): bool
     {
         return static::query()
             ->where('teacher_profile_id', $teacherProfileId)
+            ->when($exceptId !== null, fn ($query) => $query->whereKeyNot($exceptId))
             ->where('starts_at', '<', $ends)
             ->where('ends_at', '>', $starts)
             ->where(function ($query) {
@@ -145,6 +146,18 @@ class Slot extends Model
         }
 
         return $this->activeBookingsCount() === 0;
+    }
+
+    public function canBeEdited(): bool
+    {
+        return $this->is_published
+            && $this->conducted_at === null
+            && $this->starts_at->isFuture();
+    }
+
+    public function timeIsLocked(): bool
+    {
+        return $this->activeBookingsCount() > 0;
     }
 
     public function statusLabel(): string

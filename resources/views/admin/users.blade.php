@@ -25,7 +25,13 @@
             <td>{{ $user->name }}</td>
             <td>{{ $user->email }}</td>
             <td>{{ $user->role->name }}</td>
-            <td>{{ $user->teacherProfile->position ?? $user->studentProfile->group_name ?? '—' }}</td>
+            <td>
+              @if ($user->teacherProfile)
+                {{ $user->teacherProfile->position }}, {{ $user->teacherProfile->department }}
+              @else
+                {{ $user->studentProfile->group_name ?? '—' }}
+              @endif
+            </td>
             <td>
               @if ($user->is_active)
                 <span class="state-on">активен</span>
@@ -52,6 +58,24 @@
                       @csrf
                       <input type="text" name="password" minlength="8" required autocomplete="off" placeholder="временный пароль">
                       <button class="btn btn-small" type="submit">Задать</button>
+                    </form>
+                  </details>
+                @endcan
+                @can('updateProfile', $user)
+                  <details class="password-box profile-box" @if ((string) old('profile_user') === (string) $user->id) open @endif>
+                    <summary>Должность и кафедра</summary>
+                    <form method="POST" action="{{ route('admin.users.profile', $user) }}">
+                      @csrf
+                      <input type="hidden" name="profile_user" value="{{ $user->id }}">
+                      <label>
+                        Должность
+                        <input type="text" name="position" value="{{ (string) old('profile_user') === (string) $user->id ? old('position') : $user->teacherProfile->position }}" required>
+                      </label>
+                      <label>
+                        Кафедра
+                        <input type="text" name="department" value="{{ (string) old('profile_user') === (string) $user->id ? old('department') : $user->teacherProfile->department }}" required>
+                      </label>
+                      <button class="btn btn-small" type="submit">Сохранить</button>
                     </form>
                   </details>
                 @endcan

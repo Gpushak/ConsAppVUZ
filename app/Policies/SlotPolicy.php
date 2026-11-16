@@ -34,6 +34,13 @@ class SlotPolicy
             && (bool) $slot->teacherProfile?->user?->is_active;
     }
 
+    public function update(User $user, Slot $slot): bool
+    {
+        return $user->isTeacher()
+            && $slot->teacher_profile_id === $user->teacherProfile?->id
+            && $slot->canBeEdited();
+    }
+
     public function unpublish(User $user, Slot $slot): bool
     {
         return $user->isTeacher()

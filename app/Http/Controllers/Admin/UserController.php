@@ -103,6 +103,33 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('status', 'Временный пароль задан. Пользователь сменит его при входе.');
     }
 
+    public function updateProfile(Request $request, User $user): RedirectResponse
+    {
+        $this->authorize('updateProfile', $user);
+
+        $request->merge([
+            'position' => trim((string) $request->input('position')),
+            'department' => trim((string) $request->input('department')),
+        ]);
+
+        $data = $request->validate([
+            'position' => ['required', 'string', 'max:255'],
+            'department' => ['required', 'string', 'max:255'],
+        ], [
+            'position.required' => 'Укажите должность.',
+            'department.required' => 'Укажите кафедру.',
+            'position.max' => 'Должность не длиннее 255 символов.',
+            'department.max' => 'Кафедра не длиннее 255 символов.',
+        ]);
+
+        $user->teacherProfile->update([
+            'position' => $data['position'],
+            'department' => $data['department'],
+        ]);
+
+        return redirect()->route('admin.users.index')->with('status', 'Должность и кафедра сохранены.');
+    }
+
     private function endSessions(User $user): void
     {
         DB::table('sessions')->where('user_id', $user->id)->delete();

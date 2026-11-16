@@ -22,4 +22,12 @@ class UserPolicy
     {
         return $user->isAdmin() && $user->id !== $target->id;
     }
+
+    public function updateProfile(User $user, User $target): bool
+    {
+        return $user->isAdmin()
+            && $user->id !== $target->id
+            && $target->isTeacher()
+            && $target->teacherProfile !== null;
+    }
 }

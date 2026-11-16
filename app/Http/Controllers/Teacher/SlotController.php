@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSlotRequest;
+use App\Http\Requests\UpdateSlotRequest;
 use App\Models\Booking;
 use App\Models\Slot;
 use App\Services\BookingService;
@@ -38,9 +39,21 @@ class SlotController extends Controller
                 ->unique()
                 ->values();
 
+        $stopSlotIds = $slots
+            ->filter(function (Slot $slot) use ($stoppableSeries) {
+                return $slot->series_id !== null
+                    && $stoppableSeries->contains($slot->series_id)
+                    && $slot->is_published
+                    && $slot->conducted_at === null
+                    && $slot->starts_at->isFuture();
+            })
+            ->groupBy('series_id')
+            ->map(fn ($group) => $group->sortBy(fn (Slot $slot) => $slot->starts_at->getTimestamp())->first()->id)
+            ->values();
+
         return view('teacher.slots', [
             'slots' => $slots,
-            'stoppableSeries' => $stoppableSeries,
+            'stopSlotIds' => $stopSlotIds,
         ]);
     }
 
@@ -84,6 +97,22 @@ class SlotController extends Controller
         }
 
         return redirect()->route('teacher.slots.index')->with('status', $message);
+    }
+
+    public function edit(Slot $slot): View
+    {
+        $this->authorize('update', $slot);
+
+        return view('teacher.edit', [
+            'slot' => $slot,
+        ]);
+    }
+
+    public function update(UpdateSlotRequest $request, Slot $slot, BookingService $bookings): RedirectResponse
+    {
+        $bookings->updateSlot($slot, $request->slotAttributes());
+
+        return redirect()->route('teacher.slots.index')->with('status', 'Слот изменён.');
     }
 
     public function stopSeriesForm(Slot $slot): View
