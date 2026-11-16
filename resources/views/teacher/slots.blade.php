@@ -6,31 +6,22 @@
   <div class="page-head">
     <h1>Мои слоты</h1>
     <div class="actions">
-      @if ($slots->contains(fn ($slot) => $slot->isFinished()))
+      @if ($showFinishedToggle)
         <button class="btn btn-ghost" type="button" data-finished-toggle aria-pressed="false">Показать завершённые</button>
       @endif
       <a class="btn" href="{{ route('teacher.slots.create') }}">Новый слот</a>
     </div>
   </div>
   @include('partials.errors')
+  @include('partials.week-range', ['span' => $span, 'action' => route('teacher.slots.index')])
   @if ($slots->isEmpty())
     <p class="notice">Слотов пока нет. <a href="{{ route('teacher.slots.create') }}">Создайте первый слот</a>.</p>
-  @else
-  <div class="table-wrap slot-cards">
-    <table class="data-table slot-table">
-      <thead>
-        <tr>
-          <th>Дата</th>
-          <th>Время</th>
-          <th>Место</th>
-          <th>Студенты</th>
-          <th>Комментарий</th>
-          <th>Статус</th>
-          <th data-skip>Действие</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach ($slots as $slot)
+  @endif
+  <div class="week">
+    @foreach ($days as $day)
+      <section class="day" aria-labelledby="day-{{ $day['date']->format('Ymd') }}">
+        @include('partials.day-head', ['date' => $day['date']])
+        @forelse ($day['slots'] as $slot)
           @php
             $showStop = $stopSlotIds->contains($slot->id);
             $showMark = $slot->series_id !== null && ! $showStop;
@@ -49,59 +40,58 @@
                 || ($slot->canBeEdited() && $primary !== 'edit')
                 || ($slot->canBeUnpublished() && $primary !== 'unpublish')
                 || ($showStop && $primary !== 'stop');
-          @endphp
-          @php
             $ahead = $seriesAhead->get($slot->id);
           @endphp
-          <tr class="slot-row" @if ($slot->isFinished()) data-finished hidden @endif>
-            <td class="slot-date">
-              {{ $slot->dateLabel() }}
+          <article @class(['slot', 'done' => $slot->isFinished()]) @if ($slot->isFinished()) data-finished hidden @endif>
+            <p class="time">
+              <span class="slot-date-text">{{ $slot->dateLabel() }}</span>
+              <span class="slot-time-text">{{ $slot->timeRange() }}</span>
               @if ($showMark)
                 <span class="series-mark">еженедельно@if ($ahead), {{ \App\Support\Ru::aheadDays($ahead) }}@endif</span>
               @elseif ($ahead)
                 <span class="series-mark">{{ \App\Support\Ru::aheadDays($ahead) }}</span>
               @endif
-            </td>
-            <td class="slot-time">{{ $slot->timeRange() }}</td>
-            <td class="place">@include('partials.slot-place', ['slot' => $slot])</td>
-            @include('partials.signup-list', ['slot' => $slot])
-            <td @class(['soft', 'slot-comment', 'is-empty' => ! $slot->comment])>{{ $slot->comment ?: '—' }}</td>
-            <td class="slot-status"><span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span></td>
-            <td class="fit slot-actions">
-              @if ($primary)
-                <div class="actions slot-primary">
-                  @if ($primary === 'conduct')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}">Отметить проведённой</a>
-                  @elseif ($primary === 'edit')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}">Изменить</a>
-                  @elseif ($primary === 'unpublish')
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
-                  @else
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}">Остановить повтор</a>
-                  @endif
-                </div>
-              @endif
-              @if ($hasMore)
-                <div class="actions slot-more">
-                  @if ($slot->canBeConducted() && $primary !== 'conduct')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}">Отметить проведённой</a>
-                  @endif
-                  @if ($slot->canBeEdited() && $primary !== 'edit')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}">Изменить</a>
-                  @endif
-                  @if ($slot->canBeUnpublished() && $primary !== 'unpublish')
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
-                  @endif
-                  @if ($showStop && $primary !== 'stop')
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}">Остановить повтор</a>
-                  @endif
-                </div>
-              @endif
-            </td>
-          </tr>
-        @endforeach
-      </tbody>
-    </table>
+            </p>
+            @include('partials.slot-place', ['slot' => $slot])
+            @if ($slot->comment)
+              <p class="comment">{{ $slot->comment }}</p>
+            @endif
+            @include('partials.signup-list', ['slot' => $slot, 'asCell' => false])
+            <span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span>
+            @if ($primary)
+              <div class="actions slot-primary">
+                @if ($primary === 'conduct')
+                  <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}">Отметить проведённой</a>
+                @elseif ($primary === 'edit')
+                  <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}">Изменить</a>
+                @elseif ($primary === 'unpublish')
+                  <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
+                @else
+                  <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}">Остановить повтор</a>
+                @endif
+              </div>
+            @endif
+            @if ($hasMore)
+              <div class="actions slot-more">
+                @if ($slot->canBeConducted() && $primary !== 'conduct')
+                  <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}">Отметить проведённой</a>
+                @endif
+                @if ($slot->canBeEdited() && $primary !== 'edit')
+                  <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}">Изменить</a>
+                @endif
+                @if ($slot->canBeUnpublished() && $primary !== 'unpublish')
+                  <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
+                @endif
+                @if ($showStop && $primary !== 'stop')
+                  <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}">Остановить повтор</a>
+                @endif
+              </div>
+            @endif
+          </article>
+        @empty
+          <p class="empty">нет слотов</p>
+        @endforelse
+      </section>
+    @endforeach
   </div>
-  @endif
 @endsection

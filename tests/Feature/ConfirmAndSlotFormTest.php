@@ -17,7 +17,7 @@ class ConfirmAndSlotFormTest extends ConsultationTestCase
         $this->actingAs($student)->post(route('bookings.store', $booked))->assertRedirect();
 
         $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertSee(route('teacher.slots.unpublish.confirm', $slot), false)
             ->assertDontSee('action="'.route('teacher.slots.unpublish', $slot).'"', false);

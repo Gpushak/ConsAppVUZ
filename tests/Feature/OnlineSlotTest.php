@@ -35,7 +35,7 @@ class OnlineSlotTest extends ConsultationTestCase
             ->assertSee('name="format"', false);
 
         $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertSee('https://meet.example.com/room')
             ->assertDontSee('ауд.');
@@ -135,7 +135,7 @@ class OnlineSlotTest extends ConsultationTestCase
         $slot = Slot::query()->where('meeting_url', 'https://meet.example.com/ivanova')->firstOrFail();
 
         $this->actingAs($student)
-            ->get(route('home'))
+            ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertSee('https://meet.example.com/ivanova')
             ->assertSee('подключиться за пять минут')

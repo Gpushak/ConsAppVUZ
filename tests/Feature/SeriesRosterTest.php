@@ -145,7 +145,7 @@ class SeriesRosterTest extends ConsultationTestCase
         $other = $this->futureSlot($teacher, '18:00', '18:45', 'Б', '3');
 
         $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Остановить повтор')
             ->assertSee(route('teacher.slots.unpublish.confirm', $future), false);
@@ -162,7 +162,7 @@ class SeriesRosterTest extends ConsultationTestCase
         $this->assertTrue($other->refresh()->is_published);
 
         $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertDontSee('Остановить повтор');
     }
@@ -301,7 +301,7 @@ class SeriesRosterTest extends ConsultationTestCase
         }
 
         $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->assertDontSee('<details class="people"', false)
             ->assertSee('>3 студента</a>', false)
@@ -355,7 +355,7 @@ class SeriesRosterTest extends ConsultationTestCase
 
     private function rowHtml(string $html, string $marker): string
     {
-        $pattern = '/<tr\b[^>]*>(?:(?!<\/tr>).)*'.preg_quote($marker, '/').'(?:(?!<\/tr>).)*<\/tr>/s';
+        $pattern = '/<(?:article|tr)\b[^>]*>(?:(?!<\/(?:article|tr)>).)*'.preg_quote($marker, '/').'(?:(?!<\/(?:article|tr)>).)*<\/(?:article|tr)>/s';
         $this->assertMatchesRegularExpression($pattern, $html);
         preg_match($pattern, $html, $match);
 

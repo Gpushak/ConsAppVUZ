@@ -22,7 +22,7 @@ class FavoriteHomeTest extends ConsultationTestCase
         ]);
 
         $this->actingAs($student)
-            ->get(route('home'))
+            ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Иванова А. С.')
             ->assertSee('Смирнова Е. В.')
@@ -49,7 +49,7 @@ class FavoriteHomeTest extends ConsultationTestCase
             ->assertRedirect(route('teachers.index'));
 
         $this->actingAs($student)
-            ->get(route('home'))
+            ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertDontSee('Иванова А. С.')
             ->assertDontSee('ауд. 314')

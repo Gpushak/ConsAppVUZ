@@ -42,7 +42,7 @@ class SiteImprovementTest extends ConsultationTestCase
         $this->actingAs($student)->post(route('bookings.store', $nearest))->assertRedirect();
 
         $html = $this->actingAs($teacher)
-            ->get(route('teacher.slots.index'))
+            ->get(route('teacher.slots.index', $this->listedSpan()))
             ->assertOk()
             ->getContent();
 
@@ -234,7 +234,7 @@ class SiteImprovementTest extends ConsultationTestCase
             ->assertSeeInOrder(['ауд. 501', 'ауд. 502', 'ауд. 504', 'ауд. 503']);
 
         $home = $this->actingAs($student)
-            ->get(route('home'))
+            ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Вы записаны')
             ->assertSee('Записаться')
@@ -338,7 +338,7 @@ class SiteImprovementTest extends ConsultationTestCase
 
     private function rowHtml(string $html, string $marker): string
     {
-        $pattern = '/<tr\b[^>]*>(?:(?!<\/tr>).)*'.preg_quote($marker, '/').'(?:(?!<\/tr>).)*<\/tr>/s';
+        $pattern = '/<(?:article|tr)\b[^>]*>(?:(?!<\/(?:article|tr)>).)*'.preg_quote($marker, '/').'(?:(?!<\/(?:article|tr)>).)*<\/(?:article|tr)>/s';
         $this->assertMatchesRegularExpression($pattern, $html);
         preg_match($pattern, $html, $match);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Slot;
 use App\Services\BookingService;
+use App\Support\DateSpan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -33,10 +34,11 @@ class HomeController extends Controller
 
         $bookings->completeEndedSlots($favorites->pluck('id'));
 
-        $slotsByTeacher = collect();
+        $span = DateSpan::fromQuery($request->query('from'), $request->query('to'));
+        $slots = collect();
 
         if ($favorites->isNotEmpty()) {
-            $slotsByTeacher = Slot::query()
+            $slots = Slot::query()
                 ->with(['teacherProfile.user', 'bookings.studentProfile.user'])
                 ->whereIn('teacher_profile_id', $favorites->pluck('id'))
                 ->where('is_published', true)
@@ -47,14 +49,21 @@ class HomeController extends Controller
                     })->orWhereNotNull('conducted_at');
                 })
                 ->orderBy('starts_at')
-                ->get()
-                ->groupBy('teacher_profile_id');
+                ->get();
         }
+
+        $visible = $span->bounded
+            ? $slots->filter(fn (Slot $slot) => $span->contains($slot->starts_at))->values()
+            : $slots;
 
         return view('student.home', [
             'favorites' => $favorites,
-            'slotsByTeacher' => $slotsByTeacher,
             'student' => $student,
+            'span' => $span,
+            'days' => $span->buckets($visible),
+            'hasOpen' => $slots->contains(fn (Slot $slot) => ! $slot->isFinished()),
+            'onlyFinished' => ! $slots->contains(fn (Slot $slot) => ! $slot->isFinished()) && $visible->isNotEmpty(),
+            'showFinishedToggle' => $visible->contains(fn (Slot $slot) => $slot->isFinished()),
         ]);
     }
 }

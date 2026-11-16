@@ -57,6 +57,14 @@ abstract class ConsultationTestCase extends TestCase
         return $user->fresh(['teacherProfile', 'role']);
     }
 
+    /**
+     * @return array{from: string, to: string}
+     */
+    protected function listedSpan(): array
+    {
+        return ['from' => '2026-10-01', 'to' => '2026-11-30'];
+    }
+
     protected function futureSlot(
         User $teacher,
         string $start,
