@@ -47,7 +47,7 @@
   </div>
   <div class="panel slot-panel">
     @include('partials.errors', ['inlineErrors' => ['date', 'start_time', 'end_time', 'format', 'building', 'room', 'comment', 'meeting_url', 'repeat', 'repeat_until']])
-    <form class="slot-form" method="POST" action="{{ route('teacher.slots.store') }}" data-slot-form>
+    <form class="slot-form" method="POST" action="{{ route('teacher.slots.store') }}" data-slot-form data-room-warning-url="{{ route('teacher.slots.room-warning', absolute: false) }}">
       @csrf
       <div class="slot-fields">
         <fieldset class="field format">
@@ -140,6 +140,7 @@
           @enderror
         </div>
       </div>
+      @include('partials.room-warning')
       <div class="field">
         <label for="comment">Комментарий, необязательно</label>
         <textarea id="comment" name="comment" maxlength="500" placeholder="принести черновик курсовой" @if ($errors->has('comment')) aria-invalid="true" aria-describedby="comment-error" @endif>{{ old('comment') }}</textarea>
@@ -211,8 +212,64 @@
       missing(url, 'Для онлайн-слота укажите ссылку http:// или https://.');
       missing(until, 'Укажите дату окончания повтора.');
 
+      var warningTimer = null;
+      var warningSeq = 0;
+
+      function applyWarning(html) {
+        var current = form.querySelector('[data-room-warning]');
+        var holder = document.createElement('div');
+        holder.innerHTML = html.trim();
+        var next = holder.firstElementChild;
+        if (!current || !next) {
+          return;
+        }
+        current.replaceWith(next);
+      }
+
+      function readWarning() {
+        var seq = ++warningSeq;
+        var online = form.querySelector('input[name="format"]:checked').value === 'online';
+        var repeatInput = form.querySelector('input[name="repeat"]:checked');
+        var params = new URLSearchParams();
+        params.set('format', online ? 'online' : 'in_person');
+        params.set('building', building.value);
+        params.set('room', room.value.trim());
+        params.set('date', form.querySelector('#date').value);
+        params.set('start_time', form.querySelector('#start_time').value);
+        params.set('end_time', form.querySelector('#end_time').value);
+        params.set('repeat', repeatInput ? repeatInput.value : 'none');
+        params.set('repeat_until', until.value);
+        fetch(form.getAttribute('data-room-warning-url') + '?' + params.toString(), {
+          headers: { 'Accept': 'text/html' },
+          credentials: 'same-origin'
+        }).then(function (response) {
+          if (!response.ok) {
+            return '';
+          }
+          return response.text();
+        }).then(function (html) {
+          if (seq !== warningSeq || !html) {
+            return;
+          }
+          applyWarning(html);
+        }).catch(function () {});
+      }
+
+      function scheduleWarning() {
+        window.clearTimeout(warningTimer);
+        warningTimer = window.setTimeout(readWarning, 200);
+      }
+
+      ['#date', '#start_time', '#end_time', '#building', '#room', '#repeat_until'].forEach(function (selector) {
+        var input = form.querySelector(selector);
+        input.addEventListener('change', scheduleWarning);
+        input.addEventListener('input', scheduleWarning);
+      });
       form.querySelectorAll('input[name="format"], input[name="repeat"]').forEach(function (input) {
-        input.addEventListener('change', sync);
+        input.addEventListener('change', function () {
+          sync();
+          scheduleWarning();
+        });
       });
       sync();
     })();

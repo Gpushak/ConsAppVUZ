@@ -173,6 +173,28 @@ h2 {
   border-left-color: #8d2f2f;
 }
 
+.notice.room-warning {
+  border-left-color: #8a5a00;
+  background: #fff8eb;
+}
+
+.room-warning p {
+  margin: 0;
+}
+
+.room-warning ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.room-warning li + li {
+  margin-top: 4px;
+}
+
+.room-warning .room-when {
+  white-space: nowrap;
+}
+
 .section {
   margin-top: 22px;
 }
@@ -925,6 +947,37 @@ td.place {
   margin-top: 8px;
 }
 
+.next-slot {
+  margin: 0 0 18px;
+  padding: 16px;
+  min-width: 0;
+  max-width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.next-slot-label {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.next-slot .nearest {
+  margin-top: 10px;
+}
+
+.next-slot .people {
+  margin-top: 8px;
+}
+
+.next-slot .actions {
+  margin-top: 12px;
+}
+
+.next-slot .btn {
+  white-space: normal;
+}
 .cal-nav {
   display: flex;
   align-items: center;

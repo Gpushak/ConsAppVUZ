@@ -9,9 +9,12 @@ use App\Models\Booking;
 use App\Models\Slot;
 use App\Services\BookingService;
 use App\Support\DateSpan;
+use App\Support\RoomOccupancy;
 use App\Support\Ru;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class SlotController extends Controller
@@ -25,7 +28,9 @@ class SlotController extends Controller
         $slots = $profile->slots()
             ->with(['bookings.studentProfile.user'])
             ->orderBy('starts_at')
+            ->orderBy('id')
             ->get();
+        $nextSlot = $this->nextPlannedSlot($slots);
 
         $seriesIds = $slots->pluck('series_id')->filter()->unique()->values();
         $stoppableSeries = $seriesIds->isEmpty()
@@ -78,7 +83,30 @@ class SlotController extends Controller
             'span' => $span,
             'stopSlotIds' => $stopSlotIds,
             'seriesAhead' => $seriesAhead,
+            'nextSlot' => $nextSlot,
         ]);
+    }
+
+    /**
+     * Soonest published slot that has not started and is not finished.
+     * The clock is Asia/Yekaterinburg, the same one the week uses.
+     *
+     * @param  Collection<int, Slot>  $slots
+     */
+    private function nextPlannedSlot(Collection $slots): ?Slot
+    {
+        $now = Carbon::now(DateSpan::TIMEZONE);
+
+        return $slots
+            ->filter(function (Slot $slot) use ($now): bool {
+                if (! $slot->is_published || $slot->conducted_at !== null || $slot->isFinished()) {
+                    return false;
+                }
+
+                return $slot->starts_at->copy()->timezone(DateSpan::TIMEZONE)->greaterThan($now);
+            })
+            ->sortBy(fn (Slot $slot): array => [$slot->starts_at->getTimestamp(), $slot->id])
+            ->first();
     }
 
     public function roster(Request $request, Slot $slot): View
@@ -94,11 +122,40 @@ class SlotController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $this->authorize('create', Slot::class);
 
-        return view('teacher.create');
+        return view('teacher.create', [
+            'roomConflicts' => RoomOccupancy::conflicts($this->warningInput($request)),
+        ]);
+    }
+
+    public function roomWarning(Request $request): View
+    {
+        $this->authorize('create', Slot::class);
+
+        return view('partials.room-warning', [
+            'roomConflicts' => RoomOccupancy::conflicts($this->warningInput($request)),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function warningInput(Request $request): array
+    {
+        $input = [];
+
+        foreach (['format', 'building', 'room', 'date', 'start_time', 'end_time', 'repeat', 'repeat_weekly', 'repeat_until'] as $key) {
+            $value = $request->old($key);
+            if ($value === null) {
+                $value = $request->query($key);
+            }
+            $input[$key] = is_scalar($value) ? $value : null;
+        }
+
+        return $input;
     }
 
     public function store(StoreSlotRequest $request, BookingService $bookings): RedirectResponse
