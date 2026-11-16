@@ -73,22 +73,23 @@ class StoreSlotRequest extends FormRequest
     {
         return [
             'date.required' => 'Укажите дату.',
-            'date.regex' => 'Укажите дату.',
+            'date.regex' => 'Укажите дату: такого дня нет.',
             'start_time.required' => 'Укажите начало.',
             'start_time.regex' => 'Укажите начало в формате ЧЧ:ММ.',
             'end_time.required' => 'Укажите конец.',
             'end_time.regex' => 'Укажите конец в формате ЧЧ:ММ.',
             'format.required' => 'Выберите формат: очно или онлайн.',
             'format.in' => 'Выберите формат: очно или онлайн.',
-            'building.required' => 'Выберите корпус.',
-            'building.in' => 'Корпус выбирается из списка.',
+            'building.required' => 'Выберите корпус из списка.',
+            'building.in' => 'Корпус выбирается из списка: Главный А, Главный Б, А, Б, В, Г или Д.',
             'room.required' => 'Укажите аудиторию.',
+            'room.max' => 'Аудитория не длиннее 32 символов.',
             'comment.max' => 'Комментарий не длиннее 500 символов.',
-            'meeting_url.required' => 'Для онлайн-слота укажите ссылку.',
-            'meeting_url.regex' => 'Ссылка должна начинаться с http:// или https://.',
+            'meeting_url.required' => 'Для онлайн-слота укажите ссылку http:// или https://.',
+            'meeting_url.regex' => 'Ссылка должна быть адресом http:// или https:// без пробелов.',
             'meeting_url.max' => 'Ссылка не длиннее 500 символов.',
             'repeat_until.required' => 'Укажите дату окончания повтора.',
-            'repeat_until.regex' => 'Укажите дату.',
+            'repeat_until.regex' => 'Укажите дату окончания повтора: такого дня нет.',
         ];
     }
 
@@ -100,7 +101,7 @@ class StoreSlotRequest extends FormRequest
             }
 
             if ($this->strictDay((string) $this->input('date')) === null) {
-                $validator->errors()->add('date', 'Укажите дату.');
+                $validator->errors()->add('date', 'Укажите дату: такого дня нет.');
 
                 return;
             }
@@ -123,7 +124,7 @@ class StoreSlotRequest extends FormRequest
                 $until = $this->strictDay((string) $this->input('repeat_until'));
 
                 if ($until === null) {
-                    $validator->errors()->add('repeat_until', 'Укажите дату.');
+                    $validator->errors()->add('repeat_until', 'Укажите дату окончания повтора: такого дня нет.');
 
                     return;
                 }

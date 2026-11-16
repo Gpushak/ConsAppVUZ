@@ -27,18 +27,22 @@
         <tbody>
           @foreach ($signups as $booking)
             <tr class="roster-card">
-              <td class="roster-group">{{ $booking->studentProfile->group_name }}</td>
+              <td class="roster-group"><span class="cell-label">Группа</span>{{ $booking->studentProfile->group_name }}</td>
               <td class="roster-name">
+                <span class="cell-label">Студент</span>
                 {{ $booking->studentProfile->user->name }}
                 @if (filled($booking->teacher_comment))
-                  <span class="muted">{{ $booking->teacher_comment }}</span>
+                  <span class="roster-note"><span class="note-label">Комментарий</span>{{ $booking->teacher_comment }}</span>
                 @endif
               </td>
-              <td class="roster-status"><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
+              <td class="roster-status">
+                <span class="cell-label">Статус</span>
+                <span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span>
+              </td>
               @if ($teacherActions)
                 <td class="roster-actions">
                   @if ($booking->isActive())
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.bookings.cancel', $booking) }}">Отменить</a>
+                    <a class="btn btn-small btn-ghost btn-quiet" href="{{ route('teacher.bookings.cancel', $booking) }}" aria-label="Отменить запись: {{ $booking->studentProfile->user->name }}, {{ $booking->studentProfile->group_name }}">Отменить</a>
                   @endif
                 </td>
               @endif

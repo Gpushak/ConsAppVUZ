@@ -43,7 +43,7 @@ class Pass3Test extends ConsultationTestCase
             ->assertSee('Будут изменены ещё 2 дня серии.', false)
             ->getContent();
         $this->assertMatchesRegularExpression(
-            '/id="apply_to_series"[^>]*>\s*Применить к оставшимся дням серии\s*<\/label>\s*<p class="field-note" id="series-apply-note">Будут изменены ещё 2 дня серии\.<\/p>/',
+            '/id="apply_to_series"[^>]*>\s*Применить к оставшимся дням серии\s*<\/label>\s*<p class="field-note" id="series-apply-note"[^>]*data-on="Будут изменены ещё 2 дня серии\."[^>]*>Изменится только этот день\. Отметьте, чтобы изменить ещё 2 дня серии\.<\/p>/',
             $form,
         );
 
@@ -217,7 +217,7 @@ class Pass3Test extends ConsultationTestCase
             $phone,
         );
         $this->assertMatchesRegularExpression(
-            '/\.booking-cards tr\.booking-card > td\.booking-extra\s*\{[^}]*display:\s*none/s',
+            '/\.booking-cards tr\.booking-card > td\.booking-who,\s*\.booking-cards tr\.booking-card > td\.booking-note\s*\{[^}]*display:\s*block/s',
             $phone,
         );
         $this->assertMatchesRegularExpression(
@@ -273,7 +273,10 @@ class Pass3Test extends ConsultationTestCase
         $this->assertStringContainsString('Главный А, ауд. 314', $roomCard);
         $this->assertStringContainsString('booking-status', $roomCard);
         $this->assertStringContainsString('занят', $roomCard);
-        $this->assertStringContainsString('booking-extra', $roomCard);
+        $this->assertStringContainsString('booking-who', $roomCard);
+        $this->assertStringContainsString('>Преподаватель<', $roomCard);
+        $this->assertStringContainsString('booking-note', $roomCard);
+        $this->assertStringContainsString('>К слоту<', $roomCard);
         $this->assertStringContainsString('Иванова А. С.', $roomCard);
         $this->assertStringContainsString('принести черновик', $roomCard);
         $this->assertSame(1, substr_count($roomCard, 'class="btn'));

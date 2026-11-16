@@ -36,6 +36,15 @@ final class Ru
         return $verb.' ещё '.$count.' '.self::plural($count, 'день', 'дня', 'дней').' серии.';
     }
 
+    public static function seriesApplyHint(int $count): string
+    {
+        if ($count < 1) {
+            return 'Оставшиеся дни серии не изменятся.';
+        }
+
+        return 'Изменится только этот день. Отметьте, чтобы изменить ещё '.$count.' '.self::plural($count, 'день', 'дня', 'дней').' серии.';
+    }
+
     public static function emptyDaysWillBeUnpublished(int $count): string
     {
         if ($count < 1) {

@@ -33,6 +33,6 @@ class BookingController extends Controller
         $comment = trim((string) ($data['comment'] ?? ''));
         $bookings->cancelByTeacher($booking, $request->user(), $comment === '' ? null : $comment);
 
-        return redirect()->route('teacher.slots.index')->with('status', 'Запись студента отменена. Слот для остальных открыт.');
+        return redirect()->route('slots.roster', $booking->slot_id)->with('status', 'Запись студента отменена. Слот для остальных открыт.');
     }
 }
