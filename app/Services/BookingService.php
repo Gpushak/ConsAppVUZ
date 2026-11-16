@@ -230,6 +230,53 @@ class BookingService
         });
     }
 
+    /**
+     * @param  array{starts_at: Carbon, ends_at: Carbon, building: ?string, room: ?string, comment: ?string, meeting_url: ?string}  $attributes
+     */
+    public function updateSlot(Slot $slot, array $attributes): void
+    {
+        DB::transaction(function () use ($slot, $attributes) {
+            TeacherProfile::query()->whereKey($slot->teacher_profile_id)->lockForUpdate()->first();
+            $locked = Slot::query()->whereKey($slot->id)->lockForUpdate()->firstOrFail();
+
+            if (! $locked->canBeEdited()) {
+                throw ValidationException::withMessages([
+                    'slot' => 'Этот слот уже нельзя изменить.',
+                ]);
+            }
+
+            $timeChanged = $locked->starts_at->format('Y-m-d H:i') !== $attributes['starts_at']->format('Y-m-d H:i')
+                || $locked->ends_at->format('Y-m-d H:i') !== $attributes['ends_at']->format('Y-m-d H:i');
+
+            $active = Booking::query()
+                ->where('slot_id', $locked->id)
+                ->where('status', Booking::BOOKED)
+                ->lockForUpdate()
+                ->exists();
+
+            if ($active && $timeChanged) {
+                throw ValidationException::withMessages([
+                    'start_time' => 'Время нельзя изменить: на слот уже есть запись.',
+                ]);
+            }
+
+            if ($timeChanged && Slot::teacherHasOverlap($locked->teacher_profile_id, $attributes['starts_at'], $attributes['ends_at'], $locked->id)) {
+                throw ValidationException::withMessages([
+                    'start_time' => 'Это время пересекается с другим вашим слотом.',
+                ]);
+            }
+
+            $locked->update([
+                'starts_at' => $timeChanged ? $attributes['starts_at'] : $locked->starts_at,
+                'ends_at' => $timeChanged ? $attributes['ends_at'] : $locked->ends_at,
+                'building' => $attributes['building'],
+                'room' => $attributes['room'],
+                'comment' => $attributes['comment'],
+                'meeting_url' => $attributes['meeting_url'],
+            ]);
+        });
+    }
+
     public function stopSeries(Slot $slot): void
     {
         if ($slot->series_id === null) {

@@ -24,7 +24,15 @@ class BookingController extends Controller
             ->with(['slot.teacherProfile.user'])
             ->where('student_profile_id', $student->id)
             ->get()
-            ->sortByDesc(fn (Booking $booking) => $booking->slot->starts_at->getTimestamp())
+            ->sort(function (Booking $left, Booking $right) {
+                if ($left->isActive() !== $right->isActive()) {
+                    return $left->isActive() ? -1 : 1;
+                }
+
+                $order = $left->slot->starts_at->getTimestamp() <=> $right->slot->starts_at->getTimestamp();
+
+                return $left->isActive() ? $order : -$order;
+            })
             ->values();
 
         return view('student.bookings', [

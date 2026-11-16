@@ -624,6 +624,44 @@ li.me {
   font: inherit;
 }
 
+.profile-box form {
+  display: grid;
+  gap: 8px;
+  width: 16rem;
+}
+
+.profile-box label {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.profile-box input {
+  width: 100%;
+  min-width: 0;
+}
+
+.series-mark {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 450;
+}
+
+.slot-when .slot-time-text {
+  margin-left: 8px;
+}
+
+td.slot-actions {
+  white-space: normal;
+}
+
+td.slot-actions .actions + .actions {
+  margin-top: 6px;
+}
+
 td.place {
   white-space: normal;
   min-width: 10rem;
@@ -794,5 +832,141 @@ td.place {
   .choice input {
     width: 1.25rem;
     height: 1.25rem;
+  }
+
+  .profile-box input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .table-wrap.slot-cards {
+    overflow-x: visible;
+    background: transparent;
+    border: 0;
+  }
+
+  .slot-cards table.slot-table {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .slot-cards .slot-table thead {
+    display: none;
+  }
+
+  .slot-cards .slot-table,
+  .slot-cards .slot-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .slot-cards tr.slot-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px 8px;
+    margin: 0 0 12px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+
+  .slot-cards tr.slot-row > td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+  }
+
+  .slot-cards tr.slot-row > td.slot-date,
+  .slot-cards tr.slot-row > td.slot-time {
+    flex: 0 0 auto;
+    order: 1;
+    font-weight: 650;
+  }
+
+  .slot-cards tr.slot-row > td.slot-time {
+    order: 2;
+  }
+
+  .slot-cards tr.slot-row > td.slot-when {
+    flex: 1 0 100%;
+    order: 1;
+    font-weight: 650;
+  }
+
+  .slot-cards tr.slot-row > td.place {
+    flex: 1 0 100%;
+    order: 3;
+  }
+
+  .slot-cards tr.slot-row > td.slot-status {
+    flex: 1 0 100%;
+    order: 4;
+  }
+
+  .slot-cards tr.slot-row > td.people {
+    flex: 1 0 100%;
+    order: 5;
+  }
+
+  .slot-cards tr.slot-row > td.slot-actions {
+    display: contents;
+  }
+
+  .slot-cards tr.slot-row .slot-primary,
+  .slot-cards tr.slot-row .slot-more,
+  .slot-cards tr.slot-row > td.slot-comment {
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+
+  .slot-cards tr.slot-row .slot-primary {
+    order: 6;
+  }
+
+  .slot-cards tr.slot-row > td.slot-comment {
+    order: 7;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+
+  .slot-cards tr.slot-row > td.slot-comment.is-empty {
+    display: none;
+  }
+
+  .slot-cards tr.slot-row .slot-more {
+    order: 8;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+
+  .slot-cards .btn {
+    white-space: normal;
+  }
+
+  .slot-cards tr[data-static],
+  .slot-cards tr[data-nomatch] {
+    display: block;
+    margin: 0;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+
+  .slot-cards tr[data-static] td,
+  .slot-cards tr[data-nomatch] td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    white-space: normal;
+    border: 0;
   }
 }

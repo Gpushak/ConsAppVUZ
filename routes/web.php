@@ -46,6 +46,8 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/slots', [SlotController::class, 'index'])->name('teacher.slots.index');
             Route::get('/slots/create', [SlotController::class, 'create'])->name('teacher.slots.create');
             Route::post('/slots', [SlotController::class, 'store'])->name('teacher.slots.store');
+            Route::get('/slots/{slot}/edit', [SlotController::class, 'edit'])->name('teacher.slots.edit');
+            Route::post('/slots/{slot}', [SlotController::class, 'update'])->name('teacher.slots.update');
             Route::get('/slots/{slot}/series/stop', [SlotController::class, 'stopSeriesForm'])->name('teacher.slots.series.stop');
             Route::post('/slots/{slot}/series/stop', [SlotController::class, 'stopSeries'])->name('teacher.slots.series.stop.store');
             Route::get('/slots/{slot}/unpublish', [SlotController::class, 'unpublishForm'])->name('teacher.slots.unpublish.confirm');
@@ -63,6 +65,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::post('/users/{user}/block', [UserController::class, 'block'])->name('admin.users.block');
             Route::post('/users/{user}/unblock', [UserController::class, 'unblock'])->name('admin.users.unblock');
             Route::post('/users/{user}/password', [UserController::class, 'resetPassword'])->name('admin.users.password');
+            Route::post('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('admin.users.profile');
         });
     });
 });
