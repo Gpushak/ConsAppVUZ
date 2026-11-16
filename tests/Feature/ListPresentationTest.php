@@ -90,16 +90,16 @@ class ListPresentationTest extends ConsultationTestCase
             ->get(route('home', $this->listedSpan()))
             ->assertOk()
             ->assertSee('Слоты избранных')
-            ->assertSee('Показать завершённые')
+            ->assertDontSee('Показать завершённые')
             ->assertSee('ауд. 314')
-            ->assertSee('ауд. 777')
+            ->assertDontSee('ауд. 777')
             ->assertDontSee('ауд. 909')
             ->assertDontSee('Предстоящие консультации')
             ->getContent();
 
-        $this->assertRowFinished($home, 'ауд. 777', true);
         $this->assertRowFinished($home, 'ауд. 314', false);
         $this->assertStringNotContainsString('ауд. 210', $home);
+        $this->assertStringNotContainsString('data-finished', $home);
 
         $bookings = $this->actingAs($student)
             ->get(route('bookings.index'))
@@ -137,17 +137,15 @@ class ListPresentationTest extends ConsultationTestCase
         $home = $this->actingAs($student)
             ->get(route('home', $this->listedSpan()))
             ->assertOk()
+            ->assertDontSee('ауд. 777')
             ->getContent();
 
         $openRow = $this->rowHtml($home, 'ауд. 314');
-        $conductedRow = $this->rowHtml($home, 'ауд. 777');
 
         $this->assertStringContainsString('свободен', $openRow);
         $this->assertStringContainsString('>Записаться</a>', $openRow);
-        $this->assertStringContainsString('проведён', $conductedRow);
-        $this->assertStringNotContainsString('Записаться', $conductedRow);
-        $this->assertStringNotContainsString('disabled', $conductedRow);
-        $this->assertStringNotContainsString('уже нельзя записаться', $conductedRow);
+        $this->assertStringNotContainsString('проведён', $home);
+        $this->assertStringNotContainsString('уже нельзя записаться', $home);
 
         $this->actingAs($student)
             ->get(route('bookings.create', $open))

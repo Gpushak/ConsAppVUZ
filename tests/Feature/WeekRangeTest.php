@@ -49,25 +49,25 @@ class WeekRangeTest extends ConsultationTestCase
     public function test_slot_outside_the_range_is_absent_and_an_empty_day_says_so(): void
     {
         [$teacher, $student] = $this->pair();
-        $this->slotOn($teacher, '2026-10-20', '201');
-        $this->slotOn($teacher, '2026-10-24', '241');
+        $this->slotOn($teacher, '2026-10-26', '201');
+        $this->slotOn($teacher, '2026-10-28', '241');
 
-        $query = ['from' => '2026-10-22', 'to' => '2026-10-25'];
+        $query = ['from' => '2026-10-27', 'to' => '2026-10-30'];
 
         foreach ($this->pages($teacher, $student) as [$user, $name]) {
             $html = $this->actingAs($user)
                 ->get(route($name, $query))
                 ->assertOk()
-                ->assertSee('value="2026-10-22"', false)
-                ->assertSee('value="2026-10-25"', false)
+                ->assertSee('value="2026-10-27"', false)
+                ->assertSee('value="2026-10-30"', false)
                 ->assertSee('ауд. 241')
                 ->assertDontSee('ауд. 201')
                 ->assertDontSee(DateSpan::ORDER_ERROR)
                 ->getContent();
 
-            $empty = $this->dayHtml($html, '23.10.2026');
+            $empty = $this->dayHtml($html, '29.10.2026');
             $this->assertStringContainsString('нет слотов', $empty);
-            $filled = $this->dayHtml($html, '24.10.2026');
+            $filled = $this->dayHtml($html, '28.10.2026');
             $this->assertStringContainsString('ауд. 241', $filled);
             $this->assertStringNotContainsString('нет слотов', $filled);
         }
