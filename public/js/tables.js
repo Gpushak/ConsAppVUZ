@@ -223,6 +223,46 @@
     });
   }
 
+  function toggleSlotCard(card) {
+    var button = card.querySelector('.slot-toggle');
+    var details = card.querySelector('.slot-details');
+
+    if (!button || !details) {
+      return;
+    }
+
+    var open = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    details.hidden = !open;
+  }
+
+  function bootSlotCards() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-slot-card]'), function (card) {
+      if (card.dataset.foldReady === '1') {
+        return;
+      }
+      card.dataset.foldReady = '1';
+
+      card.addEventListener('click', function (event) {
+        var node = event.target;
+        if (node && node.nodeType !== 1) {
+          node = node.parentElement;
+        }
+        if (!node) {
+          return;
+        }
+
+        var toggle = card.querySelector('.slot-toggle');
+        var interactive = node.closest('a, button, input, select, textarea, label');
+        if (interactive && card.contains(interactive) && interactive !== toggle) {
+          return;
+        }
+
+        toggleSlotCard(card);
+      });
+    });
+  }
+
   function boot() {
     Array.prototype.forEach.call(document.querySelectorAll('table.data-table'), enhance);
     var search = document.querySelector('[data-teacher-search]');
@@ -247,6 +287,7 @@
     updateToggle();
     syncFinishedOnly();
     applyFinishedCards();
+    bootSlotCards();
   }
 
   if (document.readyState === 'loading') {

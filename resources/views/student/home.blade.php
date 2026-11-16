@@ -30,28 +30,32 @@
               @php
                 $mine = $slot->bookings->first(fn ($booking) => $booking->student_profile_id === $student->id && $booking->isActive());
               @endphp
-              <article @class(['slot', 'mine' => (bool) $mine, 'done' => $slot->isFinished()]) @if ($slot->isFinished()) data-finished hidden @endif>
-                <p class="time">
-                  <span class="slot-date-text">{{ $slot->dateLabel() }}</span>
-                  <span class="slot-time-text">{{ $slot->timeRange() }}</span>
-                </p>
-                <p class="who-line">{{ $slot->teacherProfile->user->name }}</p>
-                <p class="fact">{{ $slot->teacherProfile->position }}, {{ $slot->teacherProfile->department }}</p>
-                @include('partials.slot-place', ['slot' => $slot])
-                @if ($slot->comment)
-                  <p class="comment">{{ $slot->comment }}</p>
-                @endif
-                @include('partials.signup-list', ['slot' => $slot, 'activeOnly' => true, 'asCell' => false])
-                <span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span>
-                @if ($mine || $slot->canBeBooked())
-                  <div class="actions slot-primary">
-                    @if ($mine)
-                      <a class="btn btn-small btn-ghost" href="{{ route('bookings.show', $mine) }}">Вы записаны</a>
-                    @else
-                      <a class="btn btn-small" href="{{ route('bookings.create', $slot) }}">Записаться</a>
-                    @endif
-                  </div>
-                @endif
+              <article @class(['slot', 'mine' => (bool) $mine, 'done' => $slot->isFinished()]) data-slot-card @if ($slot->isFinished()) data-finished hidden @endif>
+                <button class="slot-toggle" type="button" aria-expanded="false" aria-controls="slot-details-{{ $slot->id }}">
+                  <span class="time">
+                    <span class="slot-date-text">{{ $slot->dateLabel() }}</span>
+                    <span class="slot-time-text">{{ $slot->timeRange() }}</span>
+                  </span>
+                  <span class="who-line">{{ $slot->teacherProfile->user->name }}</span>
+                  <span class="chip {{ $slot->chipClass() }}">{{ $slot->statusLabel() }}</span>
+                </button>
+                <div class="slot-details" id="slot-details-{{ $slot->id }}" hidden>
+                  <p class="fact">{{ $slot->teacherProfile->position }}, {{ $slot->teacherProfile->department }}</p>
+                  @include('partials.slot-place', ['slot' => $slot])
+                  @if ($slot->comment)
+                    <p class="comment">{{ $slot->comment }}</p>
+                  @endif
+                  @include('partials.signup-list', ['slot' => $slot, 'activeOnly' => true, 'asCell' => false])
+                  @if ($mine || $slot->canBeBooked())
+                    <div class="actions slot-primary">
+                      @if ($mine)
+                        <a class="btn btn-small btn-ghost" href="{{ route('bookings.show', $mine) }}">Вы записаны</a>
+                      @else
+                        <a class="btn btn-small" href="{{ route('bookings.create', $slot) }}">Записаться</a>
+                      @endif
+                    </div>
+                  @endif
+                </div>
               </article>
             @empty
               <p class="empty">нет слотов</p>
