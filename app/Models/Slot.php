@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -158,6 +159,24 @@ class Slot extends Model
     public function timeIsLocked(): bool
     {
         return $this->activeBookingsCount() > 0;
+    }
+
+    /**
+     * Later days of this weekly series that are still ahead and not conducted.
+     *
+     * @return Builder<Slot>
+     */
+    public function laterSeriesDays(?Carbon $after = null)
+    {
+        $after ??= $this->starts_at;
+
+        return static::query()
+            ->where('series_id', $this->series_id)
+            ->where('teacher_profile_id', $this->teacher_profile_id)
+            ->whereKeyNot($this->id)
+            ->whereNull('conducted_at')
+            ->where('starts_at', '>', $after)
+            ->where('starts_at', '>', now());
     }
 
     /**

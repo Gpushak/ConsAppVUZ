@@ -13,7 +13,7 @@
   @if ($bookings->isEmpty())
     <p class="notice">Записей пока нет. <a href="{{ route('home') }}">Посмотрите слоты избранных</a>.</p>
   @else
-    <div class="table-wrap slot-cards">
+    <div class="table-wrap slot-cards booking-cards">
       <table class="data-table slot-table">
         <thead>
           <tr>
@@ -31,12 +31,12 @@
             @php
               $comment = trim((string) $booking->slot->comment.' '.(string) $booking->teacher_comment);
             @endphp
-            <tr class="slot-row" @if ($booking->isFinished()) data-finished hidden @endif>
-              <td class="slot-date">{{ $booking->slot->dateLabel() }}</td>
-              <td class="slot-time">{{ $booking->slot->timeRange() }}</td>
-              <td class="slot-who">{{ $booking->slot->teacherProfile->user->name }}</td>
-              <td class="place">@include('partials.slot-place', ['slot' => $booking->slot])</td>
-              <td @class(['soft', 'slot-comment', 'is-empty' => $comment === ''])>
+            <tr class="slot-row booking-card" @if ($booking->isFinished()) data-finished hidden @endif>
+              <td class="slot-date booking-date">{{ $booking->slot->dateLabel() }}</td>
+              <td class="slot-time booking-time">{{ $booking->slot->timeRange() }}</td>
+              <td class="slot-who booking-extra">{{ $booking->slot->teacherProfile->user->name }}</td>
+              <td class="place booking-place">@include('partials.slot-place', ['slot' => $booking->slot])</td>
+              <td @class(['soft', 'slot-comment', 'booking-extra', 'is-empty' => $comment === ''])>
                 @if ($booking->slot->comment)
                   <div>{{ $booking->slot->comment }}</div>
                 @endif
@@ -47,10 +47,10 @@
                   —
                 @endif
               </td>
-              <td class="slot-status"><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
-              <td class="slot-actions">
+              <td class="slot-status booking-status"><span class="chip {{ $booking->chipClass() }}">{{ $booking->label() }}</span></td>
+              <td class="slot-actions booking-actions">
                 @can('cancel', $booking)
-                  <div class="actions slot-primary">
+                  <div class="actions slot-primary booking-primary">
                     <a class="btn btn-small" href="{{ route('bookings.cancel', $booking) }}">Отменить</a>
                   </div>
                 @endcan
