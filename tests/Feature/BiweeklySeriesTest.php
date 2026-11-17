@@ -21,7 +21,7 @@ class BiweeklySeriesTest extends ConsultationTestCase
             ->assertSee('Каждую неделю')
             ->assertSee('Каждые 2 недели')
             ->assertSee('Последний день повтора')
-            ->assertSee('Учитывается, только если выбран повтор: «Каждую неделю» или «Каждые 2 недели». Не позже 19.04.2027.')
+            ->assertSee('Учитывается, только если выбран повтор: «Каждую неделю» или «Каждые 2 недели». Не позже 30.06.2027.')
             ->getContent();
 
         $this->assertMatchesRegularExpression('/id="repeat_none"[^>]*\bchecked\b/', $page);
@@ -49,7 +49,7 @@ class BiweeklySeriesTest extends ConsultationTestCase
             '/id="repeat_until"[^>]*>\s*<p class="error" id="repeat_until-error">Дата окончания не раньше даты слота\.<\/p>/',
             $kept,
         );
-        $this->assertStringContainsString('Последний день серии, не позже 19.04.2027.', $kept);
+        $this->assertStringContainsString('Последний день серии, не позже 30.06.2027.', $kept);
         $this->assertSame(0, Slot::query()->count());
     }
 
@@ -138,26 +138,28 @@ class BiweeklySeriesTest extends ConsultationTestCase
         $this->assertNull($once->seriesStepLabel());
 
         $this->actingAs($teacher)->post(route('teacher.slots.store'), $this->payload([
-            'date' => '05.04.2027',
+            'date' => '16.06.2027',
             'room' => '19',
             'repeat' => '2',
-            'repeat_until' => '20.04.2027',
-        ]))->assertSessionHasErrors('repeat_until');
+            'repeat_until' => '14.07.2027',
+        ]))->assertSessionHasErrors([
+            'repeat_until' => 'Дата окончания не позже 30.06.2027.',
+        ]);
         $this->assertNull(Slot::query()->where('room', '19')->first());
 
         $this->actingAs($teacher)->post(route('teacher.slots.store'), $this->payload([
-            'date' => '05.04.2027',
+            'date' => '16.06.2027',
             'room' => '19',
             'repeat' => '2',
-            'repeat_until' => '19.04.2027',
+            'repeat_until' => '30.06.2027',
         ]))->assertRedirect(route('teacher.slots.index'));
 
         $bounded = Slot::query()->where('room', '19')->orderBy('starts_at')->get();
         $this->assertSame(
-            ['2027-04-05', '2027-04-19'],
+            ['2027-06-16', '2027-06-30'],
             $bounded->map(fn (Slot $slot) => $this->localDate($slot))->all(),
         );
-        $this->assertNull(Slot::query()->where('room', '19')->whereDate('starts_at', '2027-04-12')->first());
+        $this->assertNull(Slot::query()->where('room', '19')->whereDate('starts_at', '2027-06-23')->first());
         $this->assertTrue($bounded->every(fn (Slot $slot) => $slot->series_weeks === 2));
     }
 
