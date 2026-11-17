@@ -9,66 +9,72 @@ use App\Http\Controllers\Student\BookingController;
 use App\Http\Controllers\Student\TeacherDirectoryController;
 use App\Http\Controllers\Teacher\BookingController as TeacherBookingController;
 use App\Http\Controllers\Teacher\SlotController;
+use App\Http\Middleware\MarkDesktopWindow;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
-    Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
-});
+// Same routes for the browser and the Electron window. MarkDesktopWindow
+// turns on the sidebar frame only when Electron sets the window flag, and
+// marks the old confirmation pages (DesktopWindow::DIALOG_ROUTES) as dialogs.
+Route::middleware(MarkDesktopWindow::class)->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [LoginController::class, 'create'])->name('login');
+        Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+        Route::get('/register', [RegisterController::class, 'create'])->name('register');
+        Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+    });
 
-Route::post('/logout', [LoginController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
+    Route::post('/logout', [LoginController::class, 'destroy'])
+        ->middleware('auth')
+        ->name('logout');
 
-Route::middleware(['auth', 'active'])->group(function () {
-    Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');
-    Route::post('/password', [PasswordController::class, 'update'])->name('password.update');
+    Route::middleware(['auth', 'active'])->group(function () {
+        Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');
+        Route::post('/password', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::middleware('password.changed')->group(function () {
-        Route::get('/', [HomeController::class, 'index'])->name('home');
-        Route::get('/slots/{slot}/roster', [SlotController::class, 'roster'])->name('slots.roster');
+        Route::middleware('password.changed')->group(function () {
+            Route::get('/', [HomeController::class, 'index'])->name('home');
+            Route::get('/slots/{slot}/roster', [SlotController::class, 'roster'])->name('slots.roster');
 
-        Route::middleware('role:student')->group(function () {
-            Route::get('/teachers', [TeacherDirectoryController::class, 'index'])->name('teachers.index');
-            Route::post('/teachers/{teacher}/favorite', [TeacherDirectoryController::class, 'favorite'])->name('teachers.favorite');
-            Route::post('/teachers/{teacher}/unfavorite', [TeacherDirectoryController::class, 'unfavorite'])->name('teachers.unfavorite');
-            Route::get('/slots/{slot}', [BookingController::class, 'create'])->name('bookings.create');
-            Route::post('/slots/{slot}/bookings', [BookingController::class, 'store'])->name('bookings.store');
-            Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
-            Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
-            Route::get('/bookings/{booking}/cancel', [BookingController::class, 'cancelForm'])->name('bookings.cancel');
-            Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel.store');
-        });
+            Route::middleware('role:student')->group(function () {
+                Route::get('/teachers', [TeacherDirectoryController::class, 'index'])->name('teachers.index');
+                Route::post('/teachers/{teacher}/favorite', [TeacherDirectoryController::class, 'favorite'])->name('teachers.favorite');
+                Route::post('/teachers/{teacher}/unfavorite', [TeacherDirectoryController::class, 'unfavorite'])->name('teachers.unfavorite');
+                Route::get('/slots/{slot}', [BookingController::class, 'create'])->name('bookings.create');
+                Route::post('/slots/{slot}/bookings', [BookingController::class, 'store'])->name('bookings.store');
+                Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+                Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+                Route::get('/bookings/{booking}/cancel', [BookingController::class, 'cancelForm'])->name('bookings.cancel');
+                Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel.store');
+            });
 
-        Route::middleware('role:teacher')->prefix('teacher')->group(function () {
-            Route::get('/slots', [SlotController::class, 'index'])->name('teacher.slots.index');
-            Route::get('/slots/create', [SlotController::class, 'create'])->name('teacher.slots.create');
-            Route::get('/slots/room-warning', [SlotController::class, 'roomWarning'])->name('teacher.slots.room-warning');
-            Route::post('/slots', [SlotController::class, 'store'])->name('teacher.slots.store');
-            Route::get('/slots/{slot}/edit', [SlotController::class, 'edit'])->name('teacher.slots.edit');
-            Route::post('/slots/{slot}', [SlotController::class, 'update'])->name('teacher.slots.update');
-            Route::get('/slots/{slot}/series/stop', [SlotController::class, 'stopSeriesForm'])->name('teacher.slots.series.stop');
-            Route::post('/slots/{slot}/series/stop', [SlotController::class, 'stopSeries'])->name('teacher.slots.series.stop.store');
-            Route::get('/slots/{slot}/unpublish', [SlotController::class, 'unpublishForm'])->name('teacher.slots.unpublish.confirm');
-            Route::post('/slots/{slot}/unpublish', [SlotController::class, 'unpublish'])->name('teacher.slots.unpublish');
-            Route::get('/slots/{slot}/conduct', [SlotController::class, 'conductForm'])->name('teacher.slots.conduct');
-            Route::post('/slots/{slot}/conduct', [SlotController::class, 'conduct'])->name('teacher.slots.conduct.store');
-            Route::get('/bookings/{booking}/cancel', [TeacherBookingController::class, 'cancelForm'])->name('teacher.bookings.cancel');
-            Route::post('/bookings/{booking}/cancel', [TeacherBookingController::class, 'cancel'])->name('teacher.bookings.cancel.store');
-        });
+            Route::middleware('role:teacher')->prefix('teacher')->group(function () {
+                Route::get('/slots', [SlotController::class, 'index'])->name('teacher.slots.index');
+                Route::get('/slots/create', [SlotController::class, 'create'])->name('teacher.slots.create');
+                Route::get('/slots/room-warning', [SlotController::class, 'roomWarning'])->name('teacher.slots.room-warning');
+                Route::post('/slots', [SlotController::class, 'store'])->name('teacher.slots.store');
+                Route::get('/slots/{slot}/edit', [SlotController::class, 'edit'])->name('teacher.slots.edit');
+                Route::post('/slots/{slot}', [SlotController::class, 'update'])->name('teacher.slots.update');
+                Route::get('/slots/{slot}/series/stop', [SlotController::class, 'stopSeriesForm'])->name('teacher.slots.series.stop');
+                Route::post('/slots/{slot}/series/stop', [SlotController::class, 'stopSeries'])->name('teacher.slots.series.stop.store');
+                Route::get('/slots/{slot}/unpublish', [SlotController::class, 'unpublishForm'])->name('teacher.slots.unpublish.confirm');
+                Route::post('/slots/{slot}/unpublish', [SlotController::class, 'unpublish'])->name('teacher.slots.unpublish');
+                Route::get('/slots/{slot}/conduct', [SlotController::class, 'conductForm'])->name('teacher.slots.conduct');
+                Route::post('/slots/{slot}/conduct', [SlotController::class, 'conduct'])->name('teacher.slots.conduct.store');
+                Route::get('/bookings/{booking}/cancel', [TeacherBookingController::class, 'cancelForm'])->name('teacher.bookings.cancel');
+                Route::post('/bookings/{booking}/cancel', [TeacherBookingController::class, 'cancel'])->name('teacher.bookings.cancel.store');
+            });
 
-        Route::middleware('role:admin')->prefix('admin')->group(function () {
-            Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
-            Route::post('/teachers', [UserController::class, 'storeTeacher'])->name('admin.teachers.store');
-            Route::get('/users/{user}/block', [UserController::class, 'blockForm'])->name('admin.users.block.confirm');
-            Route::post('/users/{user}/block', [UserController::class, 'block'])->name('admin.users.block');
-            Route::get('/users/{user}/unblock', [UserController::class, 'unblockForm'])->name('admin.users.unblock.confirm');
-            Route::post('/users/{user}/unblock', [UserController::class, 'unblock'])->name('admin.users.unblock');
-            Route::get('/users/{user}/password', [UserController::class, 'passwordForm'])->name('admin.users.password.confirm');
-            Route::post('/users/{user}/password', [UserController::class, 'resetPassword'])->name('admin.users.password');
-            Route::post('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('admin.users.profile');
+            Route::middleware('role:admin')->prefix('admin')->group(function () {
+                Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+                Route::post('/teachers', [UserController::class, 'storeTeacher'])->name('admin.teachers.store');
+                Route::get('/users/{user}/block', [UserController::class, 'blockForm'])->name('admin.users.block.confirm');
+                Route::post('/users/{user}/block', [UserController::class, 'block'])->name('admin.users.block');
+                Route::get('/users/{user}/unblock', [UserController::class, 'unblockForm'])->name('admin.users.unblock.confirm');
+                Route::post('/users/{user}/unblock', [UserController::class, 'unblock'])->name('admin.users.unblock');
+                Route::get('/users/{user}/password', [UserController::class, 'passwordForm'])->name('admin.users.password.confirm');
+                Route::post('/users/{user}/password', [UserController::class, 'resetPassword'])->name('admin.users.password');
+                Route::post('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('admin.users.profile');
+            });
         });
     });
 });

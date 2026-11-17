@@ -1,0 +1,13 @@
+{
+  "name": "consapp-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Окно записи на консультацию",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "33.4.11"
+  }
+}

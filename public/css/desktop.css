@@ -1,0 +1,228 @@
+/* Window frame. Loaded only with the Electron layout, not from app.css. */
+
+html:has(body.desk) {
+  height: 100%;
+  overflow: hidden;
+}
+
+body.desk {
+  height: 100%;
+  overflow: hidden;
+}
+
+.desk-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+}
+
+.desk-top {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 16px;
+  min-height: 56px;
+  padding: 6px 16px;
+  background: var(--paper);
+  border-bottom: 3px solid var(--blue);
+}
+
+.desk-top .brand {
+  margin-right: auto;
+}
+
+.desk-top .brand img {
+  max-height: 40px;
+}
+
+.desk-top .who {
+  align-items: flex-end;
+}
+
+.desk-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.desk-side {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 220px;
+  min-height: 0;
+  padding: 12px 0 12px;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  overflow: auto;
+}
+
+.desk-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.desk-side a {
+  display: block;
+  padding: 8px 16px;
+  color: var(--blue);
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.desk-side a:hover {
+  background: var(--blue-soft);
+  text-decoration: none;
+}
+
+.desk-side a[aria-current="page"] {
+  background: var(--blue-soft);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+.desk-side form {
+  margin: auto 0 0;
+  padding: 12px 12px 0;
+}
+
+.desk-logout {
+  width: 100%;
+}
+
+.desk-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+body.desk main.desk-main {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 16px 16px 12px;
+  overflow: auto;
+}
+
+body.desk .near,
+body.desk .next-slot {
+  margin-bottom: 10px;
+  padding: 12px;
+}
+
+body.desk .page-head,
+body.desk .week-range {
+  margin-bottom: 8px;
+}
+
+body.desk .desk-main:has(.week) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.desk .desk-main:has(.week) > :not(.week):not(:has(> .week)) {
+  flex: 0 0 auto;
+}
+
+body.desk .desk-main:has(.week) > .week,
+body.desk .desk-main:has(.week) > div:has(> .week) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+body.desk .week {
+  flex: 1 1 auto;
+  align-items: stretch;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+
+body.desk .day {
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+}
+
+body.desk .day-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-bottom: 8px;
+  background: var(--bg);
+}
+
+body.desk .desk-main:has(.table-wrap) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.desk .desk-main:has(.table-wrap) > :not(.table-wrap) {
+  flex: 0 0 auto;
+}
+
+body.desk .table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+body.desk .table-wrap table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body.desk .table-wrap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--head);
+}
+
+.desk-modal {
+  width: min(640px, calc(100vw - 48px));
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 24px 64px rgba(16, 36, 56, 0.28);
+}
+
+.desk-modal:has(.slot-form),
+.desk-modal:has(#new-teacher) {
+  width: min(920px, calc(100vw - 48px));
+}
+
+.desk-modal::backdrop {
+  background: rgba(16, 36, 56, 0.46);
+}
+
+.desk-modal-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 10px 0;
+}
+
+.desk-modal-body {
+  max-height: calc(100vh - 110px);
+  padding: 4px 20px 20px;
+  overflow: auto;
+}
+
+.desk-modal .page-head {
+  margin-bottom: 12px;
+}
