@@ -80,30 +80,32 @@ class SeriesRosterTest extends ConsultationTestCase
 
         $this->actingAs($teacher)->post(route('teacher.slots.store'), [
             'format' => 'in_person',
-            'date' => '12.04.2027',
+            'date' => '16.06.2027',
             'start_time' => '09:00',
             'end_time' => '09:45',
             'building' => 'Г',
             'room' => '1',
             'repeat_weekly' => '1',
-            'repeat_until' => '20.04.2027',
-        ])->assertSessionHasErrors('repeat_until');
+            'repeat_until' => '07.07.2027',
+        ])->assertSessionHasErrors([
+            'repeat_until' => 'Дата окончания не позже 30.06.2027.',
+        ]);
 
         $this->assertNull(Slot::query()->where('room', '1')->first());
 
         $this->actingAs($teacher)->post(route('teacher.slots.store'), [
             'format' => 'in_person',
-            'date' => '12.04.2027',
+            'date' => '16.06.2027',
             'start_time' => '09:00',
             'end_time' => '09:45',
             'building' => 'Г',
             'room' => '1',
             'repeat_weekly' => '1',
-            'repeat_until' => '19.04.2027',
+            'repeat_until' => '30.06.2027',
         ])->assertRedirect(route('teacher.slots.index'));
 
         $this->assertSame(
-            ['2027-04-12', '2027-04-19'],
+            ['2027-06-16', '2027-06-23', '2027-06-30'],
             Slot::query()->where('room', '1')->orderBy('starts_at')->pluck('starts_at')->map(fn ($at) => $at->toDateString())->all(),
         );
     }

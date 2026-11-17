@@ -175,7 +175,7 @@ class Pass1ScreensTest extends ConsultationTestCase
             ->assertSee('Очно: корпус из списка и аудитория. Онлайн: ссылка http:// или https://, без корпуса и аудитории.')
             ->assertSee('Ссылка на встречу, необязательно')
             ->assertSee('Последний день повтора')
-            ->assertSee('Учитывается, только если выбран повтор: «Каждую неделю» или «Каждые 2 недели». Не позже 19.04.2027.')
+            ->assertSee('Учитывается, только если выбран повтор: «Каждую неделю» или «Каждые 2 недели». Не позже 30.06.2027.')
             ->assertSee('Укажите дату.')
             ->assertSee('Выберите корпус из списка.')
             ->getContent();
@@ -271,7 +271,7 @@ class Pass1ScreensTest extends ConsultationTestCase
             '/id="repeat_until"[^>]*>\s*<p class="error" id="repeat_until-error">Дата окончания не раньше даты слота\.<\/p>/',
             $until,
         );
-        $this->assertStringContainsString('Последний день серии, не позже 19.04.2027.', $until);
+        $this->assertStringContainsString('Последний день серии, не позже 30.06.2027.', $until);
         $this->assertStringNotContainsString('class="notice error"', $until);
 
         $this->actingAs($teacher)->post(route('teacher.slots.store'), [

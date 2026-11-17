@@ -6,7 +6,7 @@ use Illuminate\Support\Carbon;
 
 final class Term
 {
-    public const WORK_ENDS_ON = '2027-04-19';
+    public const WORK_ENDS_ON = '2027-06-30';
 
     public static function workEndsOn(): Carbon
     {
