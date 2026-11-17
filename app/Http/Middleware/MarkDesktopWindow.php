@@ -14,6 +14,7 @@ class MarkDesktopWindow
     {
         $desktop = DesktopWindow::requested($request);
         View::share('desktopWindow', $desktop);
+        View::share('desktopRoster', DesktopWindow::rosterWindow($request));
         View::share('desktopDialog', $desktop && $request->routeIs(...DesktopWindow::DIALOG_ROUTES));
 
         return $next($request);

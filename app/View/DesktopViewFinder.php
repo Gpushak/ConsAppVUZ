@@ -13,7 +13,9 @@ class DesktopViewFinder extends FileViewFinder
     public function find($view)
     {
         if ($view === 'layouts.app' && DesktopWindow::requested()) {
-            return parent::find('layouts.desktop');
+            $layout = DesktopWindow::rosterWindow() ? 'layouts.desktop-roster' : 'layouts.desktop';
+
+            return parent::find($layout);
         }
 
         return parent::find($view);

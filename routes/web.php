@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Same routes for the browser and the Electron window. MarkDesktopWindow
 // turns on the sidebar frame only when Electron sets the window flag, and
 // marks the old confirmation pages (DesktopWindow::DIALOG_ROUTES) as dialogs.
+// The roster BrowserWindow also sends X-Desktop-Roster and gets a list-only frame.
 Route::middleware(MarkDesktopWindow::class)->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [LoginController::class, 'create'])->name('login');

@@ -226,3 +226,16 @@ body.desk .table-wrap thead th {
 .desk-modal .page-head {
   margin-bottom: 12px;
 }
+
+html:has(body.desk-roster),
+body.desk.desk-roster {
+  height: auto;
+  min-height: 100%;
+  overflow: auto;
+}
+
+body.desk.desk-roster main.desk-main {
+  display: block;
+  height: auto;
+  overflow: visible;
+}

@@ -52,11 +52,13 @@
       </table>
     </div>
   @endif
-  <p class="hint">
-    @if ($teacherActions)
-      <a href="{{ route('teacher.slots.index') }}">К моим слотам</a>
-    @else
-      <a href="{{ route('home') }}">К слотам избранных</a>
-    @endif
-  </p>
+  @unless ($desktopRoster ?? false)
+    <p class="hint">
+      @if ($teacherActions)
+        <a href="{{ route('teacher.slots.index') }}">К моим слотам</a>
+      @else
+        <a href="{{ route('home') }}">К слотам избранных</a>
+      @endif
+    </p>
+  @endunless
 @endsection

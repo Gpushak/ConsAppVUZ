@@ -8,6 +8,8 @@ final class DesktopWindow
 {
     public const HEADER = 'X-Desktop-Window';
 
+    public const ROSTER = 'X-Desktop-Roster';
+
     public const FRAGMENT = 'X-Desktop-Fragment';
 
     public const USER_AGENT = 'ConsAppDesktop/1';
@@ -46,5 +48,19 @@ final class DesktopWindow
 
         return $request->headers->get(self::HEADER) === '1'
             || str_contains((string) $request->userAgent(), self::USER_AGENT);
+    }
+
+    /**
+     * The separate roster window. It must not render the sidebar frame.
+     */
+    public static function rosterWindow(?Request $request = null): bool
+    {
+        if (! self::requested($request)) {
+            return false;
+        }
+
+        $request ??= request();
+
+        return $request instanceof Request && $request->headers->get(self::ROSTER) === '1';
     }
 }

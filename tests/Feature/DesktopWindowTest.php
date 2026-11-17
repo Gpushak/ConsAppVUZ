@@ -118,4 +118,74 @@ class DesktopWindowTest extends ConsultationTestCase
         $this->assertStringNotContainsString('desk-side', $fragment);
         $this->assertStringNotContainsString('desk-frame', $fragment);
     }
+
+    public function test_roster_window_is_only_the_list_and_cannot_link_back_to_slots(): void
+    {
+        $teacher = $this->teacherUser();
+        $student = $this->studentUser();
+        $slot = $this->futureSlot($teacher, '11:00', '11:45');
+        $this->actingAs($student)->post(route('bookings.store', $slot))->assertRedirect();
+        $booking = $student->studentProfile->bookings()->firstOrFail();
+
+        $browser = $this->actingAs($teacher)
+            ->get(route('slots.roster', $slot))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<header class="top">', $browser);
+        $this->assertStringContainsString('К моим слотам', $browser);
+        $this->assertStringNotContainsString('desk-roster', $browser);
+
+        $main = $this->actingAs($teacher)
+            ->withHeader(DesktopWindow::HEADER, '1')
+            ->get(route('slots.roster', $slot))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('class="desk-side"', $main);
+        $this->assertStringContainsString('Мои слоты', $main);
+        $this->assertStringContainsString('К моим слотам', $main);
+        $this->assertStringNotContainsString('desk-roster', $main);
+
+        $roster = $this->actingAs($teacher)
+            ->withHeader(DesktopWindow::HEADER, '1')
+            ->withHeader(DesktopWindow::ROSTER, '1')
+            ->get(route('slots.roster', $slot))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('class="desk desk-roster"', $roster);
+        $this->assertStringContainsString('Записавшиеся', $roster);
+        $this->assertStringContainsString('>Отменить</a>', $roster);
+        $this->assertStringNotContainsString('desk-side', $roster);
+        $this->assertStringNotContainsString('desk-frame', $roster);
+        $this->assertStringNotContainsString('js/desktop.js', $roster);
+        $this->assertStringNotContainsString('К моим слотам', $roster);
+        $this->assertStringNotContainsString('К слотам избранных', $roster);
+        $this->assertStringNotContainsString(route('teacher.slots.index'), $roster);
+
+        $studentList = $this->actingAs($student)
+            ->withHeader(DesktopWindow::HEADER, '1')
+            ->withHeader(DesktopWindow::ROSTER, '1')
+            ->get(route('slots.roster', $slot))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('desk-roster', $studentList);
+        $this->assertStringNotContainsString('К слотам избранных', $studentList);
+        $this->assertStringNotContainsString('desk-side', $studentList);
+
+        $cancel = $this->actingAs($teacher)
+            ->withHeader(DesktopWindow::HEADER, '1')
+            ->withHeader(DesktopWindow::ROSTER, '1')
+            ->get(route('teacher.bookings.cancel', $booking))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('desk-roster', $cancel);
+        $this->assertStringContainsString('Не отменять', $cancel);
+        $this->assertStringContainsString('href="'.route('slots.roster', $slot).'"', $cancel);
+        $this->assertStringNotContainsString('desk-side', $cancel);
+        $this->assertStringNotContainsString('К моим слотам', $cancel);
+    }
 }

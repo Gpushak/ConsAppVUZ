@@ -25,6 +25,9 @@ function withDesktopAgent(contents) {
 function attachWindowFlag() {
   session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['http://*/*', 'https://*/*'] }, (details, callback) => {
     details.requestHeaders['X-Desktop-Window'] = '1';
+    if (rosterContents.has(details.webContentsId)) {
+      details.requestHeaders['X-Desktop-Roster'] = '1';
+    }
     callback({ requestHeaders: details.requestHeaders });
   });
 }
@@ -48,6 +51,7 @@ function lockNavigation(win) {
 let mainWindow = null;
 let role = '';
 const rosterWindows = new Map();
+const rosterContents = new Set();
 
 function send(channel, ...args) {
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -152,6 +156,55 @@ function createMain() {
   });
 }
 
+function rosterSlotId(url) {
+  try {
+    const match = new URL(url).pathname.match(/\/slots\/(\d+)\/roster\/?$/);
+    return match ? match[1] : '';
+  } catch (error) {
+    return '';
+  }
+}
+
+function rosterStay(url, slotId) {
+  if (!slotId || !sameOrigin(url)) {
+    return false;
+  }
+  let path;
+  try {
+    path = new URL(url).pathname.replace(/\/$/, '') || '/';
+  } catch (error) {
+    return false;
+  }
+  if (path === '/slots/' + slotId + '/roster') {
+    return true;
+  }
+
+  return /^\/teacher\/bookings\/\d+\/cancel$/.test(path);
+}
+
+function lockRoster(win, rosterUrl) {
+  const slotId = rosterSlotId(rosterUrl);
+  const guard = (event, url) => {
+    if (!sameOrigin(url)) {
+      event.preventDefault();
+      shell.openExternal(url);
+      return;
+    }
+    if (!rosterStay(url, slotId)) {
+      event.preventDefault();
+    }
+  };
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (!sameOrigin(url)) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', guard);
+  win.webContents.on('will-redirect', guard);
+}
+
 function openRoster(url) {
   let absolute;
   try {
@@ -168,15 +221,22 @@ function openRoster(url) {
     return;
   }
   const child = new BrowserWindow(windowOptions({
-    width: 860,
-    height: 720,
+    width: 720,
+    height: 640,
+    minWidth: 480,
+    minHeight: 360,
     parent: mainWindow || undefined,
     title: 'Записавшиеся',
+    autoHideMenuBar: true,
   }));
+  child.removeMenu();
+  const contentsId = child.webContents.id;
+  rosterContents.add(contentsId);
   withDesktopAgent(child.webContents);
-  lockNavigation(child);
+  lockRoster(child, absolute);
   rosterWindows.set(absolute, child);
   child.on('closed', () => {
+    rosterContents.delete(contentsId);
     rosterWindows.delete(absolute);
   });
   child.loadURL(absolute);
