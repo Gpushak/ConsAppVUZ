@@ -174,20 +174,21 @@ main {
   padding: 24px 24px 80px;
 }
 
-/* Short screens such as login stay as tall as their content. The footer follows the form. */
-html:has(body .auth),
-body:has(.auth) {
-  height: auto;
-  min-height: 0;
+/* Short pages fill the window so the footer sits on the bottom edge. */
+body:not(.desk) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-body:has(.auth) {
-  display: block;
+body:not(.desk) > header,
+body:not(.desk) > .site-footer {
+  flex: 0 0 auto;
 }
 
-body:has(.auth) main {
-  flex: none;
-  padding-bottom: 12px;
+body:not(.desk) > main {
+  flex: 1 0 auto;
 }
 
 .site-footer {
