@@ -38,7 +38,11 @@ class AccessibilityMarkupTest extends ConsultationTestCase
         $this->assertStringNotContainsString('#8a94a0', $css);
         $this->assertStringNotContainsString('body:has(.auth)', $css);
         $this->assertMatchesRegularExpression(
-            '/body:not\(\.desk\)\s*\{[^}]*display:\s*flex;[^}]*min-height:\s*100vh/s',
+            '/html\s*\{[^}]*height:\s*100%/s',
+            $css,
+        );
+        $this->assertMatchesRegularExpression(
+            '/body:not\(\.desk\)\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*min-height:\s*100%/s',
             $css,
         );
         $this->assertMatchesRegularExpression(

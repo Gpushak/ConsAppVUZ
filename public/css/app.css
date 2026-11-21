@@ -16,8 +16,10 @@
 }
 
 html {
+  height: 100%;
   color-scheme: light;
   overflow-x: clip;
+  background: var(--bg);
 }
 
 body {
@@ -174,12 +176,12 @@ main {
   padding: 24px 24px 80px;
 }
 
-/* Short pages fill the window so the footer sits on the bottom edge. */
+/* Fill the window. The footer is the last flex item, so nothing paints below it. */
 body:not(.desk) {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: auto;
+  min-height: 100%;
 }
 
 body:not(.desk) > header,
