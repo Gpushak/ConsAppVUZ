@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
+  <a class="skip-link" href="#content">К содержанию</a>
   <header class="top">
     <div class="head-row">
       <a class="brand" href="{{ auth()->check() ? route('home') : route('login') }}">
-        <img src="{{ asset('images/pnipu-kons.png') }}" alt="Запись на консультацию">
+        <img src="{{ asset('images/pnipu-kons.png') }}" alt="Пермский политех, запись на консультацию">
       </a>
       @auth
         <div class="who">
@@ -43,7 +44,7 @@
       @endunless
     @endauth
   </header>
-  <main>
+  <main id="content">
     @yield('content')
   </main>
   <script src="{{ asset('js/tables.js') }}"></script>

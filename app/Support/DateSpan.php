@@ -9,7 +9,7 @@ final class DateSpan
 {
     public const TIMEZONE = 'Asia/Yekaterinburg';
 
-    public const ORDER_ERROR = 'Дата «По» раньше даты «С».';
+    public const ORDER_ERROR = 'Дата «Неделя по» раньше даты «Неделя с».';
 
     public function __construct(
         public readonly Carbon $from,
@@ -42,7 +42,7 @@ final class DateSpan
         if ($start === null || $end === null) {
             $week = self::currentWeek();
 
-            return new self($week->from, $week->until, 'Укажите даты «С» и «По».', false);
+            return new self($week->from, $week->until, 'Укажите даты «Неделя с» и «Неделя по».', false);
         }
 
         if ($end->lt($start)) {

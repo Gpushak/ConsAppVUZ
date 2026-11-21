@@ -4,7 +4,7 @@
   --ink: #1b2128;
   --muted: #5c6770;
   --line: #d5dbe1;
-  --line-strong: #c3ccd4;
+  --line-strong: #5c6770;
   --blue: #0c3d6e;
   --blue-dark: #092f54;
   --blue-soft: #e7eef6;
@@ -29,6 +29,34 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 16px;
   line-height: 1.45;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: 0;
+  z-index: 30;
+  transform: translateY(-120%);
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #0c3d6e;
+  font-weight: 650;
+}
+
+.skip-link:focus {
+  transform: translateY(8px);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .top {
@@ -159,6 +187,18 @@ h2 {
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.page-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 6px 0 0;
+  font-size: 15px;
+}
+
+.page-links a {
+  color: var(--blue);
 }
 
 .notice {
@@ -414,7 +454,7 @@ thead th {
 
 .field input::placeholder,
 .field textarea::placeholder {
-  color: #8a94a0;
+  color: #5c6770;
   opacity: 1;
 }
 
@@ -463,24 +503,90 @@ thead th {
 }
 
 th.sortable {
-  cursor: pointer;
-  user-select: none;
+  padding: 0;
 }
 
-th.sortable:hover {
+th.sortable button {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 650;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+th.sortable button:hover {
   color: var(--blue);
 }
 
-th.sortable[aria-sort="ascending"]::after {
+th.sortable button:focus-visible,
+.table-sort button:focus-visible {
+  outline: 2px solid #0c3d6e;
+  outline-offset: 2px;
+}
+
+th.sortable button[data-sort="ascending"] .sort-mark::before,
+.table-sort button[data-sort="ascending"] .sort-mark::before {
   content: " ▲";
   color: var(--blue);
   font-size: 11px;
 }
 
-th.sortable[aria-sort="descending"]::after {
+th.sortable button[data-sort="descending"] .sort-mark::before,
+.table-sort button[data-sort="descending"] .sort-mark::before {
   content: " ▼";
   color: var(--blue);
   font-size: 11px;
+}
+
+.table-tools {
+  display: none;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+}
+
+.table-tools:has(.table-status) {
+  display: flex;
+}
+
+.table-sort {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.table-sort button {
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.table-status.field {
+  width: 16rem;
+  max-width: 100%;
+  margin: 0;
+}
+
+.table-status > span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 650;
 }
 
 tr.filters th {
@@ -1106,6 +1212,7 @@ td.place {
 }
 
 .cal-day {
+  position: relative;
   color: var(--ink);
 }
 
@@ -1556,6 +1663,20 @@ td.place {
   tr.filters select {
     min-height: 44px;
     font-size: 16px;
+  }
+
+  .table-tools,
+  .table-sort {
+    display: flex;
+  }
+
+  .table-sort button,
+  .table-status.field {
+    min-height: 44px;
+  }
+
+  .table-status.field {
+    width: 100%;
   }
 
   .field textarea {
@@ -2042,6 +2163,14 @@ td.place {
   .slot-form .slot-fields:has(> .field > .error),
   .slot-form .slot-fields:has(#start_time-lock) {
     margin-bottom: 2.75rem;
+  }
+
+  .slot-form .slot-fields > .field > .error + #start_time-lock {
+    top: calc(100% + 1.35rem);
+  }
+
+  .slot-form .slot-fields:has(> .field > .error + #start_time-lock) {
+    margin-bottom: 4.5rem;
   }
 }
 

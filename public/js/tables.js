@@ -35,10 +35,47 @@
     return String(value || '').replace(/\s+/g, ' ').trim();
   }
 
+  function visibleText(node) {
+    if (!node) {
+      return '';
+    }
+
+    var copy = node.cloneNode(true);
+    Array.prototype.forEach.call(copy.querySelectorAll('.cell-label'), function (label) {
+      label.remove();
+    });
+
+    return copy.textContent;
+  }
+
   function cellText(row, index) {
     var cell = row.cells[index];
 
-    return cell ? fold(cell.textContent) : '';
+    return cell ? fold(visibleText(cell)) : '';
+  }
+
+  function sortButton(label) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.appendChild(document.createTextNode(label));
+    var mark = document.createElement('span');
+    mark.className = 'sort-mark';
+    mark.setAttribute('aria-hidden', 'true');
+    button.appendChild(mark);
+
+    return button;
+  }
+
+  function markSort(button, state) {
+    if (!button) {
+      return;
+    }
+
+    if (state) {
+      button.setAttribute('data-sort', state);
+    } else {
+      button.removeAttribute('data-sort');
+    }
   }
 
   function compareValues(left, right) {
@@ -77,13 +114,13 @@
     });
   }
 
-  function apply(table) {
-    var select = table.querySelector('select[data-status-filter]');
+  function apply(table, announce) {
+    var select = table.parentNode ? table.parentNode.querySelector('select[data-status-filter]') : null;
     var query = select ? fold(select.value) : '';
     var search = directorySearch(table);
     var words = search ? searchWords(search.value) : [];
 
-    var statusIndex = select ? select.parentNode.cellIndex : -1;
+    var statusIndex = select ? Number(select.getAttribute('data-status-index')) : -1;
     var filtering = query !== '' || words.length > 0;
     var shown = 0;
 
@@ -112,7 +149,17 @@
     if (empty) {
       empty.hidden = !(filtering && shown === 0);
     }
+
+    if (announce && isPersonDirectory(table)) {
+      var liveId = table.hasAttribute('data-user-directory') ? 'user-search-status' : 'teacher-search-status';
+      var live = document.getElementById(liveId);
+      if (live) {
+        live.textContent = words.length > 0 && shown === 0 ? 'Нет совпадений' : 'Показано ' + shown;
+      }
+    }
   }
+
+  var sorters = new WeakMap();
 
   function toggleSort(table, index, header) {
     var next = header.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
@@ -120,6 +167,11 @@
       cell.removeAttribute('aria-sort');
     });
     header.setAttribute('aria-sort', next);
+    (sorters.get(table) || []).forEach(function (item) {
+      var state = item.header === header ? next : '';
+      markSort(item.headerButton, state);
+      markSort(item.stripButton, state);
+    });
 
     var direction = next === 'ascending' ? 1 : -1;
     var body = table.tBodies[0];
@@ -143,7 +195,7 @@
     var values = [];
 
     dataRows(table).forEach(function (row) {
-      var text = clean(row.cells[index] ? row.cells[index].textContent : '');
+      var text = clean(visibleText(row.cells[index]));
       var key = fold(text);
       if (!key || seen[key]) {
         return;
@@ -167,59 +219,71 @@
 
     var headerRow = table.tHead.rows[0];
     var statusIndex = -1;
+    var controls = [];
 
     Array.prototype.forEach.call(headerRow.cells, function (header, index) {
       if (header.hasAttribute('data-skip')) {
         return;
       }
 
+      var label = clean(header.textContent);
       header.classList.add('sortable');
-      header.tabIndex = 0;
-      header.title = 'Сортировать';
-      header.addEventListener('click', function () {
+      header.textContent = '';
+      var button = sortButton(label);
+      header.appendChild(button);
+      button.addEventListener('click', function () {
         toggleSort(table, index, header);
       });
-      header.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          toggleSort(table, index, header);
-        }
-      });
+      controls.push({ header: header, headerButton: button, stripButton: null, index: index, label: label });
 
-      if (fold(header.textContent) === 'статус') {
+      if (fold(label) === 'статус') {
         statusIndex = index;
       }
     });
 
-    if (statusIndex >= 0) {
-      var filterRow = document.createElement('tr');
-      filterRow.className = 'filters';
-
-      Array.prototype.forEach.call(headerRow.cells, function (header, index) {
-        var cell = document.createElement('th');
-        if (index === statusIndex) {
-          var select = document.createElement('select');
-          select.setAttribute('data-status-filter', '');
-          select.setAttribute('aria-label', 'Статус');
-          var all = document.createElement('option');
-          all.value = '';
-          all.textContent = 'Все';
-          select.appendChild(all);
-          statusOptions(table, statusIndex).forEach(function (status) {
-            var option = document.createElement('option');
-            option.value = status;
-            option.textContent = status;
-            select.appendChild(option);
-          });
-          select.addEventListener('change', function () {
-            apply(table);
-          });
-          cell.appendChild(select);
-        }
-        filterRow.appendChild(cell);
+    var tools = document.createElement('div');
+    tools.className = 'table-tools';
+    var sortStrip = document.createElement('div');
+    sortStrip.className = 'table-sort';
+    controls.forEach(function (item) {
+      var button = sortButton(item.label);
+      button.addEventListener('click', function () {
+        toggleSort(table, item.index, item.header);
       });
+      item.stripButton = button;
+      sortStrip.appendChild(button);
+    });
+    tools.appendChild(sortStrip);
+    sorters.set(table, controls);
 
-      headerRow.parentNode.appendChild(filterRow);
+    if (statusIndex >= 0) {
+      var statusLabel = document.createElement('label');
+      statusLabel.className = 'field table-status';
+      var caption = document.createElement('span');
+      caption.textContent = 'Статус';
+      var select = document.createElement('select');
+      select.setAttribute('data-status-filter', '');
+      select.setAttribute('data-status-index', String(statusIndex));
+      var all = document.createElement('option');
+      all.value = '';
+      all.textContent = 'Все';
+      select.appendChild(all);
+      statusOptions(table, statusIndex).forEach(function (status) {
+        var option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        select.appendChild(option);
+      });
+      select.addEventListener('change', function () {
+        apply(table);
+      });
+      statusLabel.appendChild(caption);
+      statusLabel.appendChild(select);
+      tools.appendChild(statusLabel);
+    }
+
+    if (controls.length || statusIndex >= 0) {
+      table.parentNode.insertBefore(tools, table);
     }
 
     if ((statusIndex >= 0 || isPersonDirectory(table)) && dataRows(table).length && !table.querySelector('[data-nomatch]')) {
@@ -332,7 +396,7 @@
           : 'table[data-teacher-directory]';
         var table = document.querySelector(selector);
         if (table) {
-          apply(table);
+          apply(table, true);
         }
       });
     });

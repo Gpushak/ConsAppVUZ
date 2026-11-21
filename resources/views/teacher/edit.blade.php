@@ -37,6 +37,17 @@
   $roomValue = old('room', $slot->room);
   $laterDays = $slot->series_id === null ? 0 : $slot->laterSeriesDays()->count();
   $applySeries = (bool) old('apply_to_series');
+  $describe = function (string $field) use ($errors, $locked): string {
+      $ids = [];
+      if ($errors->has($field)) {
+          $ids[] = $field.'-error';
+      }
+      if ($locked) {
+          $ids[] = 'start_time-lock';
+      }
+
+      return implode(' ', $ids);
+  };
 @endphp
 
 @section('content')
@@ -49,15 +60,15 @@
     <form class="slot-form" method="POST" action="{{ route('teacher.slots.update', $slot) }}" data-slot-form>
       @csrf
       <div class="slot-fields">
-        <fieldset class="field format">
+        <fieldset class="field format" @if ($errors->has('format')) aria-describedby="format-error" @endif>
           <legend>Формат</legend>
           <div class="choices">
             <label class="choice">
-              <input id="format_in_person" type="radio" name="format" value="in_person" @checked(! $online)>
+              <input id="format_in_person" type="radio" name="format" value="in_person" @checked(! $online) @if ($errors->has('format')) aria-invalid="true" @endif>
               Очно
             </label>
             <label class="choice">
-              <input id="format_online" type="radio" name="format" value="online" @checked($online)>
+              <input id="format_online" type="radio" name="format" value="online" @checked($online) @if ($errors->has('format')) aria-invalid="true" @endif>
               Онлайн
             </label>
           </div>
@@ -66,13 +77,18 @@
             <p class="error" id="format-error">{{ $message }}</p>
           @enderror
         </fieldset>
+        @php
+          $dateDescribed = $describe('date');
+          $startDescribed = $describe('start_time');
+          $endDescribed = $describe('end_time');
+        @endphp
         <div class="field">
           <label for="date">Дата</label>
           @if ($locked)
             <input type="hidden" name="date" value="{{ $dateValue }}">
-            <input id="date" type="date" value="{{ $dateValue }}" disabled @if ($errors->has('date')) aria-invalid="true" aria-describedby="date-error" @endif>
+            <input id="date" type="date" value="{{ $dateValue }}" disabled @if ($errors->has('date')) aria-invalid="true" @endif @if ($dateDescribed !== '') aria-describedby="{{ $dateDescribed }}" @endif>
           @else
-            <input id="date" type="date" name="date" value="{{ $dateValue }}" required @if ($errors->has('date')) aria-invalid="true" aria-describedby="date-error" @endif>
+            <input id="date" type="date" name="date" value="{{ $dateValue }}" required @if ($errors->has('date')) aria-invalid="true" @endif @if ($dateDescribed !== '') aria-describedby="{{ $dateDescribed }}" @endif>
           @endif
           @error('date')
             <p class="error" id="date-error">{{ $message }}</p>
@@ -82,25 +98,24 @@
           <label for="start_time">Начало</label>
           @if ($locked)
             <input type="hidden" name="start_time" value="{{ $startValue }}">
-            <input id="start_time" type="time" value="{{ $startValue }}" step="300" disabled @if ($errors->has('start_time')) aria-invalid="true" aria-describedby="start_time-error" @endif>
+            <input id="start_time" type="time" value="{{ $startValue }}" step="300" disabled @if ($errors->has('start_time')) aria-invalid="true" @endif @if ($startDescribed !== '') aria-describedby="{{ $startDescribed }}" @endif>
           @else
-            <input id="start_time" type="time" name="start_time" value="{{ $startValue }}" step="300" required @if ($errors->has('start_time')) aria-invalid="true" aria-describedby="start_time-error" @endif>
+            <input id="start_time" type="time" name="start_time" value="{{ $startValue }}" step="300" required @if ($errors->has('start_time')) aria-invalid="true" @endif @if ($startDescribed !== '') aria-describedby="{{ $startDescribed }}" @endif>
           @endif
           @error('start_time')
             <p class="error" id="start_time-error">{{ $message }}</p>
-          @else
-            @if ($locked)
-              <p class="field-note" id="start_time-lock">Время нельзя изменить: на слот уже есть запись.</p>
-            @endif
           @enderror
+          @if ($locked)
+            <p class="field-note" id="start_time-lock">Время нельзя изменить: на слот уже есть запись.</p>
+          @endif
         </div>
         <div class="field">
           <label for="end_time">Конец</label>
           @if ($locked)
             <input type="hidden" name="end_time" value="{{ $endValue }}">
-            <input id="end_time" type="time" value="{{ $endValue }}" step="300" disabled @if ($errors->has('end_time')) aria-invalid="true" aria-describedby="end_time-error" @endif>
+            <input id="end_time" type="time" value="{{ $endValue }}" step="300" disabled @if ($errors->has('end_time')) aria-invalid="true" @endif @if ($endDescribed !== '') aria-describedby="{{ $endDescribed }}" @endif>
           @else
-            <input id="end_time" type="time" name="end_time" value="{{ $endValue }}" step="300" required @if ($errors->has('end_time')) aria-invalid="true" aria-describedby="end_time-error" @endif>
+            <input id="end_time" type="time" name="end_time" value="{{ $endValue }}" step="300" required @if ($errors->has('end_time')) aria-invalid="true" @endif @if ($endDescribed !== '') aria-describedby="{{ $endDescribed }}" @endif>
           @endif
           @error('end_time')
             <p class="error" id="end_time-error">{{ $message }}</p>

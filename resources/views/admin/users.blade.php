@@ -22,6 +22,7 @@
     <form class="field directory-search" method="GET" action="{{ route('admin.users.index') }}">
       <label for="user-search">Поиск</label>
       <input id="user-search" type="search" name="q" value="{{ $query }}" placeholder="ФИО" data-user-search autocomplete="off">
+      <p id="user-search-status" class="visually-hidden" aria-live="polite"></p>
     </form>
     <button class="btn" type="button" data-new-teacher aria-controls="new-teacher" aria-expanded="{{ $creating ? 'true' : 'false' }}">Новый преподаватель</button>
   </div>
@@ -137,22 +138,22 @@
                       <input type="hidden" name="profile_user" value="{{ $user->id }}">
                       <label class="field">
                         Должность
-                        <input type="text" name="position" value="{{ $profileError ? old('position') : $user->teacherProfile->position }}" @if ($profileError && $errors->has('position')) aria-invalid="true" @endif>
-                        @if ($profileError)
-                          @error('position')
-                            <p class="error">{{ $message }}</p>
-                          @enderror
-                        @endif
+                        <input type="text" name="position" value="{{ $profileError ? old('position') : $user->teacherProfile->position }}" @if ($profileError && $errors->has('position')) aria-invalid="true" aria-describedby="position-error-{{ $user->id }}" @endif>
                       </label>
+                      @if ($profileError)
+                        @error('position')
+                          <p class="error" id="position-error-{{ $user->id }}">{{ $message }}</p>
+                        @enderror
+                      @endif
                       <label class="field">
                         Кафедра
-                        <input type="text" name="department" value="{{ $profileError ? old('department') : $user->teacherProfile->department }}" @if ($profileError && $errors->has('department')) aria-invalid="true" @endif>
-                        @if ($profileError)
-                          @error('department')
-                            <p class="error">{{ $message }}</p>
-                          @enderror
-                        @endif
+                        <input type="text" name="department" value="{{ $profileError ? old('department') : $user->teacherProfile->department }}" @if ($profileError && $errors->has('department')) aria-invalid="true" aria-describedby="department-error-{{ $user->id }}" @endif>
                       </label>
+                      @if ($profileError)
+                        @error('department')
+                          <p class="error" id="department-error-{{ $user->id }}">{{ $message }}</p>
+                        @enderror
+                      @endif
                       <button class="btn btn-small" type="submit">Сохранить</button>
                     </form>
                   </details>
