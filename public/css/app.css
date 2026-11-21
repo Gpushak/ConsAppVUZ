@@ -2393,10 +2393,6 @@ tr.person-card[data-favorite] {
   background: #f3faf6;
 }
 
-.fav-form .chip {
-  white-space: nowrap;
-}
-
 .account-line {
   margin: 0 0 12px;
 }
