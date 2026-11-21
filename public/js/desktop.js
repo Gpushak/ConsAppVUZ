@@ -187,8 +187,8 @@
   }
 
   function bootTeacher() {
-    teacherButton = document.querySelector('[data-new-teacher]');
-    teacherPanel = document.getElementById('new-teacher');
+    teacherButton = document.querySelector('[data-new-user]');
+    teacherPanel = document.getElementById('new-user');
     if (!teacherButton || !teacherPanel) {
       if (window.sessionStorage.getItem('desk-open-teacher') === '1') {
         window.sessionStorage.removeItem('desk-open-teacher');
@@ -202,7 +202,7 @@
     teacherButton.addEventListener('click', function () {
       window.setTimeout(presentTeacher, 0);
     });
-    var cancel = teacherPanel.querySelector('[data-new-teacher-cancel]');
+    var cancel = teacherPanel.querySelector('[data-new-user-cancel]');
     if (cancel) {
       cancel.addEventListener('click', function () {
         window.setTimeout(presentTeacher, 0);
@@ -236,7 +236,7 @@
   }
 
   function shiftWeek(direction) {
-    var link = linkByText(direction === 'prev' ? 'Предыдущая неделя' : 'Следующая неделя');
+    var link = document.querySelector('.week-range a[rel="' + (direction === 'prev' ? 'prev' : 'next') + '"]');
     if (link) {
       window.location.href = link.href;
     }

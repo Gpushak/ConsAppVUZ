@@ -168,7 +168,7 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
             ->assertOk()
             ->assertSee('Избранных нет')
             ->getContent();
-        $this->assertStringContainsString('>Добавить в избранное</button>', $this->row($before, 'Иванова А. С.'));
+        $this->assertStringContainsString('aria-label="Добавить в избранное"', $this->row($before, 'Иванова А. С.'));
         $this->assertStringNotContainsString('data-favorite', $this->openingTag($before, 'Иванова А. С.'));
 
         $this->actingAs($student)
@@ -184,8 +184,8 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
         $petrovRow = $this->row($saved, 'Петров Н. И.');
         $this->assertStringContainsString('data-favorite', $this->openingTag($saved, 'Петров Н. И.'));
         $this->assertStringContainsString('>В избранном</span>', $petrovRow);
-        $this->assertStringContainsString('>Убрать из избранного</button>', $petrovRow);
-        $this->assertStringContainsString('>Добавить в избранное</button>', $this->row($saved, 'Иванова А. С.'));
+        $this->assertStringContainsString('aria-label="Убрать из избранного"', $petrovRow);
+        $this->assertStringContainsString('aria-label="Добавить в избранное"', $this->row($saved, 'Иванова А. С.'));
         $this->assertLessThan(strpos($saved, 'Иванова А. С.'), strpos($saved, 'Петров Н. И.'));
 
         $this->actingAs($student)
@@ -194,7 +194,7 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
             ->assertSessionHas('status', 'Преподаватель убран из избранного.');
 
         $after = $this->actingAs($student)->get(route('teachers.index'))->assertOk()->getContent();
-        $this->assertStringContainsString('>Добавить в избранное</button>', $this->row($after, 'Петров Н. И.'));
+        $this->assertStringContainsString('aria-label="Добавить в избранное"', $this->row($after, 'Петров Н. И.'));
         $this->assertStringNotContainsString('>В избранном</span>', $this->row($after, 'Петров Н. И.'));
         $this->assertStringNotContainsString('data-favorite', $this->openingTag($after, 'Петров Н. И.'));
     }
@@ -291,26 +291,27 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
         $closed = $this->actingAs($admin)
             ->get(route('admin.users.index'))
             ->assertOk()
-            ->assertSee('>Новый преподаватель</button>', false)
+            ->assertSee('>Новый</button>', false)
+            ->assertSee('aria-label="Новый пользователь"', false)
             ->getContent();
 
         $this->assertMatchesRegularExpression(
-            '/<button\b[^>]*data-new-teacher[^>]*aria-expanded="false"[^>]*>Новый преподаватель<\/button>/',
+            '/<button\b[^>]*data-new-user[^>]*aria-expanded="false"[^>]*>Новый<\/button>/',
             $closed,
         );
         $this->assertMatchesRegularExpression(
-            '/<section\b[^>]*id="new-teacher"[^>]*\bhidden\b[^>]*>[\s\S]*Преподаватели не регистрируются сами\.[\s\S]*Создать преподавателя[\s\S]*Отмена/',
+            '/<section\b[^>]*id="new-user"[^>]*\bhidden\b[^>]*>[\s\S]*Преподаватели не регистрируются сами\.[\s\S]*Кого создать[\s\S]*>Создать<\/button>[\s\S]*Отмена/',
             $closed,
         );
         $this->assertLessThan(
-            strpos($closed, 'id="new-teacher"'),
-            strpos($closed, 'data-new-teacher'),
+            strpos($closed, 'id="new-user"'),
+            strpos($closed, 'data-new-user'),
         );
 
         $script = file_get_contents(public_path('js/tables.js'));
         $this->assertIsString($script);
-        $this->assertStringContainsString('data-new-teacher', $script);
-        $this->assertStringContainsString('data-new-teacher-cancel', $script);
+        $this->assertStringContainsString('data-new-user', $script);
+        $this->assertStringContainsString('data-new-user-cancel', $script);
         $this->assertStringContainsString('setOpen(panel.hidden)', $script);
 
         $open = $this->followingRedirects()
@@ -333,11 +334,11 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
             ->getContent();
 
         $this->assertMatchesRegularExpression(
-            '/<section\b[^>]*id="new-teacher"(?![^>]*\bhidden\b)[^>]*>/',
+            '/<section\b[^>]*id="new-user"(?![^>]*\bhidden\b)[^>]*>/',
             $open,
         );
         $this->assertMatchesRegularExpression(
-            '/<button\b[^>]*data-new-teacher[^>]*aria-expanded="true"/',
+            '/<button\b[^>]*data-new-user[^>]*aria-expanded="true"/',
             $open,
         );
         $this->assertStringContainsString('id="name-error"', $open);
@@ -438,9 +439,39 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
 
         $this->assertStringContainsString(' open', $this->row($profile, 'Иванова А. С.'));
         $this->assertStringContainsString('value="'.$longPosition.'"', $this->row($profile, 'Иванова А. С.'));
-        $this->assertDoesNotMatchRegularExpression('/id="position"[^>]*value="'.$longPosition.'"/', $profile);
-        $this->assertMatchesRegularExpression('/id="position"[^>]*value=""/', $profile);
+        $this->assertDoesNotMatchRegularExpression('/id="position"[^0-9-][^>]*value="'.$longPosition.'"/', $profile);
+        $this->assertMatchesRegularExpression('/id="position"[^0-9-][^>]*value=""/', $profile);
         $this->assertSame('доцент', $teacher->teacherProfile->refresh()->position);
+    }
+
+    public function test_admin_student_form_asks_for_a_group_and_not_a_position(): void
+    {
+        $admin = $this->adminUser();
+
+        $open = $this->followingRedirects()
+            ->actingAs($admin)
+            ->post(route('admin.teachers.store'), [
+                'form' => 'user',
+                'kind' => 'student',
+                'name' => 'Новиков Пётр',
+                'email' => 'novikov-p@kafedra.local',
+                'group_name' => ' ',
+                'password' => 'Vremen-123',
+            ])
+            ->assertOk()
+            ->assertSee('Укажите учебную группу.')
+            ->assertDontSee('Укажите должность.')
+            ->assertDontSee('Укажите кафедру.')
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<section\b[^>]*id="new-user"(?![^>]*\bhidden\b)[^>]*>/',
+            $open,
+        );
+        $this->assertMatchesRegularExpression('/name="kind" value="student"[^>]*\bchecked\b/', $open);
+        $this->assertStringContainsString('id="group_name-error"', $open);
+        $this->assertStringContainsString('aria-describedby="group_name-error"', $open);
+        $this->assertNull(User::query()->where('email', 'novikov-p@kafedra.local')->first());
     }
 
     public function test_directory_and_admin_lists_can_wrap_instead_of_spilling(): void

@@ -146,7 +146,7 @@ class DailyUsePassTest extends ConsultationTestCase
             ->get(route('teacher.slots.index'))
             ->assertOk()
             ->assertSee('Слотов пока нет')
-            ->assertSee('Создайте первый слот')
+            ->assertSee('Создайте первую консультацию')
             ->assertSee(route('teacher.slots.create'), false);
 
         $slot = $this->futureSlot($teacher, '11:00', '11:45', 'А', '12');
@@ -442,7 +442,7 @@ class DailyUsePassTest extends ConsultationTestCase
         $this->assertStringContainsString('class="person-fact"', $teacherCard);
         $this->assertStringContainsString('доцент', $teacherCard);
         $this->assertStringContainsString('class="person-actions"', $teacherCard);
-        $this->assertStringContainsString('>Добавить в избранное</button>', $teacherCard);
+        $this->assertStringContainsString('aria-label="Добавить в избранное"', $teacherCard);
         $this->assertStringNotContainsString('<table', $teacherCard);
         $this->assertSame(1, substr_count($directory, '<table'));
 

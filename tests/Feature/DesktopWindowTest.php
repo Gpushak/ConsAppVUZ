@@ -80,7 +80,8 @@ class DesktopWindowTest extends ConsultationTestCase
             ->getContent();
 
         $this->assertStringContainsString('data-desktop-dialog', $create);
-        $this->assertStringContainsString('Новый слот', $create);
+        $this->assertStringContainsString('Новая консультация', $create);
+        $this->assertStringNotContainsString('Новый слот', $create);
         $this->assertStringNotContainsString('<header class="top">', $create);
     }
 

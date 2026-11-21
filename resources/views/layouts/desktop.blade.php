@@ -56,7 +56,7 @@
                 <a href="{{ route('bookings.index') }}" @if (request()->routeIs('bookings.*') && ! request()->routeIs('bookings.cancel')) aria-current="page" @endif>Мои записи</a>
               @elseif (auth()->user()->isTeacher())
                 <a href="{{ route('teacher.slots.index') }}" @if (request()->routeIs('teacher.slots.index')) aria-current="page" @endif>Мои слоты</a>
-                <a href="{{ route('teacher.slots.create') }}" @if (request()->routeIs('teacher.slots.create')) aria-current="page" @endif>Новый слот</a>
+                <a href="{{ route('teacher.slots.create') }}" @if (request()->routeIs('teacher.slots.create')) aria-current="page" @endif>Новая консультация</a>
               @elseif (auth()->user()->isAdmin())
                 <a href="{{ route('admin.users.index') }}" @if (request()->routeIs('admin.*')) aria-current="page" @endif>Пользователи</a>
               @endif

@@ -18,9 +18,10 @@ class WeekRangeTest extends ConsultationTestCase
             $this->actingAs($user)
                 ->get(route($name))
                 ->assertOk()
-                ->assertSee('value="2026-10-19"', false)
-                ->assertSee('value="2026-10-25"', false)
-                ->assertSee('Показать')
+                ->assertSee('19–25 октября 2026', false)
+                ->assertSee('Перейти к дате', false)
+                ->assertSee('aria-label="Открыть неделю этой даты"', false)
+                ->assertDontSee('>Показать</button>', false)
                 ->assertSee('Предыдущая неделя')
                 ->assertSee('Следующая неделя')
                 ->assertSee('from=2026-10-12', false)
@@ -38,8 +39,7 @@ class WeekRangeTest extends ConsultationTestCase
             $this->actingAs($user)
                 ->get(route($name))
                 ->assertOk()
-                ->assertSee('value="2026-10-26"', false)
-                ->assertSee('value="2026-11-01"', false)
+                ->assertSee('26 октября – 1 ноября 2026', false)
                 ->assertSee('ауд. 260')
                 ->assertDontSee('ауд. 251')
                 ->assertDontSee('ауд. 202');
@@ -59,8 +59,7 @@ class WeekRangeTest extends ConsultationTestCase
             $html = $this->actingAs($user)
                 ->get(route($name, $query))
                 ->assertOk()
-                ->assertSee('value="2026-10-22"', false)
-                ->assertSee('value="2026-10-25"', false)
+                ->assertSee('22–25 октября 2026', false)
                 ->assertSee('ауд. 251')
                 ->assertDontSee('ауд. 241')
                 ->assertDontSee('ауд. 201')
@@ -89,8 +88,8 @@ class WeekRangeTest extends ConsultationTestCase
                 ->get(route($name, ['from' => '2026-11-10', 'to' => '2026-11-01']))
                 ->assertOk()
                 ->assertSee(DateSpan::ORDER_ERROR)
-                ->assertSee('value="2026-11-10"', false)
-                ->assertSee('value="2026-11-01"', false)
+                ->assertSee('aria-invalid="true"', false)
+                ->assertSee('aria-describedby="week-range-error"', false)
                 ->assertSee('ауд. 555');
         }
     }
@@ -104,8 +103,7 @@ class WeekRangeTest extends ConsultationTestCase
             $html = $this->actingAs($user)
                 ->get(route($name, $query))
                 ->assertOk()
-                ->assertSee('value="2026-05-24"', false)
-                ->assertSee('value="2026-05-30"', false)
+                ->assertSee('24–30 мая 2026', false)
                 ->getContent();
 
             $this->assertStringContainsString('from=2026-05-17', $html);
@@ -117,14 +115,37 @@ class WeekRangeTest extends ConsultationTestCase
         $partial = $this->actingAs($teacher)
             ->get(route('teacher.slots.index', ['from' => '2026-10-21', 'to' => '2026-10-23']))
             ->assertOk()
-            ->assertSee('value="2026-10-21"', false)
-            ->assertSee('value="2026-10-23"', false)
+            ->assertSee('21–23 октября 2026', false)
             ->getContent();
 
         $this->assertStringContainsString('from=2026-10-14', $partial);
         $this->assertStringContainsString('to=2026-10-16', $partial);
         $this->assertStringContainsString('from=2026-10-28', $partial);
         $this->assertStringContainsString('to=2026-10-30', $partial);
+    }
+
+    public function test_one_date_opens_the_monday_to_sunday_week_around_it(): void
+    {
+        [$teacher, $student] = $this->pair();
+
+        foreach ($this->pages($teacher, $student) as [$user, $name]) {
+            $this->actingAs($user)
+                ->get(route($name, ['jump' => '1', 'on' => '2026-03-31']))
+                ->assertOk()
+                ->assertSee('30 марта – 5 апреля 2026', false)
+                ->assertSee('from=2026-03-23', false)
+                ->assertSee('to=2026-03-29', false)
+                ->assertSee('from=2026-04-06', false)
+                ->assertSee('to=2026-04-12', false)
+                ->assertDontSee(DateSpan::DATE_ERROR);
+
+            $this->actingAs($user)
+                ->get(route($name, ['jump' => '1']))
+                ->assertOk()
+                ->assertSee(DateSpan::DATE_ERROR)
+                ->assertSee('aria-invalid="true"', false)
+                ->assertSee('id="week-range-error"', false);
+        }
     }
 
     /**

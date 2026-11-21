@@ -203,7 +203,7 @@ body.desk .table-wrap thead th {
 }
 
 .desk-modal:has(.slot-form),
-.desk-modal:has(#new-teacher) {
+.desk-modal:has(#new-user) {
   width: min(920px, calc(100vw - 48px));
 }
 

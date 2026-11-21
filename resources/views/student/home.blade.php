@@ -25,7 +25,7 @@
           @endif
         </h2>
         @if ($activeDay)
-          <a class="btn btn-ghost btn-small" href="{{ route('home') }}?{{ http_build_query($nearestQuery) }}">Ближайшая</a>
+          <a class="btn btn-ghost btn-small" href="{{ route('home') }}?{{ http_build_query($nearestQuery) }}">К ближайшей консультации</a>
         @endif
       </div>
       <div class="near-main">
@@ -45,7 +45,10 @@
               @endforeach
             </select>
           </label>
-          <button class="btn" type="submit">Показать</button>
+          <button class="cal-arrow" data-tip type="submit" aria-label="Открыть консультации преподавателя">
+            <span aria-hidden="true">›</span>
+            <span class="tip" role="tooltip">Открыть консультации преподавателя</span>
+          </button>
         </form>
         @if ($daySlots !== null)
           <section class="near-day" data-day="{{ $activeDay->toDateString() }}">
@@ -147,29 +150,17 @@
         </table>
       </div>
     </section>
-    <form class="week-range" method="get" action="{{ route('home') }}">
-      @if ($selectedTeacher)
-        <input type="hidden" name="teacher" value="{{ $selectedTeacher->id }}">
-      @endif
-      <input type="hidden" name="month" value="{{ $month->format('Y-m') }}">
-      @if ($activeDay)
-        <input type="hidden" name="day" value="{{ $activeDay->toDateString() }}">
-      @endif
-      <label class="field">
-        <span>Неделя с</span>
-        <input type="date" name="from" value="{{ $span->from->toDateString() }}" @if ($span->error) aria-invalid="true" aria-describedby="week-range-error" @endif>
-      </label>
-      <label class="field">
-        <span>Неделя по</span>
-        <input type="date" name="to" value="{{ $span->query()['to'] }}" @if ($span->error) aria-invalid="true" aria-describedby="week-range-error" @endif>
-      </label>
-      <button class="btn" type="submit">Показать</button>
-      <a class="btn btn-ghost" href="{{ route('home') }}?{{ http_build_query($weekLinks['previous']) }}">Предыдущая неделя</a>
-      <a class="btn btn-ghost" href="{{ route('home') }}?{{ http_build_query($weekLinks['next']) }}">Следующая неделя</a>
-    </form>
-    @if ($span->error)
-      <p class="notice error" id="week-range-error">{{ $span->error }}</p>
-    @endif
+    @include('partials.week-range', [
+        'span' => $span,
+        'action' => route('home'),
+        'previous' => route('home', $weekLinks['previous']),
+        'next' => route('home', $weekLinks['next']),
+        'hidden' => array_filter([
+            'teacher' => $selectedTeacher?->id,
+            'month' => $month->format('Y-m'),
+            'day' => $activeDay?->toDateString(),
+        ], fn ($value) => $value !== null && $value !== ''),
+    ])
     @unless ($hasOpen)
       <p class="notice">Свободных слотов нет. <a href="{{ route('teachers.index') }}">Откройте преподавателей</a>, чтобы выбрать, чьи слоты смотреть.</p>
     @endunless

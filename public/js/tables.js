@@ -361,9 +361,63 @@
     });
   }
 
-  function bootNewTeacher() {
-    var button = document.querySelector('[data-new-teacher]');
-    var panel = document.getElementById('new-teacher');
+  function bootTips() {
+    function release(host) {
+      if (!host || !host.hasAttribute('data-tip-dismissed')) {
+        return;
+      }
+      if (host.matches(':hover') || host === document.activeElement || host.contains(document.activeElement)) {
+        return;
+      }
+      host.removeAttribute('data-tip-dismissed');
+    }
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape') {
+        return;
+      }
+      Array.prototype.forEach.call(document.querySelectorAll('[data-tip]'), function (host) {
+        if (host.matches(':hover') || host === document.activeElement || host.contains(document.activeElement)) {
+          host.setAttribute('data-tip-dismissed', '');
+        }
+      });
+    });
+
+    document.addEventListener('focusout', function (event) {
+      var host = event.target && event.target.closest ? event.target.closest('[data-tip]') : null;
+      window.setTimeout(function () {
+        release(host);
+      }, 0);
+    });
+
+    document.addEventListener('pointerout', function (event) {
+      var host = event.target && event.target.closest ? event.target.closest('[data-tip]') : null;
+      if (!host) {
+        return;
+      }
+      var next = event.relatedTarget;
+      if (next && host.contains(next)) {
+        return;
+      }
+      release(host);
+    });
+  }
+
+  function applyUserKind(panel) {
+    var selected = panel.querySelector('input[name="kind"]:checked');
+    var kind = selected ? selected.value : 'teacher';
+    Array.prototype.forEach.call(panel.querySelectorAll('[data-kind]'), function (block) {
+      var on = block.getAttribute('data-kind') === kind;
+      block.hidden = !on;
+      Array.prototype.forEach.call(block.querySelectorAll('input, select, textarea'), function (field) {
+        field.disabled = !on;
+      });
+    });
+  }
+
+  function bootNewUser() {
+    var button = document.querySelector('[data-new-user]');
+    var panel = document.getElementById('new-user');
 
     if (!button || !panel || button.dataset.ready === '1') {
       return;
@@ -379,12 +433,19 @@
       setOpen(panel.hidden);
     });
 
-    var cancel = panel.querySelector('[data-new-teacher-cancel]');
+    var cancel = panel.querySelector('[data-new-user-cancel]');
     if (cancel) {
       cancel.addEventListener('click', function () {
         setOpen(false);
       });
     }
+
+    Array.prototype.forEach.call(panel.querySelectorAll('input[name="kind"]'), function (radio) {
+      radio.addEventListener('change', function () {
+        applyUserKind(panel);
+      });
+    });
+    applyUserKind(panel);
   }
 
   function boot() {
@@ -414,7 +475,8 @@
     syncFinishedOnly();
     applyFinishedCards();
     bootSlotCards();
-    bootNewTeacher();
+    bootNewUser();
+    bootTips();
   }
 
   if (document.readyState === 'loading') {
