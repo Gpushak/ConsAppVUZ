@@ -9,7 +9,27 @@ final class DateSpan
 {
     public const TIMEZONE = 'Asia/Yekaterinburg';
 
-    public const ORDER_ERROR = 'Дата «Неделя по» раньше даты «Неделя с».';
+    public const ORDER_ERROR = 'Дата конца раньше даты начала.';
+
+    public const DATE_ERROR = 'Укажите дату.';
+
+    /**
+     * @var array<int, string>
+     */
+    private const MONTHS = [
+        1 => 'января',
+        2 => 'февраля',
+        3 => 'марта',
+        4 => 'апреля',
+        5 => 'мая',
+        6 => 'июня',
+        7 => 'июля',
+        8 => 'августа',
+        9 => 'сентября',
+        10 => 'октября',
+        11 => 'ноября',
+        12 => 'декабря',
+    ];
 
     public function __construct(
         public readonly Carbon $from,
@@ -42,7 +62,7 @@ final class DateSpan
         if ($start === null || $end === null) {
             $week = self::currentWeek();
 
-            return new self($week->from, $week->until, 'Укажите даты «Неделя с» и «Неделя по».', false);
+            return new self($week->from, $week->until, self::DATE_ERROR, false);
         }
 
         if ($end->lt($start)) {
@@ -50,6 +70,48 @@ final class DateSpan
         }
 
         return new self($start, $end->copy()->endOfDay());
+    }
+
+    /**
+     * Monday–Sunday week that contains one jump date.
+     * An empty or unparsed value keeps the current week and reports DATE_ERROR.
+     */
+    public static function fromDate(mixed $on): self
+    {
+        $date = self::parseDate(is_string($on) ? $on : null);
+
+        if ($date === null) {
+            $week = self::currentWeek();
+
+            return new self($week->from, $week->until, self::DATE_ERROR, false);
+        }
+
+        return self::weekContaining($date);
+    }
+
+    public static function weekContaining(Carbon $day): self
+    {
+        $from = $day->copy()->timezone(self::TIMEZONE)->startOfDay()->startOfWeek(Carbon::MONDAY);
+
+        return new self($from, $from->copy()->addDays(6)->endOfDay());
+    }
+
+    public function label(): string
+    {
+        $start = $this->from->copy()->timezone(self::TIMEZONE);
+        $end = $this->until->copy()->timezone(self::TIMEZONE);
+        $startMonth = self::MONTHS[$start->month];
+        $endMonth = self::MONTHS[$end->month];
+
+        if ($start->year === $end->year && $start->month === $end->month) {
+            return $start->day.'–'.$end->day.' '.$startMonth.' '.$start->year;
+        }
+
+        if ($start->year === $end->year) {
+            return $start->day.' '.$startMonth.' – '.$end->day.' '.$endMonth.' '.$end->year;
+        }
+
+        return $start->day.' '.$startMonth.' '.$start->year.' – '.$end->day.' '.$endMonth.' '.$end->year;
     }
 
     public function previous(): self

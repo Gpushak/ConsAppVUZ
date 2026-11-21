@@ -47,7 +47,8 @@ body {
   transform: translateY(8px);
 }
 
-.visually-hidden {
+.visually-hidden,
+.field label.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -81,7 +82,7 @@ body {
   gap: 10px 12px;
   max-width: 100%;
   min-width: 0;
-  margin-right: auto;
+  margin-right: 0;
   color: #111111;
   font-size: 16px;
   font-weight: 400;
@@ -107,8 +108,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  margin-left: auto;
   line-height: 1.25;
   font-size: 14px;
+  text-align: right;
+}
+
+.who form {
+  display: flex;
+  margin: 0;
+}
+
+.who button.logout {
+  color: var(--ink);
 }
 
 .who span,
@@ -159,7 +171,42 @@ main {
   max-width: 1232px;
   min-width: 0;
   margin: 0 auto;
-  padding: 24px 24px 48px;
+  padding: 24px 24px 80px;
+}
+
+.site-footer {
+  max-width: 1232px;
+  margin: 0 auto;
+  padding: 0 24px 28px;
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 8px 12px;
+  border: 1px solid #5c6770;
+  border-radius: 4px;
+  background: #fff;
+  color: #0c3d6e;
+  font: inherit;
+  font-weight: 650;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.to-top:focus-visible {
+  outline: 2px solid #0c3d6e;
+  outline-offset: 2px;
 }
 
 h1 {
@@ -408,6 +455,21 @@ thead th {
   margin-bottom: 6px;
 }
 
+.auth-centered h1 {
+  text-align: center;
+}
+
+.auth-centered .form-actions .btn,
+.auth-centered .auth-next {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.auth-centered .auth-next {
+  margin-top: 8px;
+}
+
 .auth .lead {
   margin-bottom: 18px;
 }
@@ -490,12 +552,12 @@ thead th {
   max-width: 100%;
 }
 
-#new-teacher {
+#new-user {
   margin-top: 0;
   margin-bottom: 16px;
 }
 
-#new-teacher .form-actions {
+#new-user .form-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -840,6 +902,63 @@ li.me {
   gap: 8px;
 }
 
+.star-btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: #0c3d6e;
+  cursor: pointer;
+}
+
+.star-btn svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.star-btn:focus-visible {
+  outline: 2px solid #0c3d6e;
+  outline-offset: 2px;
+}
+
+[data-tip] {
+  position: relative;
+}
+
+[data-tip] .tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 1px);
+  z-index: 6;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.3;
+  white-space: nowrap;
+  visibility: hidden;
+}
+
+[data-tip]:hover .tip,
+[data-tip]:focus-visible .tip {
+  visibility: visible;
+}
+
+[data-tip][data-tip-dismissed] .tip {
+  visibility: hidden;
+}
+
 .password-box {
   margin-top: 6px;
 }
@@ -1167,16 +1286,26 @@ td.place {
 
 .cal-arrow {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
+  padding: 0;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
+  background: #fff;
   color: var(--blue);
+  font: inherit;
   font-size: 20px;
   line-height: 1;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.cal-arrow:focus-visible {
+  outline: 2px solid #0c3d6e;
+  outline-offset: 2px;
 }
 
 .cal-arrow:hover {
@@ -1270,6 +1399,18 @@ td.place {
   align-items: flex-end;
   gap: 10px 12px;
   margin: 0 0 16px;
+}
+
+.week-current {
+  margin: 0 0 6px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.week-jump {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .week-range .field {
@@ -1541,6 +1682,27 @@ td.place {
   display: none;
 }
 
+@media (min-width: 761px) {
+  .booking-cards th:nth-child(3),
+  .booking-cards th:nth-child(4),
+  .booking-cards th:nth-child(5),
+  .booking-cards td.booking-who,
+  .booking-cards td.booking-place,
+  .booking-cards td.booking-note,
+  .booking-cards th:nth-child(3) button,
+  .booking-cards th:nth-child(4) button,
+  .booking-cards th:nth-child(5) button,
+  .roster-cards th:nth-child(1),
+  .roster-cards th:nth-child(2),
+  .roster-cards td.roster-group,
+  .roster-cards td.roster-name,
+  .roster-cards th:nth-child(1) button,
+  .roster-cards th:nth-child(2) button {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 @media (max-width: 760px) {
   .cal-arrow {
     width: 44px;
@@ -1555,12 +1717,24 @@ td.place {
 
   .head-row {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
     flex: 1 1 100%;
     width: 100%;
     min-width: 0;
     gap: 8px;
+  }
+
+  .head-row .brand {
+    order: 1;
+  }
+
+  .head-row .who {
+    order: 2;
+  }
+
+  .head-row nav {
+    order: 3;
   }
 
   .brand {
@@ -1619,7 +1793,20 @@ td.place {
   }
 
   main {
-    padding: 16px 12px 40px;
+    padding: 16px 12px 80px;
+  }
+
+  .site-footer {
+    padding: 0 12px 24px;
+  }
+
+  .to-top {
+    min-height: 44px;
+  }
+
+  .star-btn {
+    width: 44px;
+    height: 44px;
   }
 
   .auth {
@@ -1916,6 +2103,11 @@ td.place {
     width: 100%;
     max-width: 100%;
     white-space: normal;
+  }
+
+  .person-cards .fav-form .star-btn {
+    width: 44px;
+    max-width: 44px;
   }
 
   .person-cards .password-box,

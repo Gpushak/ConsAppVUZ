@@ -46,12 +46,22 @@
                 <form class="fav-form" method="POST" action="{{ route('teachers.unfavorite', $teacher) }}">
                   @csrf
                   <span class="chip chip-free">В избранном</span>
-                  <button class="btn btn-small btn-ghost" type="submit">Убрать из избранного</button>
+                  <button class="star-btn" data-tip type="submit" aria-label="Убрать из избранного">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path fill="currentColor" d="M12 2.8l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.7 6.6 19.6l1-6.1L3.2 9.2l6.1-.9L12 2.8z"/>
+                    </svg>
+                    <span class="tip" role="tooltip">Убрать из избранного</span>
+                  </button>
                 </form>
               @else
                 <form class="fav-form" method="POST" action="{{ route('teachers.favorite', $teacher) }}">
                   @csrf
-                  <button class="btn btn-small" type="submit">Добавить в избранное</button>
+                  <button class="star-btn" data-tip type="submit" aria-label="Добавить в избранное">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M12 3.2l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.4 6.8 19.2l1-5.8L3.6 9.3l5.8-.8L12 3.2z"/>
+                    </svg>
+                    <span class="tip" role="tooltip">Добавить в избранное</span>
+                  </button>
                 </form>
               @endif
             </td>

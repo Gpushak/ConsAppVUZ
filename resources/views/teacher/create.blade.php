@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Новый слот')
+@section('title', 'Новая консультация')
 
 @php
   $format = old('format', 'in_person');
@@ -43,7 +43,7 @@
 
 @section('content')
   <div class="page-head">
-    <h1>Новый слот</h1>
+    <h1>Новая консультация</h1>
   </div>
   <div class="panel slot-panel">
     @include('partials.errors', ['inlineErrors' => ['date', 'start_time', 'end_time', 'format', 'building', 'room', 'comment', 'meeting_url', 'repeat', 'repeat_until']])

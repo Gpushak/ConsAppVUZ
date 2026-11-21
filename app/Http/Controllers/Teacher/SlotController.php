@@ -24,7 +24,9 @@ class SlotController extends Controller
         $profile = $request->user()->teacherProfile;
         $bookings->completeEndedSlots([$profile->id]);
 
-        $span = DateSpan::fromQuery($request->query('from'), $request->query('to'));
+        $span = $request->exists('jump') || $request->exists('on')
+            ? DateSpan::fromDate($request->query('on'))
+            : DateSpan::fromQuery($request->query('from'), $request->query('to'));
         $slots = $profile->slots()
             ->with(['bookings.studentProfile.user'])
             ->orderBy('starts_at')

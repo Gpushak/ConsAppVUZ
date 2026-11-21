@@ -14,39 +14,60 @@
         <img src="{{ asset('images/pnipu-kons.png') }}" alt="Пермский политех, запись на консультацию">
       </a>
       @auth
+        @unless (auth()->user()->must_change_password)
+          <nav>
+            @if (auth()->user()->isStudent())
+              <a href="{{ route('home') }}" @if (request()->routeIs('home')) aria-current="page" @endif>Слоты избранных</a>
+              <a href="{{ route('teachers.index') }}" @if (request()->routeIs('teachers.*')) aria-current="page" @endif>Преподаватели</a>
+              <a href="{{ route('bookings.index') }}" @if (request()->routeIs('bookings.*')) aria-current="page" @endif>Мои записи</a>
+            @elseif (auth()->user()->isTeacher())
+              <a href="{{ route('teacher.slots.index') }}" @if (request()->routeIs('teacher.slots.index')) aria-current="page" @endif>Мои слоты</a>
+              <a href="{{ route('teacher.slots.create') }}" @if (request()->routeIs('teacher.slots.create')) aria-current="page" @endif>Новая консультация</a>
+            @elseif (auth()->user()->isAdmin())
+              <a href="{{ route('admin.users.index') }}" @if (request()->routeIs('admin.*')) aria-current="page" @endif>Пользователи</a>
+            @endif
+          </nav>
+        @endunless
         <div class="who">
           <strong>{{ auth()->user()->name }}</strong>
           <span>{{ auth()->user()->roleLine() }}</span>
           @unless (auth()->user()->must_change_password)
             <a href="{{ route('password.edit') }}">Сменить пароль</a>
+            <form method="POST" action="{{ route('logout') }}">
+              @csrf
+              <button class="link-button logout" type="submit">Выйти</button>
+            </form>
           @endunless
         </div>
       @endauth
     </div>
-    @auth
-      @unless (auth()->user()->must_change_password)
-        <nav>
-          @if (auth()->user()->isStudent())
-            <a href="{{ route('home') }}" @if (request()->routeIs('home')) aria-current="page" @endif>Слоты избранных</a>
-            <a href="{{ route('teachers.index') }}" @if (request()->routeIs('teachers.*')) aria-current="page" @endif>Преподаватели</a>
-            <a href="{{ route('bookings.index') }}" @if (request()->routeIs('bookings.*')) aria-current="page" @endif>Мои записи</a>
-          @elseif (auth()->user()->isTeacher())
-            <a href="{{ route('teacher.slots.index') }}" @if (request()->routeIs('teacher.slots.index')) aria-current="page" @endif>Мои слоты</a>
-            <a href="{{ route('teacher.slots.create') }}" @if (request()->routeIs('teacher.slots.create')) aria-current="page" @endif>Новый слот</a>
-          @elseif (auth()->user()->isAdmin())
-            <a href="{{ route('admin.users.index') }}" @if (request()->routeIs('admin.*')) aria-current="page" @endif>Пользователи</a>
-          @endif
-          <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button class="link-button logout" type="submit">Выйти</button>
-          </form>
-        </nav>
-      @endunless
-    @endauth
   </header>
-  <main id="content">
+  <main id="content" tabindex="-1">
     @yield('content')
   </main>
+  <footer class="site-footer">
+    <p>Пермский политех. Запись на консультацию.</p>
+  </footer>
+  <button class="to-top" type="button" hidden>Наверх</button>
+  <script>
+    (function () {
+      var button = document.querySelector('.to-top');
+      var content = document.getElementById('content');
+      if (!button || !content) {
+        return;
+      }
+      function sync() {
+        button.hidden = window.scrollY === 0;
+      }
+      sync();
+      window.addEventListener('scroll', sync, { passive: true });
+      button.addEventListener('click', function () {
+        window.scrollTo(0, 0);
+        button.hidden = true;
+        content.focus();
+      });
+    })();
+  </script>
   <script src="{{ asset('js/tables.js') }}"></script>
 </body>
 </html>

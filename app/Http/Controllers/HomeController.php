@@ -38,7 +38,7 @@ class HomeController extends Controller
 
         $bookings->completeEndedSlots($favorites->pluck('id'));
 
-        $span = DateSpan::fromQuery($request->query('from'), $request->query('to'));
+        $span = $this->spanFrom($request);
         $month = MonthGrid::parse($request->query('month'));
         $selected = $this->selectedFavorite($favorites, $request->query('teacher'));
         $slots = collect();
@@ -99,6 +99,15 @@ class HomeController extends Controller
                 'next' => $this->homeQuery($span, $month->copy()->addMonth(), $teacherId, $dayKey),
             ],
         ]);
+    }
+
+    private function spanFrom(Request $request): DateSpan
+    {
+        if ($request->exists('jump') || $request->exists('on')) {
+            return DateSpan::fromDate($request->query('on'));
+        }
+
+        return DateSpan::fromQuery($request->query('from'), $request->query('to'));
     }
 
     /**

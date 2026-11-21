@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Slot;
-use App\Models\User;
 use Tests\ConsultationTestCase;
 
 class AccessibilityMarkupTest extends ConsultationTestCase
@@ -15,7 +14,9 @@ class AccessibilityMarkupTest extends ConsultationTestCase
             ->assertOk()
             ->assertSee('alt="Пермский политех, запись на консультацию"', false)
             ->assertSee('<a class="skip-link" href="#content">К содержанию</a>', false)
-            ->assertSee('<main id="content">', false)
+            ->assertSee('<main id="content" tabindex="-1">', false)
+            ->assertSee('Пермский политех. Запись на консультацию.', false)
+            ->assertSee('>Наверх</button>', false)
             ->getContent();
 
         $this->assertLessThan(strpos($html, '<header'), strpos($html, 'class="skip-link"'));
@@ -150,8 +151,12 @@ class AccessibilityMarkupTest extends ConsultationTestCase
             ->assertOk()
             ->assertSee('>Преподаватели</a>', false)
             ->assertSee('>Мои записи</a>', false)
-            ->assertSee('<span>Неделя с</span>', false)
-            ->assertSee('<span>Неделя по</span>', false)
+            ->assertSee('19–25 октября 2026', false)
+            ->assertSee('Перейти к дате', false)
+            ->assertSee('aria-label="Предыдущая неделя"', false)
+            ->assertSee('aria-label="Следующая неделя"', false)
+            ->assertDontSee('<span>Неделя с</span>', false)
+            ->assertDontSee('<span>Неделя по</span>', false)
             ->assertDontSee('onchange=', false)
             ->assertDontSee('title="есть консультация"', false)
             ->getContent();
@@ -187,16 +192,16 @@ class AccessibilityMarkupTest extends ConsultationTestCase
         $bad = $this->actingAs($student)
             ->get(route('home', ['from' => '2026-11-10', 'to' => '2026-11-01']))
             ->assertOk()
-            ->assertSee('Дата «Неделя по» раньше даты «Неделя с».')
+            ->assertSee('Дата конца раньше даты начала.')
             ->getContent();
-        $this->assertSame(2, substr_count($bad, 'aria-invalid="true"'));
+        $this->assertSame(1, substr_count($bad, 'aria-invalid="true"'));
         $this->assertStringContainsString('id="week-range-error"', $bad);
         $this->assertStringContainsString('aria-describedby="week-range-error"', $bad);
 
         $this->actingAs($student)
             ->get(route('home', ['from' => 'нет', 'to' => '']))
             ->assertOk()
-            ->assertSee('Укажите даты «Неделя с» и «Неделя по».');
+            ->assertSee('Укажите дату.');
 
         $this->actingAs($student)
             ->get(route('teachers.index'))
@@ -238,7 +243,8 @@ class AccessibilityMarkupTest extends ConsultationTestCase
         );
         $this->assertStringContainsString('aria-label="Изменить: 02.11.2026, 16:00–16:45"', $html);
         $this->assertStringContainsString('aria-label="1 студент, 02.11.2026, 16:00–16:45"', $html);
-        $this->assertStringContainsString('<span>Неделя с</span>', $html);
+        $this->assertStringContainsString('19–25 октября 2026', $html);
+        $this->assertStringContainsString('Перейти к дате', $html);
     }
 
     public function test_slot_form_groups_room_warning_and_conduct_comment(): void

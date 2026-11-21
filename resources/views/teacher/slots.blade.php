@@ -6,7 +6,7 @@
   <div class="page-head">
     <h1>Мои слоты</h1>
     <div class="actions">
-      <a class="btn" href="{{ route('teacher.slots.create') }}">Новый слот</a>
+      <a class="btn" href="{{ route('teacher.slots.create') }}">Новая консультация</a>
     </div>
   </div>
   @include('partials.errors')
@@ -34,9 +34,14 @@
       <p class="nearest-empty">Ближайших консультаций нет.</p>
     @endif
   </section>
-  @include('partials.week-range', ['span' => $span, 'action' => route('teacher.slots.index')])
+  @include('partials.week-range', [
+      'span' => $span,
+      'action' => route('teacher.slots.index'),
+      'previous' => route('teacher.slots.index', $span->previous()->query()),
+      'next' => route('teacher.slots.index', $span->next()->query()),
+  ])
   @if ($slots->isEmpty())
-    <p class="notice">Слотов пока нет. <a href="{{ route('teacher.slots.create') }}">Создайте первый слот</a>.</p>
+    <p class="notice">Слотов пока нет. <a href="{{ route('teacher.slots.create') }}">Создайте первую консультацию</a>.</p>
   @endif
   <div class="week">
     @foreach ($days as $day)

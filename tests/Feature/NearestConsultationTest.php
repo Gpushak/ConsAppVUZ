@@ -259,7 +259,7 @@ class NearestConsultationTest extends ConsultationTestCase
         $this->assertStringContainsString('month=2026-11', $nav);
         $this->assertStringContainsString('name="day" value="2026-10-27"', $html);
 
-        $back = $this->href($html, 'Ближайшая');
+        $back = $this->href($html, 'К ближайшей консультации');
         $this->assertStringNotContainsString('day=', $back);
         $this->assertStringContainsString('teacher='.$ivanova->teacherProfile->id, $back);
         $this->assertStringContainsString('month=2026-10', $back);

@@ -12,8 +12,8 @@
   <form method="POST" action="{{ route('admin.users.password', $user) }}" novalidate>
     @csrf
     <div class="field">
-      <label for="password">Временный пароль</label>
-      <input id="password" type="text" name="password" value="{{ old('password') }}" autocomplete="off" @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+      <label class="visually-hidden" for="password">Временный пароль</label>
+      <input id="password" type="text" name="password" value="{{ old('password') }}" placeholder="Временный пароль" autocomplete="off" @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
       <p class="field-note">Не короче 8 символов.</p>
       @error('password')
         <p class="error" id="password-error">{{ $message }}</p>

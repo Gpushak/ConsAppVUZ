@@ -50,13 +50,21 @@ class UserController extends Controller
     public function storeTeacher(StoreTeacherRequest $request): RedirectResponse
     {
         $user = User::query()->create([
-            'role_id' => Role::idFor(Role::TEACHER),
+            'role_id' => Role::idFor($request->string('kind')->toString() === 'student' ? Role::STUDENT : Role::TEACHER),
             'name' => $request->string('name')->toString(),
             'email' => $request->string('email')->toString(),
             'password' => $request->string('password')->toString(),
             'is_active' => true,
             'must_change_password' => true,
         ]);
+
+        if ($user->isStudent()) {
+            $user->studentProfile()->create([
+                'group_name' => $request->string('group_name')->toString(),
+            ]);
+
+            return redirect()->route('admin.users.index')->with('status', 'Студент создан. Передайте временный пароль лично.');
+        }
 
         $user->teacherProfile()->create([
             'position' => $request->string('position')->toString(),

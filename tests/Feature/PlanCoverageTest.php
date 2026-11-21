@@ -113,6 +113,34 @@ class PlanCoverageTest extends ConsultationTestCase
         $this->assertTrue(Hash::check('Vremen-123', $teacher->password));
     }
 
+    public function test_admin_creates_a_student_who_must_change_the_temporary_password(): void
+    {
+        $admin = $this->adminUser();
+
+        $this->actingAs($admin)->post(route('admin.teachers.store'), [
+            'form' => 'user',
+            'kind' => 'student',
+            'name' => 'Новиков Пётр',
+            'email' => 'novikov-p@kafedra.local',
+            'group_name' => 'ПИ-21',
+            'password' => 'Vremen-123',
+        ])->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('status', 'Студент создан. Передайте временный пароль лично.');
+
+        $student = User::query()->where('email', 'novikov-p@kafedra.local')->firstOrFail();
+        $this->assertTrue($student->isStudent());
+        $this->assertTrue($student->must_change_password);
+        $this->assertSame('ПИ-21', $student->studentProfile->group_name);
+        $this->assertNull($student->teacherProfile);
+        $this->assertTrue(Hash::check('Vremen-123', $student->password));
+
+        $this->asGuest();
+        $this->post(route('login.store'), [
+            'email' => 'novikov-p@kafedra.local',
+            'password' => 'Vremen-123',
+        ])->assertRedirect(route('password.edit'));
+    }
+
     public function test_block_and_unblock_end_the_session(): void
     {
         $admin = $this->adminUser();

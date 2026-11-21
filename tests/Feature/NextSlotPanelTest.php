@@ -46,10 +46,10 @@ class NextSlotPanelTest extends ConsultationTestCase
         $html = $this->actingAs($teacher)
             ->get(route('teacher.slots.index', ['from' => '2026-10-19', 'to' => '2026-10-25']))
             ->assertOk()
-            ->assertSee('value="2026-10-19"', false)
-            ->assertSee('value="2026-10-25"', false)
-            ->assertSee('<span>Неделя с</span>', false)
-            ->assertSee('<span>Неделя по</span>', false)
+            ->assertSee('19–25 октября 2026', false)
+            ->assertSee('Перейти к дате', false)
+            ->assertDontSee('<span>Неделя с</span>', false)
+            ->assertDontSee('<span>Неделя по</span>', false)
             ->assertDontSee('Показать завершённые')
             ->getContent();
 
