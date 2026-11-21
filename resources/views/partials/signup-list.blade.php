@@ -42,7 +42,7 @@
       </details>
     @endif
   @else
-    <a @class(['signup-link', 'muted' => $count === 0]) href="{{ route('slots.roster', $slot) }}">{{ $label }}</a>
+    <a @class(['signup-link', 'muted' => $count === 0]) href="{{ route('slots.roster', $slot) }}" aria-label="{{ $label }}, {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">{{ $label }}</a>
   @endif
 @if ($asCell)
 </td>

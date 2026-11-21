@@ -3,8 +3,15 @@
 @section('title', 'Мои слоты')
 
 @section('content')
+  <div class="page-head">
+    <h1>Мои слоты</h1>
+    <div class="actions">
+      <a class="btn" href="{{ route('teacher.slots.create') }}">Новый слот</a>
+    </div>
+  </div>
+  @include('partials.errors')
   <section class="next-slot" aria-labelledby="next-slot-title">
-    <p class="next-slot-label" id="next-slot-title">Ближайшая консультация</p>
+    <h2 class="next-slot-label" id="next-slot-title">Ближайшая консультация</h2>
     @if ($nextSlot)
       <div class="nearest" data-next-slot="{{ $nextSlot->id }}">
         <p class="nearest-when">{{ $nextSlot->dateLabel() }}, {{ $nextSlot->timeRange() }}</p>
@@ -13,13 +20,13 @@
         @include('partials.signup-list', ['slot' => $nextSlot, 'activeOnly' => true, 'asCell' => false])
         <div class="actions">
           @if ($nextSlot->canBeEdited())
-            <a class="btn btn-small" href="{{ route('teacher.slots.edit', $nextSlot) }}">Изменить</a>
+            <a class="btn btn-small" href="{{ route('teacher.slots.edit', $nextSlot) }}" aria-label="Изменить: {{ $nextSlot->dateLabel() }}, {{ $nextSlot->timeRange() }}">Изменить</a>
           @endif
           @if ($nextSlot->canBeUnpublished())
-            <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $nextSlot) }}">Снять с публикации</a>
+            <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $nextSlot) }}" aria-label="Снять с публикации: {{ $nextSlot->dateLabel() }}, {{ $nextSlot->timeRange() }}">Снять с публикации</a>
           @endif
           @if ($nextSlot->series_id !== null)
-            <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $nextSlot) }}">Остановить повтор</a>
+            <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $nextSlot) }}" aria-label="Остановить повтор: {{ $nextSlot->dateLabel() }}, {{ $nextSlot->timeRange() }}">Остановить повтор</a>
           @endif
         </div>
       </div>
@@ -27,13 +34,6 @@
       <p class="nearest-empty">Ближайших консультаций нет.</p>
     @endif
   </section>
-  <div class="page-head">
-    <h1>Мои слоты</h1>
-    <div class="actions">
-      <a class="btn" href="{{ route('teacher.slots.create') }}">Новый слот</a>
-    </div>
-  </div>
-  @include('partials.errors')
   @include('partials.week-range', ['span' => $span, 'action' => route('teacher.slots.index')])
   @if ($slots->isEmpty())
     <p class="notice">Слотов пока нет. <a href="{{ route('teacher.slots.create') }}">Создайте первый слот</a>.</p>
@@ -82,29 +82,29 @@
               @if ($primary)
                 <div class="actions slot-primary">
                   @if ($primary === 'conduct')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}">Отметить проведённой</a>
+                    <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}" aria-label="Отметить проведённой: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Отметить проведённой</a>
                   @elseif ($primary === 'edit')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}">Изменить</a>
+                    <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}" aria-label="Изменить: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Изменить</a>
                   @elseif ($primary === 'unpublish')
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
+                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}" aria-label="Снять с публикации: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Снять с публикации</a>
                   @else
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}">Остановить повтор</a>
+                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}" aria-label="Остановить повтор: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Остановить повтор</a>
                   @endif
                 </div>
               @endif
               @if ($hasMore)
                 <div class="actions slot-more">
                   @if ($slot->canBeConducted() && $primary !== 'conduct')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}">Отметить проведённой</a>
+                    <a class="btn btn-small" href="{{ route('teacher.slots.conduct', $slot) }}" aria-label="Отметить проведённой: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Отметить проведённой</a>
                   @endif
                   @if ($slot->canBeEdited() && $primary !== 'edit')
-                    <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}">Изменить</a>
+                    <a class="btn btn-small" href="{{ route('teacher.slots.edit', $slot) }}" aria-label="Изменить: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Изменить</a>
                   @endif
                   @if ($slot->canBeUnpublished() && $primary !== 'unpublish')
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}">Снять с публикации</a>
+                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.unpublish.confirm', $slot) }}" aria-label="Снять с публикации: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Снять с публикации</a>
                   @endif
                   @if ($showStop && $primary !== 'stop')
-                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}">Остановить повтор</a>
+                    <a class="btn btn-small btn-ghost" href="{{ route('teacher.slots.series.stop', $slot) }}" aria-label="Остановить повтор: {{ $slot->dateLabel() }}, {{ $slot->timeRange() }}">Остановить повтор</a>
                   @endif
                 </div>
               @endif

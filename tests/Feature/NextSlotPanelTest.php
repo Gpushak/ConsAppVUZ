@@ -48,13 +48,13 @@ class NextSlotPanelTest extends ConsultationTestCase
             ->assertOk()
             ->assertSee('value="2026-10-19"', false)
             ->assertSee('value="2026-10-25"', false)
-            ->assertSee('<span>С</span>', false)
-            ->assertSee('<span>По</span>', false)
+            ->assertSee('<span>Неделя с</span>', false)
+            ->assertSee('<span>Неделя по</span>', false)
             ->assertDontSee('Показать завершённые')
             ->getContent();
 
         $panel = $this->panelHtml($html);
-        $this->assertLessThan(strpos($html, '<h1>Мои слоты</h1>'), strpos($html, 'class="next-slot"'));
+        $this->assertLessThan(strpos($html, 'class="next-slot"'), strpos($html, '<h1>Мои слоты</h1>'));
         $this->assertLessThan(strpos($html, '<div class="week">'), strpos($html, 'data-next-slot="'.$soon->id.'"'));
         $this->assertStringContainsString('data-next-slot="'.$soon->id.'"', $panel);
         $this->assertStringContainsString($soon->dateLabel(), $panel);
@@ -132,7 +132,7 @@ class NextSlotPanelTest extends ConsultationTestCase
             ->getContent();
 
         $panel = $this->panelHtml($html);
-        $this->assertLessThan(strpos($html, '<h1>Мои слоты</h1>'), strpos($html, 'class="next-slot"'));
+        $this->assertLessThan(strpos($html, 'class="next-slot"'), strpos($html, '<h1>Мои слоты</h1>'));
         $this->assertStringContainsString('Ближайших консультаций нет.', $panel);
         $this->assertStringNotContainsString('data-next-slot', $panel);
         $this->assertStringNotContainsString('ауд. 111', $panel);

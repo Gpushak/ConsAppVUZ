@@ -213,12 +213,19 @@ class DailyUsePassTest extends ConsultationTestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertSame(1, substr_count($locked, 'Время нельзя изменить: на слот уже есть запись.'));
+        $this->assertSame(2, substr_count($locked, 'Время нельзя изменить: на слот уже есть запись.'));
         $this->assertMatchesRegularExpression(
-            '/id="start_time"[^>]*>\s*<p class="error" id="start_time-error">Время нельзя изменить: на слот уже есть запись\.<\/p>/',
+            '/id="start_time"[^>]*aria-describedby="start_time-error start_time-lock"[^>]*>\s*<p class="error" id="start_time-error">Время нельзя изменить: на слот уже есть запись\.<\/p>\s*<p class="field-note" id="start_time-lock">Время нельзя изменить: на слот уже есть запись\.<\/p>/',
             $locked,
         );
-        $this->assertStringNotContainsString('id="start_time-lock"', $locked);
+        $this->assertMatchesRegularExpression(
+            '/id="date"[^>]*aria-describedby="start_time-lock"/',
+            $locked,
+        );
+        $this->assertMatchesRegularExpression(
+            '/id="end_time"[^>]*aria-describedby="end_time-error start_time-lock"|id="end_time"[^>]*aria-describedby="start_time-lock"/',
+            $locked,
+        );
         $this->assertStringNotContainsString('class="notice error"', $locked);
         $this->assertSame('12:00', $booked->refresh()->starts_at->format('H:i'));
 

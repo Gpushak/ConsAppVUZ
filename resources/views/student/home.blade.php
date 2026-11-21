@@ -5,6 +5,10 @@
 @section('content')
   <div class="page-head">
     <h1>Слоты избранных</h1>
+    <p class="page-links">
+      <a href="{{ route('teachers.index') }}">Преподаватели</a>
+      <a href="{{ route('bookings.index') }}">Мои записи</a>
+    </p>
   </div>
   @include('partials.errors')
   @if ($favorites->isEmpty())
@@ -34,7 +38,7 @@
           @endif
           <label class="field">
             <span>Преподаватель</span>
-            <select name="teacher" onchange="this.form.submit()">
+            <select name="teacher">
               <option value="" @selected($selectedTeacher === null)>не выбран</option>
               @foreach ($favorites as $favorite)
                 <option value="{{ $favorite->id }}" @selected($selectedTeacher !== null && $selectedTeacher->id === $favorite->id)>{{ $favorite->user->name }}</option>
@@ -82,6 +86,22 @@
           <span id="cal-title" class="cal-title">{{ $monthTitle }}</span>
           <a class="cal-arrow" href="{{ route('home') }}?{{ http_build_query($monthLinks['next']) }}" aria-label="Следующий месяц" rel="next">›</a>
         </div>
+        @php
+          $monthNames = [
+              1 => 'января',
+              2 => 'февраля',
+              3 => 'марта',
+              4 => 'апреля',
+              5 => 'мая',
+              6 => 'июня',
+              7 => 'июля',
+              8 => 'августа',
+              9 => 'сентября',
+              10 => 'октября',
+              11 => 'ноября',
+              12 => 'декабря',
+          ];
+        @endphp
         <table class="month-cal" aria-labelledby="cal-title">
           <thead>
             <tr>
@@ -101,12 +121,23 @@
                     if (! $chosen) {
                         $dayLink['day'] = $dateKey;
                     }
+                    $spoken = $day['date']->day.' '.$monthNames[$day['date']->month].' '.$day['date']->year;
+                    $accessible = $spoken;
+                    if ($day['marked']) {
+                        $accessible .= ', есть консультация';
+                    }
+                    if ($day['today']) {
+                        $accessible .= ', сегодня';
+                    }
+                    $showNumber = $day['inMonth'] || $day['marked'];
                   @endphp
-                  <td @class(['cal-day', 'marked' => $day['marked'], 'chosen' => $chosen, 'out' => ! $day['inMonth'], 'today' => $day['today']]) data-date="{{ $dateKey }}" @if ($day['marked']) title="есть консультация" @endif>
+                  <td @class(['cal-day', 'marked' => $day['marked'], 'chosen' => $chosen, 'out' => ! $day['inMonth'], 'today' => $day['today']]) data-date="{{ $dateKey }}">
                     @if ($day['marked'])
-                      <a href="{{ route('home') }}?{{ http_build_query($dayLink) }}">{{ $day['date']->day }}</a>
-                    @else
-                      <span>{{ $day['date']->day }}</span>
+                      <a href="{{ route('home') }}?{{ http_build_query($dayLink) }}" aria-label="{{ $accessible }}" @if ($chosen) aria-current="date" @endif>{{ $day['date']->day }}@if ($day['today'])<span class="visually-hidden">сегодня</span>@endif</a>
+                    @elseif ($showNumber)
+                      <span>{{ $day['date']->day }}@if ($day['today'])<span class="visually-hidden">сегодня</span>@endif</span>
+                    @elseif ($day['today'])
+                      <span class="visually-hidden">сегодня</span>
                     @endif
                   </td>
                 @endforeach
@@ -125,19 +156,19 @@
         <input type="hidden" name="day" value="{{ $activeDay->toDateString() }}">
       @endif
       <label class="field">
-        <span>С</span>
-        <input type="date" name="from" value="{{ $span->from->toDateString() }}">
+        <span>Неделя с</span>
+        <input type="date" name="from" value="{{ $span->from->toDateString() }}" @if ($span->error) aria-invalid="true" aria-describedby="week-range-error" @endif>
       </label>
       <label class="field">
-        <span>По</span>
-        <input type="date" name="to" value="{{ $span->query()['to'] }}">
+        <span>Неделя по</span>
+        <input type="date" name="to" value="{{ $span->query()['to'] }}" @if ($span->error) aria-invalid="true" aria-describedby="week-range-error" @endif>
       </label>
       <button class="btn" type="submit">Показать</button>
       <a class="btn btn-ghost" href="{{ route('home') }}?{{ http_build_query($weekLinks['previous']) }}">Предыдущая неделя</a>
       <a class="btn btn-ghost" href="{{ route('home') }}?{{ http_build_query($weekLinks['next']) }}">Следующая неделя</a>
     </form>
     @if ($span->error)
-      <p class="notice error">{{ $span->error }}</p>
+      <p class="notice error" id="week-range-error">{{ $span->error }}</p>
     @endif
     @unless ($hasOpen)
       <p class="notice">Свободных слотов нет. <a href="{{ route('teachers.index') }}">Откройте преподавателей</a>, чтобы выбрать, чьи слоты смотреть.</p>

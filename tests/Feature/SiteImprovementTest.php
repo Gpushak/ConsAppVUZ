@@ -69,7 +69,7 @@ class SiteImprovementTest extends ConsultationTestCase
         $other = Slot::query()->where('room', '88')->orderBy('starts_at')->firstOrFail();
         $otherRow = $this->rowHtml($html, '28.10.2026');
         $this->assertStringContainsString(route('teacher.slots.series.stop', $other), $otherRow);
-        $this->assertSame(1, substr_count($otherRow, 'Остановить повтор'));
+        $this->assertSame(1, substr_count($otherRow, '>Остановить повтор</a>'));
     }
 
     public function test_edit_locks_booked_time_and_rejects_past_and_overlap(): void

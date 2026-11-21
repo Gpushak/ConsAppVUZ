@@ -5,6 +5,9 @@
 @section('content')
   <div class="page-head">
     <h1>Преподаватели</h1>
+    <p class="page-links">
+      <a href="{{ route('home') }}">Слоты избранных</a>
+    </p>
   </div>
   @include('partials.errors')
   @php
@@ -20,6 +23,7 @@
   <form class="field directory-search" method="GET" action="{{ route('teachers.index') }}">
     <label for="teacher-search">Поиск</label>
     <input id="teacher-search" type="search" name="q" value="{{ $query }}" placeholder="Имя, должность или кафедра" data-teacher-search autocomplete="off">
+    <p id="teacher-search-status" class="visually-hidden" aria-live="polite"></p>
   </form>
   <div class="table-wrap person-cards teacher-directory">
     <table class="data-table" data-teacher-directory>

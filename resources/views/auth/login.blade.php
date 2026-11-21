@@ -11,11 +11,11 @@
       @csrf
       <div class="field">
         <label for="email">Почта</label>
-        <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" required>
+        <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" required @if ($errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif>
       </div>
       <div class="field">
         <label for="password">Пароль</label>
-        <input id="password" type="password" name="password" autocomplete="current-password" required>
+        <input id="password" type="password" name="password" autocomplete="current-password" required @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
       </div>
       <p class="form-actions"><button class="btn" type="submit">Войти</button></p>
     </form>

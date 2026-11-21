@@ -50,15 +50,15 @@
     <form class="slot-form" method="POST" action="{{ route('teacher.slots.store') }}" data-slot-form data-room-warning-url="{{ route('teacher.slots.room-warning', absolute: false) }}">
       @csrf
       <div class="slot-fields">
-        <fieldset class="field format">
+        <fieldset class="field format" @if ($errors->has('format')) aria-describedby="format-error" @endif>
           <legend>Формат</legend>
           <div class="choices">
             <label class="choice">
-              <input id="format_in_person" type="radio" name="format" value="in_person" @checked(! $online)>
+              <input id="format_in_person" type="radio" name="format" value="in_person" @checked(! $online) @if ($errors->has('format')) aria-invalid="true" @endif>
               Очно
             </label>
             <label class="choice">
-              <input id="format_online" type="radio" name="format" value="online" @checked($online)>
+              <input id="format_online" type="radio" name="format" value="online" @checked($online) @if ($errors->has('format')) aria-invalid="true" @endif>
               Онлайн
             </label>
           </div>
@@ -90,19 +90,19 @@
         </div>
       </div>
       <div class="repeat-row">
-        <fieldset class="field format">
+        <fieldset class="field format" @if ($errors->has('repeat')) aria-describedby="repeat-error" @endif>
           <legend>Повтор</legend>
           <div class="choices">
             <label class="choice" for="repeat_none">
-              <input id="repeat_none" type="radio" name="repeat" value="none" @checked($repeatWeeks === 0)>
+              <input id="repeat_none" type="radio" name="repeat" value="none" @checked($repeatWeeks === 0) @if ($errors->has('repeat')) aria-invalid="true" @endif>
               Не повторять
             </label>
             <label class="choice" for="repeat_week">
-              <input id="repeat_week" type="radio" name="repeat" value="1" @checked($repeatWeeks === 1)>
+              <input id="repeat_week" type="radio" name="repeat" value="1" @checked($repeatWeeks === 1) @if ($errors->has('repeat')) aria-invalid="true" @endif>
               Каждую неделю
             </label>
             <label class="choice" for="repeat_biweek">
-              <input id="repeat_biweek" type="radio" name="repeat" value="2" @checked($repeatWeeks === 2)>
+              <input id="repeat_biweek" type="radio" name="repeat" value="2" @checked($repeatWeeks === 2) @if ($errors->has('repeat')) aria-invalid="true" @endif>
               Каждые 2 недели
             </label>
           </div>
@@ -117,7 +117,7 @@
             <p class="error" id="repeat_until-error">{{ $message }}</p>
           @enderror
           <p class="field-note" id="repeat-until-note" data-limit="{{ $repeatLimit }}" data-on="{{ $repeatOnNote }}" data-off="{{ $repeatOffNote }}">{{ $repeatWeeks > 0 ? $repeatOnNote : $repeatOffNote }}</p>
-          <p class="error" id="repeat-until-cleared" hidden></p>
+          <p class="error" id="repeat-until-cleared" role="alert" hidden></p>
           <div id="repeat-until-cal" class="end-cal" hidden>
             <div class="cal-nav">
               <button type="button" class="cal-arrow" data-end-prev aria-label="Предыдущий месяц">‹</button>
@@ -275,11 +275,23 @@
       function hideCleared() {
         cleared.hidden = true;
         cleared.textContent = '';
+        if (until.getAttribute('aria-describedby') !== 'repeat-until-cleared') {
+          return;
+        }
+        if (document.getElementById('repeat_until-error')) {
+          until.setAttribute('aria-describedby', 'repeat_until-error');
+          until.setAttribute('aria-invalid', 'true');
+        } else {
+          until.removeAttribute('aria-describedby');
+          until.removeAttribute('aria-invalid');
+        }
       }
 
       function showCleared(text) {
-        cleared.hidden = false;
         cleared.textContent = text;
+        cleared.hidden = false;
+        until.setAttribute('aria-invalid', 'true');
+        until.setAttribute('aria-describedby', 'repeat-until-cleared');
       }
 
       function monthTitle(year, month) {
@@ -425,14 +437,17 @@
       var warningSeq = 0;
 
       function applyWarning(html) {
-        var current = form.querySelector('[data-room-warning]');
-        var holder = document.createElement('div');
-        holder.innerHTML = html.trim();
-        var next = holder.firstElementChild;
-        if (!current || !next) {
+        var current = form.querySelector('#room-warning');
+        if (!current) {
           return;
         }
-        current.replaceWith(next);
+        var holder = document.createElement('div');
+        holder.innerHTML = html.trim();
+        var next = holder.querySelector('#room-warning') || holder.firstElementChild;
+        if (!next) {
+          return;
+        }
+        current.innerHTML = next.innerHTML;
       }
 
       function readWarning() {
