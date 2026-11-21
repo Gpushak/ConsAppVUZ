@@ -16,8 +16,10 @@
 }
 
 html {
+  height: 100%;
   color-scheme: light;
   overflow-x: clip;
+  background: var(--bg);
 }
 
 body {
@@ -172,6 +174,23 @@ main {
   min-width: 0;
   margin: 0 auto;
   padding: 24px 24px 80px;
+}
+
+/* Fill the window. The footer is the last flex item, so nothing paints below it. */
+body:not(.desk) {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 100%;
+}
+
+body:not(.desk) > header,
+body:not(.desk) > .site-footer {
+  flex: 0 0 auto;
+}
+
+body:not(.desk) > main {
+  flex: 1 0 auto;
 }
 
 .site-footer {

@@ -36,6 +36,19 @@ class AccessibilityMarkupTest extends ConsultationTestCase
         );
         $this->assertStringNotContainsString('#c3ccd4', $css);
         $this->assertStringNotContainsString('#8a94a0', $css);
+        $this->assertStringNotContainsString('body:has(.auth)', $css);
+        $this->assertMatchesRegularExpression(
+            '/html\s*\{[^}]*height:\s*100%/s',
+            $css,
+        );
+        $this->assertMatchesRegularExpression(
+            '/body:not\(\.desk\)\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*min-height:\s*100%/s',
+            $css,
+        );
+        $this->assertMatchesRegularExpression(
+            '/body:not\(\.desk\) > main\s*\{[^}]*flex:\s*1 0 auto/s',
+            $css,
+        );
     }
 
     public function test_login_error_is_tied_to_the_email_field(): void
