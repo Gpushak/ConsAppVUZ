@@ -15,11 +15,17 @@ class AccessibilityMarkupTest extends ConsultationTestCase
             ->assertSee('alt="Пермский политех, запись на консультацию"', false)
             ->assertSee('<a class="skip-link" href="#content">К содержанию</a>', false)
             ->assertSee('<main id="content" tabindex="-1">', false)
-            ->assertSee('Пермский политех. Запись на консультацию.', false)
+            ->assertSee('<footer class="site-footer">', false)
+            ->assertSee('Запись на консультацию', false)
+            ->assertSee('Кафедра информационных технологий и автоматизированных систем', false)
+            ->assertSee('href="https://pstu.ru/">ПНИПУ</a>', false)
+            ->assertSee('href="https://pstu.ru/about-the-university/structure-and-governing-bodies/faculties/elektrotekhnicheskiy/">Электротехнический факультет</a>', false)
+            ->assertSee('href="https://pstu.ru/about-the-university/structure-and-governing-bodies/faculties/departments/informatsionnye-tekhnologii-i-avtomatizirovannye-sistemy/o-kafedre/">Кафедра ИТАС</a>', false)
             ->assertSee('>Наверх</button>', false)
             ->getContent();
 
         $this->assertLessThan(strpos($html, '<header'), strpos($html, 'class="skip-link"'));
+        $this->assertLessThan(strpos($html, '<footer'), strpos($html, '</main>'));
 
         $css = file_get_contents(public_path('css/app.css'));
         $this->assertIsString($css);

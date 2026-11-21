@@ -46,7 +46,17 @@
     @yield('content')
   </main>
   <footer class="site-footer">
-    <p>Пермский политех. Запись на консультацию.</p>
+    <div class="site-footer-bar">
+      <p class="site-footer-name">
+        Запись на консультацию
+        <span>Кафедра информационных технологий и автоматизированных систем</span>
+      </p>
+      <nav aria-label="Сайт университета">
+        <a href="https://pstu.ru/">ПНИПУ</a>
+        <a href="https://pstu.ru/about-the-university/structure-and-governing-bodies/faculties/elektrotekhnicheskiy/">Электротехнический факультет</a>
+        <a href="https://pstu.ru/about-the-university/structure-and-governing-bodies/faculties/departments/informatsionnye-tekhnologii-i-avtomatizirovannye-sistemy/o-kafedre/">Кафедра ИТАС</a>
+      </nav>
+    </div>
   </footer>
   <button class="to-top" type="button" hidden>Наверх</button>
   <script>
