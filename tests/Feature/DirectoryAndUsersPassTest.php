@@ -168,7 +168,10 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
             ->assertOk()
             ->assertSee('Избранных нет')
             ->getContent();
-        $this->assertStringContainsString('aria-label="Добавить в избранное"', $this->row($before, 'Иванова А. С.'));
+        $ivanovaBefore = $this->row($before, 'Иванова А. С.');
+        $this->assertStringContainsString('aria-label="Добавить в избранное: Иванова А. С."', $ivanovaBefore);
+        $this->assertStringContainsString('fill="none"', $ivanovaBefore);
+        $this->assertStringNotContainsString('>В избранном</span>', $ivanovaBefore);
         $this->assertStringNotContainsString('data-favorite', $this->openingTag($before, 'Иванова А. С.'));
 
         $this->actingAs($student)
@@ -183,9 +186,11 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
             ->getContent();
         $petrovRow = $this->row($saved, 'Петров Н. И.');
         $this->assertStringContainsString('data-favorite', $this->openingTag($saved, 'Петров Н. И.'));
-        $this->assertStringContainsString('>В избранном</span>', $petrovRow);
-        $this->assertStringContainsString('aria-label="Убрать из избранного"', $petrovRow);
-        $this->assertStringContainsString('aria-label="Добавить в избранное"', $this->row($saved, 'Иванова А. С.'));
+        $this->assertStringNotContainsString('>В избранном</span>', $petrovRow);
+        $this->assertStringContainsString('fill="currentColor"', $petrovRow);
+        $this->assertStringNotContainsString('fill="none"', $petrovRow);
+        $this->assertStringContainsString('aria-label="Убрать из избранного: Петров Н. И."', $petrovRow);
+        $this->assertStringContainsString('aria-label="Добавить в избранное: Иванова А. С."', $this->row($saved, 'Иванова А. С.'));
         $this->assertLessThan(strpos($saved, 'Иванова А. С.'), strpos($saved, 'Петров Н. И.'));
 
         $this->actingAs($student)
@@ -194,8 +199,10 @@ class DirectoryAndUsersPassTest extends ConsultationTestCase
             ->assertSessionHas('status', 'Преподаватель убран из избранного.');
 
         $after = $this->actingAs($student)->get(route('teachers.index'))->assertOk()->getContent();
-        $this->assertStringContainsString('aria-label="Добавить в избранное"', $this->row($after, 'Петров Н. И.'));
-        $this->assertStringNotContainsString('>В избранном</span>', $this->row($after, 'Петров Н. И.'));
+        $petrovAfter = $this->row($after, 'Петров Н. И.');
+        $this->assertStringContainsString('aria-label="Добавить в избранное: Петров Н. И."', $petrovAfter);
+        $this->assertStringContainsString('fill="none"', $petrovAfter);
+        $this->assertStringNotContainsString('>В избранном</span>', $petrovAfter);
         $this->assertStringNotContainsString('data-favorite', $this->openingTag($after, 'Петров Н. И.'));
     }
 
